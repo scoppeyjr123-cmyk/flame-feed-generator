@@ -51,7 +51,7 @@ function Index() {
         } else {
           const answer = document.createElement("p");
           answer.className = "copied-faq-answer";
-          answer.textContent = answers[button.textContent?.trim() ?? ""];
+          answer.textContent = answers[button.textContent?.trim() ?? ""] ?? "";
           parent.append(answer);
           button.setAttribute("aria-expanded", "true");
         }
