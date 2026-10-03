@@ -36,11 +36,11 @@ function WatchPage() {
             <span className="font-sans text-lg font-bold tracking-normal text-foreground">Feed <span className="text-primary">Loves</span></span>
           </Link>
           <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
-            <Link to="/#catalogo" className="hover:text-primary">Catálogo</Link>
-            <Link to="/#planos" className="hover:text-primary">Planos</Link>
-            <Link to="/#faq" className="hover:text-primary">Dúvidas</Link>
+            <Link to="/" hash="catalogo" className="hover:text-primary">Catálogo</Link>
+            <Link to="/" hash="planos" className="hover:text-primary">Planos</Link>
+            <Link to="/" hash="faq" className="hover:text-primary">Dúvidas</Link>
           </nav>
-          <Link to="/#planos" className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-bold text-primary-foreground transition-colors hover:bg-pink-soft">ASSINAR</Link>
+          <Link to="/" hash="planos" className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-bold text-primary-foreground transition-colors hover:bg-pink-soft">ASSINAR</Link>
         </div>
       </header>
 
@@ -107,7 +107,7 @@ function WatchPage() {
         <div className="page-shell flex flex-col gap-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <Link to="/" className="inline-flex items-center gap-2 font-bold text-foreground"><img alt="" className="size-8 rounded-full" src="/__l5e/assets-v1/93a77862-54bb-4a64-aedc-f2f5ba7697a3/brand.png"/> Feed <span className="text-primary">Loves</span></Link>
           <span>Histórias para se apaixonar, capítulo a capítulo.</span>
-          <Link to="/#planos" className="hover:text-primary">Conhecer os planos</Link>
+          <Link to="/" hash="planos" className="hover:text-primary">Conhecer os planos</Link>
         </div>
       </footer>
     </main>
