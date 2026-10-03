@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronRight, Heart, LockKeyhole, MonitorSmartphone, Play } from "lucide-react";
 import { EpisodePlayer } from "../components/episode-player";
 import { PricingPlans } from "../components/pricing-plans";
@@ -53,6 +53,10 @@ function PartTwoPage() {
   const [posterUrl, setPosterUrl] = useState(episodePosterUrl);
   const [episodeTitle, setEpisodeTitle] = useState("Parte 2 — a história continua");
   const [offerUnlocked, setOfferUnlocked] = useState(false);
+  const watchedSecondsRef = useRef(0);
+  const lastMediaTimeRef = useRef<number | null>(null);
+  const [watchedSeconds, setWatchedSeconds] = useState(0);
+  const unlockAfterSeconds = 240; // Ajustável: 180 a 300 segundos de reprodução real.
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -68,10 +72,22 @@ function PartTwoPage() {
     }
   }, []);
 
-  useEffect(() => {
-    // Liberar a oferta entre 3 e 5 minutos após a chegada à página.
-    const unlockTimer = window.setTimeout(() => setOfferUnlocked(true), 4 * 60 * 1000);
-    return () => window.clearTimeout(unlockTimer);
+  const handlePlaybackSeconds = useCallback((mediaTime: number) => {
+    const previous = lastMediaTimeRef.current;
+    lastMediaTimeRef.current = mediaTime;
+    // Só acumula avanço normal da mídia; pausas e saltos na barra não contam.
+    if (previous !== null) {
+      const delta = mediaTime - previous;
+      if (delta > 0 && delta <= 2.5) {
+        watchedSecondsRef.current += delta;
+        setWatchedSeconds(watchedSecondsRef.current);
+        if (watchedSecondsRef.current >= unlockAfterSeconds) setOfferUnlocked(true);
+      }
+    }
+  }, []);
+
+  const handlePlaybackStateChange = useCallback((playing: boolean) => {
+    if (!playing) lastMediaTimeRef.current = null;
   }, []);
 
   const scrollToPlans = () => {
@@ -111,7 +127,11 @@ function PartTwoPage() {
         .part2-video-caption{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;color:var(--muted-foreground);font-size:11px}
         .part2-video-caption strong{display:block;color:var(--foreground);font-size:13px}
         .part2-exclusive{display:inline-flex;align-items:center;gap:6px;color:var(--primary);white-space:nowrap}
-        .part2-delayed-offer{padding:22px 0 8px;text-align:center;background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--primary) 4%,transparent));scroll-margin-top:78px}
+        .part2-delayed-offer{padding:14px 0 8px;text-align:center;background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--primary) 4%,transparent));scroll-margin-top:78px}
+        .part2-watch-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin:14px auto 0;padding:13px 26px;border:1px solid var(--primary);border-radius:999px;background:var(--primary);color:var(--primary-foreground)!important;font-size:12px;font-weight:800;letter-spacing:.02em;box-shadow:0 5px 22px #f33ca833;animation:part2-cta-pulse 2.2s ease-in-out infinite;cursor:pointer}
+        .part2-watch-cta:hover{filter:brightness(1.06)}
+        @keyframes part2-cta-pulse{0%,100%{box-shadow:0 5px 22px #f33ca822}50%{box-shadow:0 5px 30px #f33ca866}}
+        @media(prefers-reduced-motion:reduce){.part2-watch-cta{animation:none}}
         .part2-offer-locked{max-width:620px;margin:0 auto;padding:20px;border:1px solid var(--border);border-radius:14px;background:color-mix(in oklab,var(--card) 72%,var(--background))}
         .part2-offer-locked p{margin:8px 0 0;color:var(--muted-foreground);font-size:12px;line-height:1.65}
         .part2-offer-locked strong{color:var(--foreground)}
@@ -199,7 +219,7 @@ function PartTwoPage() {
       <section className="part2-video-section" aria-label="Assistir à Parte 2">
         <div className="part2-shell">
           <div className="part2-video-wrap">
-            <EpisodePlayer videoUrl={videoUrl} posterUrl={posterUrl} title={episodeTitle} />
+            <EpisodePlayer videoUrl={videoUrl} posterUrl={posterUrl} title={episodeTitle} onPlaybackSeconds={handlePlaybackSeconds} onPlaybackStateChange={handlePlaybackStateChange} />
             <div className="part2-video-caption">
               <div><strong>{episodeTitle}</strong><span>Feed Loves · Mini novelas</span></div>
               <span className="part2-exclusive"><LockKeyhole size={13} /> Continuação</span>
@@ -210,20 +230,15 @@ function PartTwoPage() {
 
       <section className="part2-delayed-offer" id="continuar" aria-live="polite">
         <div className="part2-shell">
-          {!offerUnlocked ? (
-            <div className="part2-offer-locked">
-              <span className="part2-eyebrow"><LockKeyhole size={12} /> SUA PRÓXIMA MARATONA</span>
-              <h2 style={{ margin: "10px 0 0", fontFamily: '"Playfair Display", Georgia, serif', fontSize: "clamp(22px, 3.5vw, 30px)" }}>A história continua em instantes…</h2>
-              <p>Continue assistindo. Em alguns minutos, você poderá desbloquear a continuação e conferir os planos disponíveis.</p>
-            </div>
-          ) : (
+          {offerUnlocked ? (
             <>
-              <span className="part2-eyebrow"><Heart size={13} fill="currentColor" /> CONTINUE SUA MARATONA</span>
-              <h2 style={{ margin: "10px 0 0", fontFamily: '"Playfair Display", Georgia, serif', fontSize: "clamp(25px, 4vw, 36px)" }}>Não pare a história por aqui.</h2>
-              <p style={{ maxWidth: 620, margin: "10px auto 0", color: "var(--muted-foreground)", fontSize: 13, lineHeight: 1.7 }}>Escolha seu plano e continue assistindo a doramas, séries turcas e novelinhas.</p>
-              <button type="button" className="part2-scroll-cta" onClick={scrollToPlans}>VER PLANOS E ASSINAR <ChevronRight size={17} /></button>
-              <div id="planos-revelados" style={{ textAlign: "left" }}><PricingPlans /></div>
+              <button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button>
+              <div id="planos-revelados"><PricingPlans /></div>
             </>
+          ) : (
+            <p style={{ margin: "0 auto", color: "var(--muted-foreground)", fontSize: 11 }}>
+              Continue assistindo para liberar os planos e a próxima etapa.
+            </p>
           )}
         </div>
       </section>
@@ -241,6 +256,7 @@ function PartTwoPage() {
               </article>
             ))}
           </div>
+          {offerUnlocked ? <div style={{ textAlign: "center", paddingTop: 24 }}><button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button></div> : null}
         </div>
       </section>
 
@@ -258,11 +274,11 @@ function PartTwoPage() {
         </div>
       </section>
 
-      <section className="part2-final">
+      {offerUnlocked ? <section className="part2-final">
         <h2>Pronta para a próxima história?</h2>
         <p>Escolha seu plano e continue sua maratona no Feed Loves.</p>
-        <button type="button" className="part2-scroll-cta" onClick={scrollToPlans}>QUERO CONTINUAR ASSISTINDO <ChevronRight size={17} /></button>
-      </section>
+        <button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button>
+      </section> : null}
 
       <footer className="part2-footer">
         <div className="part2-shell part2-footer-inner">
