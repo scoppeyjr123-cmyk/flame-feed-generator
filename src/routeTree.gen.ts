@@ -45,12 +45,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
   '/assistir/$slug': typeof AssistirSlugRoute
+  '/parte-2': typeof Parte2Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
   '/assistir/$slug': typeof AssistirSlugRoute
+  '/parte-2': typeof Parte2Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
