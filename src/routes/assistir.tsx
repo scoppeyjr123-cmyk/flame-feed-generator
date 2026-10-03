@@ -81,9 +81,9 @@ function WatchPage() {
               <h2 className="display-title mt-5 text-3xl leading-tight">Não pare a história <span className="text-pink-soft">por aqui.</span></h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">Assine o Feed Loves para desbloquear os episódios disponíveis e continuar sua maratona de romances, doramas e séries turcas.</p>
               <ul className="my-5 space-y-3 text-sm text-muted-foreground">
-                <li className="flex gap-2"><Check size={16} className="shrink-0 text-primary}/> Histórias para assistir quando quiser</li>
-                <li className="flex gap-2"><Check size={16} className="shrink-0 text-primary}/> Catálogo de romances e dramas</li>
-                <li className="flex gap-2"><Check size={16} className="shrink-0 text-primary}/> Acesso conforme o plano escolhido</li>
+                <li className="flex gap-2"><Check size={16} className="shrink-0 text-primary"/> Histórias para assistir quando quiser</li>
+                <li className="flex gap-2"><Check size={16} className="shrink-0 text-primary"/> Catálogo de romances e dramas</li>
+                <li className="flex gap-2"><Check size={16} className="shrink-0 text-primary"/> Acesso conforme o plano escolhido</li>
               </ul>
               <a href="/#planos" className="pink-glow inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-pink-soft">VER PLANOS E ASSINAR <ChevronRight size={17}/></a>
               <p className="mt-3 text-center text-[11px] leading-5 text-muted-foreground">Consulte valores, condições e detalhes de acesso antes de assinar.</p>
