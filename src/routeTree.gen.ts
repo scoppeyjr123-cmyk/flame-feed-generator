@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssistirRouteImport } from './routes/assistir'
 import { Route as AssistirSlugRouteImport } from './routes/assistir.$slug'
+import { Route as Parte2RouteImport } from './routes/parte-2'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,11 +29,17 @@ const AssistirSlugRoute = AssistirSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AssistirRoute,
 } as any)
+const Parte2Route = Parte2RouteImport.update({
+  id: '/parte-2',
+  path: '/parte-2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
   '/assistir/$slug': typeof AssistirSlugRoute
+  '/parte-2': typeof Parte2Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -47,15 +54,16 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assistir' | '/assistir/$slug'
+  fullPaths: '/' | '/assistir' | '/assistir/$slug' | '/parte-2'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assistir' | '/assistir/$slug'
-  id: '__root__' | '/' | '/assistir' | '/assistir/$slug'
+  to: '/' | '/assistir' | '/assistir/$slug' | '/parte-2'
+  id: '__root__' | '/' | '/assistir' | '/assistir/$slug' | '/parte-2'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssistirRoute: typeof AssistirRouteWithChildren
+  Parte2Route: typeof Parte2Route
 }
 
 declare module '@tanstack/react-router' {
@@ -81,6 +89,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistirSlugRouteImport
       parentRoute: typeof AssistirRoute
     }
+    '/parte-2': {
+      id: '/parte-2'
+      path: '/parte-2'
+      fullPath: '/parte-2'
+      preLoaderRoute: typeof Parte2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -99,6 +114,7 @@ const AssistirRouteWithChildren = AssistirRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssistirRoute: AssistirRouteWithChildren,
+  Parte2Route: Parte2Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
