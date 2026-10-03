@@ -55,7 +55,6 @@ function PartTwoPage() {
   const [offerUnlocked, setOfferUnlocked] = useState(false);
   const watchedSecondsRef = useRef(0);
   const lastMediaTimeRef = useRef<number | null>(null);
-  const [watchedSeconds, setWatchedSeconds] = useState(0);
   const unlockAfterSeconds = 240; // Ajustável: 180 a 300 segundos de reprodução real.
 
   useEffect(() => {
@@ -80,7 +79,6 @@ function PartTwoPage() {
       const delta = mediaTime - previous;
       if (delta > 0 && delta <= 2.5) {
         watchedSecondsRef.current += delta;
-        setWatchedSeconds(watchedSecondsRef.current);
         if (watchedSecondsRef.current >= unlockAfterSeconds) setOfferUnlocked(true);
       }
     }
