@@ -52,6 +52,7 @@ function PartTwoPage() {
   const [videoUrl, setVideoUrl] = useState(episodeVideoUrl);
   const [posterUrl, setPosterUrl] = useState(episodePosterUrl);
   const [episodeTitle, setEpisodeTitle] = useState("Parte 2 — a história continua");
+  const [offerUnlocked, setOfferUnlocked] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -65,6 +66,12 @@ function PartTwoPage() {
     if (typeof tracker === "function") {
       tracker("track", "ViewContent", { content_name: "Feed Loves — Parte 2", content_category: "episode" });
     }
+  }, []);
+
+  useEffect(() => {
+    // Liberar a oferta entre 3 e 5 minutos após a chegada à página.
+    const unlockTimer = window.setTimeout(() => setOfferUnlocked(true), 4 * 60 * 1000);
+    return () => window.clearTimeout(unlockTimer);
   }, []);
 
   const scrollToPlans = () => {
@@ -104,7 +111,10 @@ function PartTwoPage() {
         .part2-video-caption{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;color:var(--muted-foreground);font-size:11px}
         .part2-video-caption strong{display:block;color:var(--foreground);font-size:13px}
         .part2-exclusive{display:inline-flex;align-items:center;gap:6px;color:var(--primary);white-space:nowrap}
-        .part2-transition{padding:30px 0 16px;text-align:center;background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--primary) 4%,transparent))}
+        .part2-delayed-offer{padding:22px 0 8px;text-align:center;background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--primary) 4%,transparent));scroll-margin-top:78px}
+        .part2-offer-locked{max-width:620px;margin:0 auto;padding:20px;border:1px solid var(--border);border-radius:14px;background:color-mix(in oklab,var(--card) 72%,var(--background))}
+        .part2-offer-locked p{margin:8px 0 0;color:var(--muted-foreground);font-size:12px;line-height:1.65}
+        .part2-offer-locked strong{color:var(--foreground)}
         .part2-heart{display:grid;place-items:center;width:42px;height:42px;margin:0 auto 12px;border:1px solid color-mix(in oklab,var(--primary) 36%,var(--border));border-radius:50%;background:color-mix(in oklab,var(--primary) 10%,var(--card));color:var(--primary)}
         .part2-transition h2,.part2-final h2{margin:0;font:700 clamp(25px,4vw,36px)/1.15 "Playfair Display",Georgia,serif}
         .part2-transition>p{max-width:560px;margin:10px auto 0;color:var(--muted-foreground);font-size:13px;line-height:1.7}
@@ -164,7 +174,7 @@ function PartTwoPage() {
         .part2-footer-inner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
         .part2-footer-links{display:flex;flex-wrap:wrap;gap:15px}
         .part2-footer a:hover{color:var(--primary)}
-        @media(max-width:700px){.part2-shell{width:min(100% - 28px,520px)}.part2-header-inner{min-height:58px}.part2-brand{font-size:16px}.part2-brand img{width:31px;height:31px}.part2-member{min-height:35px;padding:7px 11px;font-size:11px}.part2-hero{padding:22px 0 17px}.part2-hero h1{font-size:30px}.part2-hero-copy{font-size:12px;margin-top:8px}.part2-video-section{padding-top:4px;padding-bottom:24px}.part2-video-wrap{width:min(100%,360px)}.part2-player-frame{border-radius:13px}.part2-video-caption{font-size:10px}.part2-video-caption strong{font-size:12px}.part2-transition{padding-top:25px}.part2-transition h2{font-size:27px}.part2-transition>p{font-size:12px}.part2-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,360px);justify-content:start;gap:11px;font-size:11px;text-align:left}.part2-scroll-cta{width:100%;max-width:360px}.part2-pricing{padding:28px 0 32px}.part2-section-heading h2{font-size:29px}.part2-plan-perks{gap:9px 12px;font-size:10px}.part2-plan-grid{grid-template-columns:1fr;gap:17px;width:min(100%,390px);margin:29px auto 0}.part2-plan-card{padding:23px 20px 19px}.part2-plan-card h3{font-size:32px}.part2-plan-highlight{min-height:unset}.part2-plan-card ul{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;font-size:11px}.part2-plan-cta{min-height:46px;font-size:11px}.part2-access-note>div{gap:9px 12px}.part2-catalog{padding:30px 0 32px}.part2-poster-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 12px;margin-top:20px}.part2-poster h3{font-size:11px}.part2-faq{padding:32px 0}.part2-faq summary{font-size:12px}.part2-final{padding:30px 14px 35px}.part2-footer-inner{justify-content:center;text-align:center}.part2-footer-links{justify-content:center}}
+        @media(max-width:700px){.part2-shell{width:min(100% - 28px,520px)}.part2-header-inner{min-height:58px}.part2-brand{font-size:16px}.part2-brand img{width:31px;height:31px}.part2-member{min-height:35px;padding:7px 11px;font-size:11px}.part2-hero{padding:22px 0 17px}.part2-hero h1{font-size:30px}.part2-hero-copy{font-size:12px;margin-top:8px}.part2-video-section{padding-top:4px;padding-bottom:24px}.part2-video-wrap{width:min(100%,360px)}.part2-player-frame{border-radius:13px}.part2-video-caption{font-size:10px}.part2-video-caption strong{font-size:12px}.part2-delayed-offer{padding-top:18px}.part2-offer-locked{padding:17px}.part2-transition h2{font-size:27px}.part2-transition>p{font-size:12px}.part2-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,360px);justify-content:start;gap:11px;font-size:11px;text-align:left}.part2-scroll-cta{width:100%;max-width:360px}.part2-pricing{padding:28px 0 32px}.part2-section-heading h2{font-size:29px}.part2-plan-perks{gap:9px 12px;font-size:10px}.part2-plan-grid{grid-template-columns:1fr;gap:17px;width:min(100%,390px);margin:29px auto 0}.part2-plan-card{padding:23px 20px 19px}.part2-plan-card h3{font-size:32px}.part2-plan-highlight{min-height:unset}.part2-plan-card ul{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;font-size:11px}.part2-plan-cta{min-height:46px;font-size:11px}.part2-access-note>div{gap:9px 12px}.part2-catalog{padding:30px 0 32px}.part2-poster-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 12px;margin-top:20px}.part2-poster h3{font-size:11px}.part2-faq{padding:32px 0}.part2-faq summary{font-size:12px}.part2-final{padding:30px 14px 35px}.part2-footer-inner{justify-content:center;text-align:center}.part2-footer-links{justify-content:center}}
         @media(prefers-reduced-motion:reduce){.part2-page *{scroll-behavior:auto!important;transition:none!important}}
       `}</style>
 
@@ -198,22 +208,25 @@ function PartTwoPage() {
         </div>
       </section>
 
-      <section className="part2-transition">
+      <section className="part2-delayed-offer" id="continuar" aria-live="polite">
         <div className="part2-shell">
-          <span className="part2-heart"><Heart size={20} fill="currentColor" /></span>
-          <h2>Quer continuar assistindo?</h2>
-          <p>Tenha acesso às próximas histórias, novos episódios e mini novelas completas.</p>
-          <ul className="part2-benefits">
-            <li><Check size={15} /> Novas histórias</li>
-            <li><Check size={15} /> Episódios completos</li>
-            <li><Check size={15} /> Assista quando quiser</li>
-            <li><MonitorSmartphone size={15} /> Celular, tablet ou computador</li>
-          </ul>
-          <button type="button" className="part2-scroll-cta" onClick={scrollToPlans}>Continue maratonando <ChevronRight size={17} /></button>
+          {!offerUnlocked ? (
+            <div className="part2-offer-locked">
+              <span className="part2-eyebrow"><LockKeyhole size={12} /> SUA PRÓXIMA MARATONA</span>
+              <h2 style={{ margin: "10px 0 0", fontFamily: '"Playfair Display", Georgia, serif', fontSize: "clamp(22px, 3.5vw, 30px)" }}>A história continua em instantes…</h2>
+              <p>Continue assistindo. Em alguns minutos, você poderá desbloquear a continuação e conferir os planos disponíveis.</p>
+            </div>
+          ) : (
+            <>
+              <span className="part2-eyebrow"><Heart size={13} fill="currentColor" /> CONTINUE SUA MARATONA</span>
+              <h2 style={{ margin: "10px 0 0", fontFamily: '"Playfair Display", Georgia, serif', fontSize: "clamp(25px, 4vw, 36px)" }}>Não pare a história por aqui.</h2>
+              <p style={{ maxWidth: 620, margin: "10px auto 0", color: "var(--muted-foreground)", fontSize: 13, lineHeight: 1.7 }}>Escolha seu plano e continue assistindo a doramas, séries turcas e novelinhas.</p>
+              <button type="button" className="part2-scroll-cta" onClick={scrollToPlans}>VER PLANOS E ASSINAR <ChevronRight size={17} /></button>
+              <div id="planos-revelados" style={{ textAlign: "left" }}><PricingPlans /></div>
+            </>
+          )}
         </div>
       </section>
-
-      <div className="part2-shell"><PricingPlans /></div>
 
       <section className="part2-catalog">
         <div className="part2-shell">
