@@ -1,16 +1,35 @@
 import { Play } from "lucide-react";
+import { useEffect } from "react";
 
 type EpisodePlayerProps = {
   videoUrl?: string;
   posterUrl?: string;
   title?: string;
+  onPlaybackSeconds?: (seconds: number) => void;
+  onPlaybackStateChange?: (playing: boolean) => void;
 };
 
 export function EpisodePlayer({
   videoUrl = "",
   posterUrl,
   title = "Parte 2 — a história continua",
+  onPlaybackSeconds,
+  onPlaybackStateChange,
 }: EpisodePlayerProps) {
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== "https://player.vimeo.com") return;
+      let data: any;
+      try { data = typeof event.data === "string" ? JSON.parse(event.data) : event.data; } catch { return; }
+      const eventName = data?.event;
+      if (eventName === "play") onPlaybackStateChange?.(true);
+      if (eventName === "pause" || eventName === "ended") onPlaybackStateChange?.(false);
+      if (eventName === "timeupdate" && typeof data?.data?.seconds === "number") onPlaybackSeconds?.(data.data.seconds);
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [onPlaybackSeconds, onPlaybackStateChange]);
+
   if (videoUrl) {
     const isDirectVideo = /\\.(mp4|webm|ogg|m3u8)(?:[?#]|$)/i.test(videoUrl);
 
@@ -25,17 +44,27 @@ export function EpisodePlayer({
             poster={posterUrl || undefined}
             src={videoUrl}
             aria-label={title}
+            onTimeUpdate={(event) => onPlaybackSeconds?.(event.currentTarget.currentTime)}
+            onPlay={() => onPlaybackStateChange?.(true)}
+            onPause={() => onPlaybackStateChange?.(false)}
+            onEnded={() => onPlaybackStateChange?.(false)}
           >
             Seu navegador não suporta vídeo HTML5.
           </video>
         ) : (
           <iframe
             className="part2-player-video"
-            src={videoUrl}
+            src={/vimeo\.com\/video\//.test(videoUrl) ? `${videoUrl}${videoUrl.includes("?") ? "&" : "?"}api=1&player_id=feedloves-episode` : videoUrl}
             title={title}
+            id="feedloves-episode"
             allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
+            onLoad={(event) => {
+              const frame = event.currentTarget;
+              if (!/player\.vimeo\.com/.test(frame.src)) return;
+              ["play", "pause", "timeupdate", "ended"].forEach((name) => frame.contentWindow?.postMessage(JSON.stringify({ method: "addEventListener", value: name }), "https://player.vimeo.com"));
+            }}
           />
         )}
       </div>
