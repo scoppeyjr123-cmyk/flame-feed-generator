@@ -242,11 +242,7 @@ function PartTwoPage() {
               <button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button>
               <div id="planos-revelados"><PricingPlans /></div>
             </>
-          ) : (
-            <p style={{ margin: "0 auto", color: "var(--muted-foreground)", fontSize: 11 }}>
-              Continue assistindo para liberar os planos e a próxima etapa.
-            </p>
-          )}
+          ) : null}
         </div>
       </section>
 
