@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, ChevronRight, Heart, LockKeyhole, MonitorSmartphone, Play } from "lucide-react";
 import { EpisodePlayer } from "../components/episode-player";
 import { PricingPlans } from "../components/pricing-plans";
@@ -53,9 +53,8 @@ function PartTwoPage() {
   const [posterUrl, setPosterUrl] = useState(episodePosterUrl);
   const [episodeTitle, setEpisodeTitle] = useState("Parte 2 — a história continua");
   const [offerUnlocked, setOfferUnlocked] = useState(false);
-  const watchedSecondsRef = useRef(0);
-  const lastMediaTimeRef = useRef<number | null>(null);
-  const unlockAfterSeconds = 240; // Ajustável: 180 a 300 segundos de reprodução real.
+  const unlockDeadlineRef = useRef<number | null>(null);
+  const unlockAfterSeconds = 240; // 240 segundos desde a abertura da página.
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -71,22 +70,32 @@ function PartTwoPage() {
     }
   }, []);
 
-  const handlePlaybackSeconds = useCallback((mediaTime: number) => {
-    const previous = lastMediaTimeRef.current;
-    lastMediaTimeRef.current = mediaTime;
-    // Só acumula avanço normal da mídia; pausas e saltos na barra não contam.
-    if (previous !== null) {
-      const delta = mediaTime - previous;
-      if (delta > 0 && delta <= 2.5) {
-        watchedSecondsRef.current += delta;
-        if (watchedSecondsRef.current >= unlockAfterSeconds) setOfferUnlocked(true);
-      }
+  useEffect(() => {
+    if (offerUnlocked) return;
+    // Um único prazo absoluto impede reinícios em re-renderizações e compensa atrasos da aba.
+    if (unlockDeadlineRef.current === null) {
+      unlockDeadlineRef.current = Date.now() + unlockAfterSeconds * 1000;
     }
-  }, []);
-
-  const handlePlaybackStateChange = useCallback((playing: boolean) => {
-    if (!playing) lastMediaTimeRef.current = null;
-  }, []);
+    let timerId: number | undefined;
+    const checkDeadline = () => {
+      if (timerId !== undefined) window.clearTimeout(timerId);
+      const remaining = (unlockDeadlineRef.current ?? Date.now()) - Date.now();
+      if (remaining <= 0) {
+        setOfferUnlocked(true);
+        return;
+      }
+      timerId = window.setTimeout(checkDeadline, remaining);
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") checkDeadline();
+    };
+    checkDeadline();
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      if (timerId !== undefined) window.clearTimeout(timerId);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [offerUnlocked]);
 
   const scrollToPlans = () => {
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -112,8 +121,8 @@ function PartTwoPage() {
         .part2-hero h1 span,.part2-section-heading h2 span{color:var(--pink-soft,var(--primary))}
         .part2-hero-copy{margin:10px auto 0;max-width:520px;color:var(--muted-foreground);font-size:13px;line-height:1.6}
         .part2-video-section{padding:8px 0 30px}
-        .part2-video-wrap{width:min(100%,390px);margin:0 auto}
-        .part2-player-frame{position:relative;aspect-ratio:9/16;width:100%;overflow:hidden;border:1px solid color-mix(in oklab,var(--primary) 36%,var(--border));border-radius:17px;background:radial-gradient(ellipse at 50% 35%,#35102b 0%,#170914 50%,#080408 100%);box-shadow:0 14px 45px #f33ca812,0 0 0 1px #f33ca80a}
+        .part2-video-wrap{width:min(100%,430px);margin:0 auto;padding:2px;border-radius:20px;background:linear-gradient(145deg,#ff69c4aa,#9d3cff55 48%,#ff4fb588);box-shadow:0 12px 42px #f33ca81c}
+        .part2-player-frame{position:relative;aspect-ratio:9/16;width:100%;overflow:hidden;border:1px solid color-mix(in oklab,var(--primary) 72%,#ffb6df);border-radius:18px;background:radial-gradient(ellipse at 50% 35%,#35102b 0%,#170914 50%,#080408 100%);box-shadow:0 14px 45px #f33ca822,0 0 0 1px #f33ca81c,0 0 24px #ff4fb51f;isolation:isolate}
         .part2-player-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#050305}
         .part2-player-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22;filter:blur(3px)}
         .part2-player-overlay{position:absolute;inset:0;background:linear-gradient(180deg,#08040840,#08040899 50%,#080408e8)}
@@ -126,7 +135,7 @@ function PartTwoPage() {
         .part2-video-caption strong{display:block;color:var(--foreground);font-size:13px}
         .part2-exclusive{display:inline-flex;align-items:center;gap:6px;color:var(--primary);white-space:nowrap}
         .part2-delayed-offer{padding:14px 0 8px;text-align:center;background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--primary) 4%,transparent));scroll-margin-top:78px}
-        .part2-watch-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin:14px auto 0;padding:13px 26px;border:1px solid var(--primary);border-radius:999px;background:var(--primary);color:var(--primary-foreground)!important;font-size:12px;font-weight:800;letter-spacing:.02em;box-shadow:0 5px 22px #f33ca833;animation:part2-cta-pulse 2.2s ease-in-out infinite;cursor:pointer}
+        .part2-watch-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin:14px auto 0;padding:13px 26px;border:1px solid var(--primary);border-radius:999px;background:var(--primary);color:var(--primary-foreground)!important;font-size:12px;font-weight:800;letter-spacing:.02em;box-shadow:0 5px 22px #f33ca833;animation:part2-cta-pulse 2.2s ease-in-out infinite;cursor:pointer;min-width:min(100%,280px)}
         .part2-watch-cta:hover{filter:brightness(1.06)}
         @keyframes part2-cta-pulse{0%,100%{box-shadow:0 5px 22px #f33ca822}50%{box-shadow:0 5px 30px #f33ca866}}
         @media(prefers-reduced-motion:reduce){.part2-watch-cta{animation:none}}
@@ -217,7 +226,7 @@ function PartTwoPage() {
       <section className="part2-video-section" aria-label="Assistir à Parte 2">
         <div className="part2-shell">
           <div className="part2-video-wrap">
-            <EpisodePlayer videoUrl={videoUrl} posterUrl={posterUrl} title={episodeTitle} onPlaybackSeconds={handlePlaybackSeconds} onPlaybackStateChange={handlePlaybackStateChange} />
+            <EpisodePlayer videoUrl={videoUrl} posterUrl={posterUrl} title={episodeTitle} />
             <div className="part2-video-caption">
               <div><strong>{episodeTitle}</strong><span>Feed Loves · Mini novelas</span></div>
               <span className="part2-exclusive"><LockKeyhole size={13} /> Continuação</span>
