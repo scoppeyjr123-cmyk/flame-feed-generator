@@ -135,6 +135,8 @@ function PartTwoPage() {
         .part2-video-caption strong{display:block;color:var(--foreground);font-size:13px}
         .part2-exclusive{display:inline-flex;align-items:center;gap:6px;color:var(--primary);white-space:nowrap}
         .part2-delayed-offer{padding:14px 0 8px;text-align:center;background:linear-gradient(180deg,transparent,color-mix(in oklab,var(--primary) 4%,transparent));scroll-margin-top:78px}
+        .part2-delayed-copy{margin:0 auto;color:var(--muted-foreground);font-size:clamp(13px,2vw,15px);line-height:1.6;text-align:center}
+        .part2-delayed-copy span{color:var(--primary);font-size:18px}
         .part2-watch-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin:14px auto 0;padding:13px 26px;border:1px solid var(--primary);border-radius:999px;background:var(--primary);color:var(--primary-foreground)!important;font-size:12px;font-weight:800;letter-spacing:.02em;box-shadow:0 5px 22px #f33ca833;animation:part2-cta-pulse 2.2s ease-in-out infinite;cursor:pointer;min-width:min(100%,280px)}
         .part2-watch-cta:hover{filter:brightness(1.06)}
         @keyframes part2-cta-pulse{0%,100%{box-shadow:0 5px 22px #f33ca822}50%{box-shadow:0 5px 30px #f33ca866}}
@@ -242,7 +244,9 @@ function PartTwoPage() {
               <button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button>
               <div id="planos-revelados"><PricingPlans /></div>
             </>
-          ) : null}
+          ) : (
+            <p className="part2-delayed-copy">Aqui você vai maratonar, se emocionar, chorar e rir muito! <span>♡</span></p>
+          )}
         </div>
       </section>
 
