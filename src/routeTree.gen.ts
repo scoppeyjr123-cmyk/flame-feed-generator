@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssistirRouteImport } from './routes/assistir'
-import { Route as AssistirSlugRouteImport } from './routes/assistir.$slug'
 import { Route as Parte2RouteImport } from './routes/parte-2'
+import { Route as AssistirSlugRouteImport } from './routes/assistir.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,42 +24,42 @@ const AssistirRoute = AssistirRouteImport.update({
   path: '/assistir',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AssistirSlugRoute = AssistirSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => AssistirRoute,
-} as any)
 const Parte2Route = Parte2RouteImport.update({
   id: '/parte-2',
   path: '/parte-2',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistirSlugRoute = AssistirSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AssistirRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
-  '/assistir/$slug': typeof AssistirSlugRoute
   '/parte-2': typeof Parte2Route
+  '/assistir/$slug': typeof AssistirSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
-  '/assistir/$slug': typeof AssistirSlugRoute
   '/parte-2': typeof Parte2Route
+  '/assistir/$slug': typeof AssistirSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
-  '/assistir/$slug': typeof AssistirSlugRoute
   '/parte-2': typeof Parte2Route
+  '/assistir/$slug': typeof AssistirSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assistir' | '/assistir/$slug' | '/parte-2'
+  fullPaths: '/' | '/assistir' | '/parte-2' | '/assistir/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assistir' | '/assistir/$slug' | '/parte-2'
-  id: '__root__' | '/' | '/assistir' | '/assistir/$slug' | '/parte-2'
+  to: '/' | '/assistir' | '/parte-2' | '/assistir/$slug'
+  id: '__root__' | '/' | '/assistir' | '/parte-2' | '/assistir/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -84,19 +84,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistirRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/assistir/$slug': {
-      id: '/assistir/$slug'
-      path: '/$slug'
-      fullPath: '/assistir/$slug'
-      preLoaderRoute: typeof AssistirSlugRouteImport
-      parentRoute: typeof AssistirRoute
-    }
     '/parte-2': {
       id: '/parte-2'
       path: '/parte-2'
       fullPath: '/parte-2'
       preLoaderRoute: typeof Parte2RouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/assistir/$slug': {
+      id: '/assistir/$slug'
+      path: '/$slug'
+      fullPath: '/assistir/$slug'
+      preLoaderRoute: typeof AssistirSlugRouteImport
+      parentRoute: typeof AssistirRoute
     }
   }
 }
