@@ -220,7 +220,18 @@ function PartTwoPage() {
       <section className="part2-hero">
         <div className="part2-shell">
           <p className="part2-eyebrow"><Play size={12} fill="currentColor" /> CONTINUAÇÃO EXCLUSIVA</p>
-          <h1>{episodeTitle.includes("—") ? <>{episodeTitle.split("—")[0].trim()} <span>— {episodeTitle.split("—").slice(1).join("—").trim()}</span></> : <>{episodeTitle} <span>— a história continua</span></>}</h1>
+          <h1>{(() => {
+            const [first, ...rest] = episodeTitle.split("—");
+            return rest.length ? (
+              <>
+                {first?.trim()} <span>— {rest.join("—").trim()}</span>
+              </>
+            ) : (
+              <>
+                {episodeTitle} <span>— a história continua</span>
+              </>
+            );
+          })()}</h1>
           <p className="part2-hero-copy">Você chegou até aqui. Agora descubra o que acontece depois.</p>
         </div>
       </section>
