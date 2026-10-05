@@ -78,3 +78,45 @@ export const getPublishedCatalog = createServerFn({ method: "GET" }).handler(asy
     error: null,
   };
 });
+
+export const getPublishedSeriesBySlug = createServerFn({ method: "GET" })
+  .validator((slug: string) => slug)
+  .handler(async ({ data: slug }) => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("series")
+      .select(
+        "id,title,slug,short_description,description,category,genre,cover_url,banner_url,thumbnail_url,featured,episodes(id,episode_number,title,description,video_url,thumbnail_url,duration_seconds,status,access_type,sort_order)",
+      )
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (error || !data) return { series: null, error: "Novela não encontrada." };
+    return {
+      series: {
+        ...data,
+        episodes: (data.episodes ?? [])
+          .filter((episode) => episode.status === "published")
+          .sort((a, b) => a.sort_order - b.sort_order || a.episode_number - b.episode_number),
+      },
+      error: null,
+    };
+  });
+
+export const getPublishedEpisode = createServerFn({ method: "GET" })
+  .validator((episodeId: string) => episodeId)
+  .handler(async ({ data: episodeId }) => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("episodes")
+      .select(
+        "id,episode_number,title,description,video_url,video_provider,thumbnail_url,duration_seconds,status,access_type,plan_id,series(id,title,slug)",
+      )
+      .eq("id", episodeId)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (error || !data) return { episode: null, error: "Episódio não encontrado ou sem acesso." };
+    return { episode: data, error: null };
+  });

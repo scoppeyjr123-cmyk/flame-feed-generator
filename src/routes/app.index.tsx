@@ -26,10 +26,14 @@ function AppHome() {
                 "Uma nova história espera por você."}
             </p>
             <div className="app-actions">
-              <Link className="app-action" to="/app">
+              <Link className="app-action" to="/app/novela/$slug" params={{ slug: featured.slug }}>
                 ▶ Assistir
               </Link>
-              <Link className="app-action alt" to="/app">
+              <Link
+                className="app-action alt"
+                to="/app/novela/$slug"
+                params={{ slug: featured.slug }}
+              >
                 ＋ Minha Lista
               </Link>
             </div>
@@ -51,7 +55,12 @@ function AppHome() {
         {series.length ? (
           <div className="app-grid">
             {series.map((item) => (
-              <Link className="app-card" to="/app" key={item.id}>
+              <Link
+                className="app-card"
+                to="/app/novela/$slug"
+                params={{ slug: item.slug }}
+                key={item.id}
+              >
                 <div className="app-card-cover">
                   <img
                     src={item.cover_url || item.thumbnail_url || "/assets/poster1.jpg"}

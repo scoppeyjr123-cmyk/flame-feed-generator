@@ -29,6 +29,8 @@ import { Route as AdminNovelasRouteImport } from './routes/admin.novelas'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AssistirSlugRouteImport } from './routes/assistir.$slug'
+import { Route as AppNovelaSlugRouteImport } from './routes/app.novela.$slug'
+import { Route as AppWatchEpisodeIdRouteImport } from './routes/app.watch.$episodeId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -130,6 +132,16 @@ const AssistirSlugRoute = AssistirSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AssistirRoute,
 } as any)
+const AppNovelaSlugRoute = AppNovelaSlugRouteImport.update({
+  id: '/novela/$slug',
+  path: '/novela/$slug',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWatchEpisodeIdRoute = AppWatchEpisodeIdRouteImport.update({
+  id: '/watch/$episodeId',
+  path: '/watch/$episodeId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -152,6 +164,8 @@ export interface FileRoutesByFullPath {
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
+  '/app/novela/$slug': typeof AppNovelaSlugRoute
+  '/app/watch/$episodeId': typeof AppWatchEpisodeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -172,6 +186,8 @@ export interface FileRoutesByTo {
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
+  '/app/novela/$slug': typeof AppNovelaSlugRoute
+  '/app/watch/$episodeId': typeof AppWatchEpisodeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -195,6 +211,8 @@ export interface FileRoutesById {
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
+  '/app/novela/$slug': typeof AppNovelaSlugRoute
+  '/app/watch/$episodeId': typeof AppWatchEpisodeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -219,6 +237,8 @@ export interface FileRouteTypes {
     | '/assistir/$slug'
     | '/admin/'
     | '/app/'
+    | '/app/novela/$slug'
+    | '/app/watch/$episodeId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -239,6 +259,8 @@ export interface FileRouteTypes {
     | '/assistir/$slug'
     | '/admin'
     | '/app'
+    | '/app/novela/$slug'
+    | '/app/watch/$episodeId'
   id:
     | '__root__'
     | '/'
@@ -261,6 +283,8 @@ export interface FileRouteTypes {
     | '/assistir/$slug'
     | '/admin/'
     | '/app/'
+    | '/app/novela/$slug'
+    | '/app/watch/$episodeId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -414,6 +438,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistirSlugRouteImport
       parentRoute: typeof AssistirRoute
     }
+    '/app/novela/$slug': {
+      id: '/app/novela/$slug'
+      path: '/novela/$slug'
+      fullPath: '/app/novela/$slug'
+      preLoaderRoute: typeof AppNovelaSlugRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/watch/$episodeId': {
+      id: '/app/watch/$episodeId'
+      path: '/watch/$episodeId'
+      fullPath: '/app/watch/$episodeId'
+      preLoaderRoute: typeof AppWatchEpisodeIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -451,10 +489,14 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
+  AppNovelaSlugRoute: typeof AppNovelaSlugRoute
+  AppWatchEpisodeIdRoute: typeof AppWatchEpisodeIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
+  AppNovelaSlugRoute: AppNovelaSlugRoute,
+  AppWatchEpisodeIdRoute: AppWatchEpisodeIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
