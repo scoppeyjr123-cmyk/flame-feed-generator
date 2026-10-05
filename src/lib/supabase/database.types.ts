@@ -542,6 +542,67 @@ export type Database = {
           },
         ];
       };
+      watch_progress: {
+        Row: {
+          user_id: string;
+          episode_id: string;
+          position_seconds: number;
+          duration_seconds: number;
+          completed: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          episode_id: string;
+          position_seconds?: number;
+          duration_seconds?: number;
+          completed?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          episode_id?: string;
+          position_seconds?: number;
+          duration_seconds?: number;
+          completed?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "watch_progress_episode_id_fkey";
+            columns: ["episode_id"];
+            isOneToOne: false;
+            referencedRelation: "episodes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      watchlist: {
+        Row: {
+          user_id: string;
+          series_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          series_id: string;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          series_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "watchlist_series_id_fkey";
+            columns: ["series_id"];
+            isOneToOne: false;
+            referencedRelation: "series";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_roles: {
         Row: {
           created_at: string;

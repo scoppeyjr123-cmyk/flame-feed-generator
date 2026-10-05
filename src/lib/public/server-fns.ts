@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { createClient } from "../supabase/server";
+import { getCustomerSession } from "../supabase/auth-server-fns";
 import type { Json } from "../supabase/database.types";
 
 export type PublicPlan = {
@@ -120,3 +121,20 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
     if (error || !data) return { episode: null, error: "Episódio não encontrado ou sem acesso." };
     return { episode: data, error: null };
   });
+
+export const getCustomerWatchlist = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await getCustomerSession();
+  if (!session.authenticated) return { items: [], error: "Faça login para acessar sua lista." };
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("watchlist")
+    .select(
+      "created_at,series(id,title,slug,short_description,category,genre,cover_url,banner_url)",
+    )
+    .eq("user_id", session.user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) return { items: [], error: "Não foi possível carregar sua lista." };
+  return { items: data ?? [], error: null };
+});

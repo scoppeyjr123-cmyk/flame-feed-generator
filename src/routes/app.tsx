@@ -20,9 +20,9 @@ function AppShell() {
           <Link to="/app">Doramas</Link>
           <Link to="/app">Séries Turcas</Link>
           <Link to="/app">Novelinhas</Link>
-          <Link to="/app">Minha Lista</Link>
+          <Link to="/app/minha-lista">Minha Lista</Link>
         </nav>
-        <Link to="/app" className="feed-app-brand" aria-label="Perfil">
+        <Link to="/app/perfil" className="feed-app-brand" aria-label="Perfil">
           Perfil
         </Link>
       </header>
@@ -30,15 +30,15 @@ function AppShell() {
         <Outlet />
       </div>
       <nav className="feed-app-mobile-nav" aria-label="Navegação mobile">
-        <Link to="/app">
+        <Link to="/app/buscar">
           ⌂<br />
           Início
         </Link>
-        <Link to="/app">
+        <Link to="/app/minha-lista">
           ⌕<br />
           Buscar
         </Link>
-        <Link to="/app">
+        <Link to="/app/perfil">
           ♡<br />
           Minha Lista
         </Link>

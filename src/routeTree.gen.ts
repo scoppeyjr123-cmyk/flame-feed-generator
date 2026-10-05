@@ -28,6 +28,9 @@ import { Route as AdminMidiaRouteImport } from './routes/admin.midia'
 import { Route as AdminNovelasRouteImport } from './routes/admin.novelas'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppBuscarRouteImport } from './routes/app.buscar'
+import { Route as AppMinhaListaRouteImport } from './routes/app.minha-lista'
+import { Route as AppPerfilRouteImport } from './routes/app.perfil'
 import { Route as AssistirSlugRouteImport } from './routes/assistir.$slug'
 import { Route as AppNovelaSlugRouteImport } from './routes/app.novela.$slug'
 import { Route as AppWatchEpisodeIdRouteImport } from './routes/app.watch.$episodeId'
@@ -127,6 +130,21 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBuscarRoute = AppBuscarRouteImport.update({
+  id: '/buscar',
+  path: '/buscar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMinhaListaRoute = AppMinhaListaRouteImport.update({
+  id: '/minha-lista',
+  path: '/minha-lista',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPerfilRoute = AppPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AppRoute,
+} as any)
 const AssistirSlugRoute = AssistirSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -161,6 +179,9 @@ export interface FileRoutesByFullPath {
   '/admin/midia': typeof AdminMidiaRoute
   '/admin/novelas': typeof AdminNovelasRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/app/buscar': typeof AppBuscarRoute
+  '/app/minha-lista': typeof AppMinhaListaRoute
+  '/app/perfil': typeof AppPerfilRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -183,6 +204,9 @@ export interface FileRoutesByTo {
   '/admin/midia': typeof AdminMidiaRoute
   '/admin/novelas': typeof AdminNovelasRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/app/buscar': typeof AppBuscarRoute
+  '/app/minha-lista': typeof AppMinhaListaRoute
+  '/app/perfil': typeof AppPerfilRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
@@ -208,6 +232,9 @@ export interface FileRoutesById {
   '/admin/midia': typeof AdminMidiaRoute
   '/admin/novelas': typeof AdminNovelasRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/app/buscar': typeof AppBuscarRoute
+  '/app/minha-lista': typeof AppMinhaListaRoute
+  '/app/perfil': typeof AppPerfilRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -234,6 +261,9 @@ export interface FileRouteTypes {
     | '/admin/midia'
     | '/admin/novelas'
     | '/admin/planos'
+    | '/app/buscar'
+    | '/app/minha-lista'
+    | '/app/perfil'
     | '/assistir/$slug'
     | '/admin/'
     | '/app/'
@@ -256,6 +286,9 @@ export interface FileRouteTypes {
     | '/admin/midia'
     | '/admin/novelas'
     | '/admin/planos'
+    | '/app/buscar'
+    | '/app/minha-lista'
+    | '/app/perfil'
     | '/assistir/$slug'
     | '/admin'
     | '/app'
@@ -280,6 +313,9 @@ export interface FileRouteTypes {
     | '/admin/midia'
     | '/admin/novelas'
     | '/admin/planos'
+    | '/app/buscar'
+    | '/app/minha-lista'
+    | '/app/perfil'
     | '/assistir/$slug'
     | '/admin/'
     | '/app/'
@@ -431,6 +467,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/buscar': {
+      id: '/app/buscar'
+      path: '/buscar'
+      fullPath: '/app/buscar'
+      preLoaderRoute: typeof AppBuscarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/minha-lista': {
+      id: '/app/minha-lista'
+      path: '/minha-lista'
+      fullPath: '/app/minha-lista'
+      preLoaderRoute: typeof AppMinhaListaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/perfil': {
+      id: '/app/perfil'
+      path: '/perfil'
+      fullPath: '/app/perfil'
+      preLoaderRoute: typeof AppPerfilRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/assistir/$slug': {
       id: '/assistir/$slug'
       path: '/$slug'
@@ -488,12 +545,18 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppRouteChildren {
+  AppBuscarRoute: typeof AppBuscarRoute
+  AppMinhaListaRoute: typeof AppMinhaListaRoute
+  AppPerfilRoute: typeof AppPerfilRoute
   AppIndexRoute: typeof AppIndexRoute
   AppNovelaSlugRoute: typeof AppNovelaSlugRoute
   AppWatchEpisodeIdRoute: typeof AppWatchEpisodeIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBuscarRoute: AppBuscarRoute,
+  AppMinhaListaRoute: AppMinhaListaRoute,
+  AppPerfilRoute: AppPerfilRoute,
   AppIndexRoute: AppIndexRoute,
   AppNovelaSlugRoute: AppNovelaSlugRoute,
   AppWatchEpisodeIdRoute: AppWatchEpisodeIdRoute,
