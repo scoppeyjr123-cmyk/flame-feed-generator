@@ -10,13 +10,31 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AssistirRouteImport } from './routes/assistir'
 import { Route as Parte2RouteImport } from './routes/parte-2'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAssinaturasRouteImport } from './routes/admin.assinaturas'
+import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
+import { Route as AdminCheckoutRouteImport } from './routes/admin.checkout'
+import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
+import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
+import { Route as AdminEpisodiosRouteImport } from './routes/admin.episodios'
+import { Route as AdminHomeRouteImport } from './routes/admin.home'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminMidiaRouteImport } from './routes/admin.midia'
+import { Route as AdminNovelasRouteImport } from './routes/admin.novelas'
+import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
 import { Route as AssistirSlugRouteImport } from './routes/assistir.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssistirRoute = AssistirRouteImport.update({
@@ -29,6 +47,66 @@ const Parte2Route = Parte2RouteImport.update({
   path: '/parte-2',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAssinaturasRoute = AdminAssinaturasRouteImport.update({
+  id: '/assinaturas',
+  path: '/assinaturas',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCheckoutRoute = AdminCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminClientesRoute = AdminClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEpisodiosRoute = AdminEpisodiosRouteImport.update({
+  id: '/episodios',
+  path: '/episodios',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminHomeRoute = AdminHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMidiaRoute = AdminMidiaRouteImport.update({
+  id: '/midia',
+  path: '/midia',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNovelasRoute = AdminNovelasRouteImport.update({
+  id: '/novelas',
+  path: '/novelas',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPlanosRoute = AdminPlanosRouteImport.update({
+  id: '/planos',
+  path: '/planos',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AssistirSlugRoute = AssistirSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -37,33 +115,123 @@ const AssistirSlugRoute = AssistirSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/assistir': typeof AssistirRouteWithChildren
   '/parte-2': typeof Parte2Route
+  '/admin/assinaturas': typeof AdminAssinaturasRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/checkout': typeof AdminCheckoutRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/episodios': typeof AdminEpisodiosRoute
+  '/admin/home': typeof AdminHomeRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/midia': typeof AdminMidiaRoute
+  '/admin/novelas': typeof AdminNovelasRoute
+  '/admin/planos': typeof AdminPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
   '/parte-2': typeof Parte2Route
+  '/admin/assinaturas': typeof AdminAssinaturasRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/checkout': typeof AdminCheckoutRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/episodios': typeof AdminEpisodiosRoute
+  '/admin/home': typeof AdminHomeRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/midia': typeof AdminMidiaRoute
+  '/admin/novelas': typeof AdminNovelasRoute
+  '/admin/planos': typeof AdminPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/assistir': typeof AssistirRouteWithChildren
   '/parte-2': typeof Parte2Route
+  '/admin/assinaturas': typeof AdminAssinaturasRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/checkout': typeof AdminCheckoutRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/episodios': typeof AdminEpisodiosRoute
+  '/admin/home': typeof AdminHomeRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/midia': typeof AdminMidiaRoute
+  '/admin/novelas': typeof AdminNovelasRoute
+  '/admin/planos': typeof AdminPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assistir' | '/parte-2' | '/assistir/$slug'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/assistir'
+    | '/parte-2'
+    | '/admin/assinaturas'
+    | '/admin/auditoria'
+    | '/admin/checkout'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
+    | '/admin/episodios'
+    | '/admin/home'
+    | '/admin/login'
+    | '/admin/midia'
+    | '/admin/novelas'
+    | '/admin/planos'
+    | '/assistir/$slug'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assistir' | '/parte-2' | '/assistir/$slug'
-  id: '__root__' | '/' | '/assistir' | '/parte-2' | '/assistir/$slug'
+  to:
+    | '/'
+    | '/assistir'
+    | '/parte-2'
+    | '/admin/assinaturas'
+    | '/admin/auditoria'
+    | '/admin/checkout'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
+    | '/admin/episodios'
+    | '/admin/home'
+    | '/admin/login'
+    | '/admin/midia'
+    | '/admin/novelas'
+    | '/admin/planos'
+    | '/assistir/$slug'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/assistir'
+    | '/parte-2'
+    | '/admin/assinaturas'
+    | '/admin/auditoria'
+    | '/admin/checkout'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
+    | '/admin/episodios'
+    | '/admin/home'
+    | '/admin/login'
+    | '/admin/midia'
+    | '/admin/novelas'
+    | '/admin/planos'
+    | '/assistir/$slug'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AssistirRoute: typeof AssistirRouteWithChildren
   Parte2Route: typeof Parte2Route
 }
@@ -75,6 +243,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assistir': {
@@ -91,6 +266,90 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Parte2RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/assinaturas': {
+      id: '/admin/assinaturas'
+      path: '/assinaturas'
+      fullPath: '/admin/assinaturas'
+      preLoaderRoute: typeof AdminAssinaturasRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/auditoria': {
+      id: '/admin/auditoria'
+      path: '/auditoria'
+      fullPath: '/admin/auditoria'
+      preLoaderRoute: typeof AdminAuditoriaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/checkout': {
+      id: '/admin/checkout'
+      path: '/checkout'
+      fullPath: '/admin/checkout'
+      preLoaderRoute: typeof AdminCheckoutRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/clientes': {
+      id: '/admin/clientes'
+      path: '/clientes'
+      fullPath: '/admin/clientes'
+      preLoaderRoute: typeof AdminClientesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/configuracoes': {
+      id: '/admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminConfiguracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/episodios': {
+      id: '/admin/episodios'
+      path: '/episodios'
+      fullPath: '/admin/episodios'
+      preLoaderRoute: typeof AdminEpisodiosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/home': {
+      id: '/admin/home'
+      path: '/home'
+      fullPath: '/admin/home'
+      preLoaderRoute: typeof AdminHomeRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/midia': {
+      id: '/admin/midia'
+      path: '/midia'
+      fullPath: '/admin/midia'
+      preLoaderRoute: typeof AdminMidiaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/novelas': {
+      id: '/admin/novelas'
+      path: '/novelas'
+      fullPath: '/admin/novelas'
+      preLoaderRoute: typeof AdminNovelasRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/planos': {
+      id: '/admin/planos'
+      path: '/planos'
+      fullPath: '/admin/planos'
+      preLoaderRoute: typeof AdminPlanosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/assistir/$slug': {
       id: '/assistir/$slug'
       path: '/$slug'
@@ -100,6 +359,38 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminRouteChildren {
+  AdminAssinaturasRoute: typeof AdminAssinaturasRoute
+  AdminAuditoriaRoute: typeof AdminAuditoriaRoute
+  AdminCheckoutRoute: typeof AdminCheckoutRoute
+  AdminClientesRoute: typeof AdminClientesRoute
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
+  AdminEpisodiosRoute: typeof AdminEpisodiosRoute
+  AdminHomeRoute: typeof AdminHomeRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminMidiaRoute: typeof AdminMidiaRoute
+  AdminNovelasRoute: typeof AdminNovelasRoute
+  AdminPlanosRoute: typeof AdminPlanosRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAssinaturasRoute: AdminAssinaturasRoute,
+  AdminAuditoriaRoute: AdminAuditoriaRoute,
+  AdminCheckoutRoute: AdminCheckoutRoute,
+  AdminClientesRoute: AdminClientesRoute,
+  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
+  AdminEpisodiosRoute: AdminEpisodiosRoute,
+  AdminHomeRoute: AdminHomeRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminMidiaRoute: AdminMidiaRoute,
+  AdminNovelasRoute: AdminNovelasRoute,
+  AdminPlanosRoute: AdminPlanosRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AssistirRouteChildren {
   AssistirSlugRoute: typeof AssistirSlugRoute
@@ -115,6 +406,7 @@ const AssistirRouteWithChildren = AssistirRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AssistirRoute: AssistirRouteWithChildren,
   Parte2Route: Parte2Route,
 }

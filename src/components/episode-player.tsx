@@ -1,12 +1,20 @@
 import { Play } from "lucide-react";
 import { useEffect } from "react";
 
+type VimeoPlayerMessage = {
+  event?: string;
+  data?: {
+    seconds?: unknown;
+  };
+};
+
 type EpisodePlayerProps = {
   videoUrl?: string;
   posterUrl?: string;
   title?: string;
   onPlaybackSeconds?: (seconds: number) => void;
   onPlaybackStateChange?: (playing: boolean) => void;
+  onEnded?: () => void;
 };
 
 export function EpisodePlayer({
@@ -15,23 +23,31 @@ export function EpisodePlayer({
   title = "Parte 2 — a história continua",
   onPlaybackSeconds,
   onPlaybackStateChange,
+  onEnded,
 }: EpisodePlayerProps) {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== "https://player.vimeo.com") return;
-      let data: any;
-      try { data = typeof event.data === "string" ? JSON.parse(event.data) : event.data; } catch { return; }
+      let parsedData: unknown;
+      try {
+        parsedData = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+      } catch {
+        return;
+      }
+      if (!parsedData || typeof parsedData !== "object") return;
+      const data = parsedData as VimeoPlayerMessage;
       const eventName = data?.event;
       if (eventName === "play") onPlaybackStateChange?.(true);
       if (eventName === "pause" || eventName === "ended") onPlaybackStateChange?.(false);
+      if (eventName === "ended") onEnded?.();
       if (eventName === "timeupdate" && typeof data?.data?.seconds === "number") onPlaybackSeconds?.(data.data.seconds);
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [onPlaybackSeconds, onPlaybackStateChange]);
+  }, [onEnded, onPlaybackSeconds, onPlaybackStateChange]);
 
   if (videoUrl) {
-    const isDirectVideo = /\\.(mp4|webm|ogg|m3u8)(?:[?#]|$)/i.test(videoUrl);
+    const isDirectVideo = /\.(mp4|webm|ogg|m3u8)(?:[?#]|$)/i.test(videoUrl);
 
     return (
       <div className="part2-player-frame">
@@ -47,7 +63,10 @@ export function EpisodePlayer({
             onTimeUpdate={(event) => onPlaybackSeconds?.(event.currentTarget.currentTime)}
             onPlay={() => onPlaybackStateChange?.(true)}
             onPause={() => onPlaybackStateChange?.(false)}
-            onEnded={() => onPlaybackStateChange?.(false)}
+            onEnded={() => {
+              onPlaybackStateChange?.(false);
+              onEnded?.();
+            }}
           >
             Seu navegador não suporta vídeo HTML5.
           </video>
