@@ -1,6 +1,7 @@
 import { Check, ChevronRight, Sparkles } from "lucide-react";
+import type { PublicPlan } from "../lib/public/server-fns";
 
-const plans = [
+const fallbackPlans = [
   {
     id: "weekly",
     label: "SEMANAL",
@@ -54,42 +55,103 @@ function carryTrackingParameters(checkoutUrl: string) {
 }
 
 function trackCheckoutClick(planId: string) {
-  const tracker = (window as Window & {
-    fbq?: (...args: unknown[]) => void;
-  }).fbq;
+  const tracker = (
+    window as Window & {
+      fbq?: (...args: unknown[]) => void;
+    }
+  ).fbq;
 
   // Reuse an existing Meta Pixel only; this component never injects a pixel.
   if (typeof tracker === "function") {
-    tracker("track", "InitiateCheckout", { content_name: planId, content_category: "subscription" });
+    tracker("track", "InitiateCheckout", {
+      content_name: planId,
+      content_category: "subscription",
+    });
   }
 }
 
-export function PricingPlans({ className = "" }: { className?: string }) {
+function formatPlanPrice(plan: PublicPlan) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: plan.currency }).format(
+    plan.price,
+  );
+}
+
+function formatPlanDuration(plan: PublicPlan) {
+  if (plan.description) return plan.description;
+  if (plan.billing_interval === "week") return "7 dias de acesso ilimitado";
+  if (plan.billing_interval === "year") return "12 meses de acesso ilimitado";
+  if (plan.billing_interval === "lifetime") return "Acesso vitalício";
+  return "30 dias de acesso ilimitado";
+}
+
+export function PricingPlans({
+  className = "",
+  remotePlans = [],
+}: {
+  className?: string;
+  remotePlans?: PublicPlan[];
+}) {
+  const configuredPlans = remotePlans
+    .map((plan) => ({
+      id: plan.slug,
+      label: plan.name.toUpperCase(),
+      price: formatPlanPrice(plan),
+      duration: formatPlanDuration(plan),
+      highlight: plan.description || "Acesso completo ao Feed Loves",
+      cta: `ASSINAR — ${formatPlanPrice(plan)}`,
+      checkout: plan.checkout_url || "",
+      featured: plan.featured,
+    }))
+    .filter((plan) => plan.checkout.length > 0);
+  const plans = remotePlans.length ? configuredPlans : fallbackPlans;
   return (
-    <section className={`part2-pricing ${className}`.trim()} id="planos" aria-labelledby="part2-plans-title">
+    <section
+      className={`part2-pricing ${className}`.trim()}
+      id="planos"
+      aria-labelledby="part2-plans-title"
+    >
       <div className="part2-section-heading">
         <p className="part2-eyebrow">SUA PRÓXIMA HISTÓRIA ESTÁ A UM CLIQUE</p>
-        <h2 id="part2-plans-title">Escolha como você quer <span>maratonar ♡</span></h2>
+        <h2 id="part2-plans-title">
+          Escolha como você quer <span>maratonar ♡</span>
+        </h2>
         <p>Um único acesso para curtir doramas, séries turcas e novelinhas sem anúncios.</p>
         <div className="part2-plan-perks">
-          <span><Check size={14} /> Acesso imediato</span>
-          <span><Check size={14} /> Dublado e legendado</span>
-          <span><Check size={14} /> Sem anúncios</span>
-          <span><Check size={14} /> Dispositivos compatíveis</span>
+          <span>
+            <Check size={14} /> Acesso imediato
+          </span>
+          <span>
+            <Check size={14} /> Dublado e legendado
+          </span>
+          <span>
+            <Check size={14} /> Sem anúncios
+          </span>
+          <span>
+            <Check size={14} /> Dispositivos compatíveis
+          </span>
         </div>
       </div>
 
       <div className="part2-plan-grid">
         {plans.map((plan) => (
-          <article className={`part2-plan-card ${plan.featured ? "is-featured" : ""}`} key={plan.id}>
-            {plan.featured ? <span className="part2-plan-badge"><Sparkles size={13} /> MAIOR ECONOMIA</span> : null}
+          <article
+            className={`part2-plan-card ${plan.featured ? "is-featured" : ""}`}
+            key={plan.id}
+          >
+            {plan.featured ? (
+              <span className="part2-plan-badge">
+                <Sparkles size={13} /> MAIOR ECONOMIA
+              </span>
+            ) : null}
             <p className="part2-plan-label">{plan.label}</p>
             <h3>{plan.price}</h3>
             <p className="part2-plan-duration">{plan.duration}</p>
             <p className="part2-plan-highlight">{plan.highlight}</p>
             <ul>
               {benefits.map((benefit) => (
-                <li key={benefit}><Check size={16} /> <span>{benefit}</span></li>
+                <li key={benefit}>
+                  <Check size={16} /> <span>{benefit}</span>
+                </li>
               ))}
             </ul>
             <a
@@ -111,7 +173,12 @@ export function PricingPlans({ className = "" }: { className?: string }) {
       <div className="part2-access-note">
         <p className="part2-access-title">✦ ACESSO IMEDIATO APÓS A CONFIRMAÇÃO</p>
         <p>Assim que o pagamento for confirmado, você receberá as informações de acesso.</p>
-        <div><span>📱 Receba no WhatsApp</span><span>✉️ Receba também por e-mail</span><span>🚫 Sem anúncios</span><span>📺 Dispositivos compatíveis</span></div>
+        <div>
+          <span>📱 Receba no WhatsApp</span>
+          <span>✉️ Receba também por e-mail</span>
+          <span>🚫 Sem anúncios</span>
+          <span>📺 Dispositivos compatíveis</span>
+        </div>
         <small>Pagamento seguro • Acesso simples • Sem taxas escondidas</small>
       </div>
     </section>

@@ -4,14 +4,23 @@ import { Check, ChevronRight, Heart, LockKeyhole, MonitorSmartphone, Play } from
 import { EpisodePlayer } from "../components/episode-player";
 import { PricingPlans } from "../components/pricing-plans";
 import { SubscriptionModal } from "../components/subscription-modal";
+import { getPublicPlans } from "../lib/public/server-fns";
 
 export const Route = createFileRoute("/parte-2")({
+  loader: () => getPublicPlans(),
   head: () => ({
     meta: [
       { title: "Parte 2 — a história continua | Feed Loves" },
-      { name: "description", content: "Continue a história no Feed Loves e descubra as próximas mini novelas, doramas e episódios." },
+      {
+        name: "description",
+        content:
+          "Continue a história no Feed Loves e descubra as próximas mini novelas, doramas e episódios.",
+      },
       { property: "og:title", content: "Parte 2 — a história continua | Feed Loves" },
-      { property: "og:description", content: "Sua próxima história espera por você no Feed Loves." },
+      {
+        property: "og:description",
+        content: "Sua próxima história espera por você no Feed Loves.",
+      },
       { property: "og:type", content: "website" },
     ],
   }),
@@ -24,24 +33,43 @@ const episodeVideoUrl = "https://player.vimeo.com/video/1231112345";
 const episodePosterUrl = "";
 
 const posters = [
-  { title: "My Queen, My Rules", category: "ROMANCE", src: "/__l5e/assets-v1/464ea311-caac-41c1-b5e3-882fce3f3eb1/poster1.jpg" },
-  { title: "Dolunay", category: "DUBLADO", src: "/__l5e/assets-v1/24253758-3d5f-4dd6-a2e1-7ea2b22f249f/poster2.jpg" },
-  { title: "Scandal", category: "ÉPOCA", src: "/__l5e/assets-v1/2045f9a0-1c3a-439f-aca7-988d0a897445/poster3.jpg" },
-  { title: "Muhtemel Aşk", category: "COMÉDIA ROMÂNTICA", src: "/__l5e/assets-v1/9318291d-db42-4541-81fa-a4fdaff49aa0/poster4.jpg" },
+  {
+    title: "My Queen, My Rules",
+    category: "ROMANCE",
+    src: "/__l5e/assets-v1/464ea311-caac-41c1-b5e3-882fce3f3eb1/poster1.jpg",
+  },
+  {
+    title: "Dolunay",
+    category: "DUBLADO",
+    src: "/__l5e/assets-v1/24253758-3d5f-4dd6-a2e1-7ea2b22f249f/poster2.jpg",
+  },
+  {
+    title: "Scandal",
+    category: "ÉPOCA",
+    src: "/__l5e/assets-v1/2045f9a0-1c3a-439f-aca7-988d0a897445/poster3.jpg",
+  },
+  {
+    title: "Muhtemel Aşk",
+    category: "COMÉDIA ROMÂNTICA",
+    src: "/__l5e/assets-v1/9318291d-db42-4541-81fa-a4fdaff49aa0/poster4.jpg",
+  },
 ];
 
 const faqItems = [
   {
     question: "Como funciona a assinatura?",
-    answer: "Escolha o plano que combina com a sua maratona e confira o preço, o período de acesso e as condições no checkout antes de concluir o pagamento.",
+    answer:
+      "Escolha o plano que combina com a sua maratona e confira o preço, o período de acesso e as condições no checkout antes de concluir o pagamento.",
   },
   {
     question: "Posso assistir pelo celular?",
-    answer: "Sim. Você pode assistir pelo navegador do celular em dispositivos compatíveis, além de usar tablet ou computador.",
+    answer:
+      "Sim. Você pode assistir pelo navegador do celular em dispositivos compatíveis, além de usar tablet ou computador.",
   },
   {
     question: "Posso cancelar quando quiser?",
-    answer: "As condições de cancelamento e renovação são apresentadas antes da contratação. Confira esses detalhes no checkout do plano escolhido.",
+    answer:
+      "As condições de cancelamento e renovação são apresentadas antes da contratação. Confira esses detalhes no checkout do plano escolhido.",
   },
   {
     question: "O acesso é liberado na hora?",
@@ -50,6 +78,7 @@ const faqItems = [
 ];
 
 function PartTwoPage() {
+  const { plans: configuredPlans } = Route.useLoaderData();
   const [videoUrl, setVideoUrl] = useState(episodeVideoUrl);
   const [posterUrl, setPosterUrl] = useState(episodePosterUrl);
   const [episodeTitle, setEpisodeTitle] = useState("Parte 2 — a história continua");
@@ -70,7 +99,10 @@ function PartTwoPage() {
     // No pixel IDs or third-party tracking scripts are added by this route.
     const tracker = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
     if (typeof tracker === "function") {
-      tracker("track", "ViewContent", { content_name: "Feed Loves — Parte 2", content_category: "episode" });
+      tracker("track", "ViewContent", {
+        content_name: "Feed Loves — Parte 2",
+        content_category: "episode",
+      });
     }
   }, []);
 
@@ -128,9 +160,12 @@ function PartTwoPage() {
     setIsSubscriptionModalOpen(false);
   }, []);
 
-  useEffect(() => () => {
-    if (highlightTimerRef.current !== undefined) window.clearTimeout(highlightTimerRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (highlightTimerRef.current !== undefined) window.clearTimeout(highlightTimerRef.current);
+    },
+    [],
+  );
 
   return (
     <main className="part2-page">
@@ -258,38 +293,58 @@ function PartTwoPage() {
         <div className="part2-shell part2-header-inner">
           <Link to="/" className="part2-brand" aria-label="Feed Loves — página inicial">
             <img src="/__l5e/assets-v1/93a77862-54bb-4a64-aedc-f2f5ba7697a3/brand.png" alt="" />
-            <span style={{ color: "var(--foreground)" }}>Feed <span>Loves</span></span>
+            <span style={{ color: "var(--foreground)" }}>
+              Feed <span>Loves</span>
+            </span>
           </Link>
-          <a className="part2-member" href="/#planos">Já sou assinante</a>
+          <a className="part2-member" href="/#planos">
+            Já sou assinante
+          </a>
         </div>
       </header>
 
       <section className="part2-hero">
         <div className="part2-shell">
-          <p className="part2-eyebrow"><Play size={12} fill="currentColor" /> CONTINUAÇÃO EXCLUSIVA</p>
-          <h1>{(() => {
-            const [first, ...rest] = episodeTitle.split("—");
-            return rest.length ? (
-              <>
-                {first?.trim()} <span>— {rest.join("—").trim()}</span>
-              </>
-            ) : (
-              <>
-                {episodeTitle} <span>— a história continua</span>
-              </>
-            );
-          })()}</h1>
-          <p className="part2-hero-copy">Você chegou até aqui. Agora descubra o que acontece depois.</p>
+          <p className="part2-eyebrow">
+            <Play size={12} fill="currentColor" /> CONTINUAÇÃO EXCLUSIVA
+          </p>
+          <h1>
+            {(() => {
+              const [first, ...rest] = episodeTitle.split("—");
+              return rest.length ? (
+                <>
+                  {first?.trim()} <span>— {rest.join("—").trim()}</span>
+                </>
+              ) : (
+                <>
+                  {episodeTitle} <span>— a história continua</span>
+                </>
+              );
+            })()}
+          </h1>
+          <p className="part2-hero-copy">
+            Você chegou até aqui. Agora descubra o que acontece depois.
+          </p>
         </div>
       </section>
 
       <section className="part2-video-section" aria-label="Assistir à Parte 2">
         <div className="part2-shell">
           <div className="part2-video-wrap">
-            <EpisodePlayer videoUrl={videoUrl} posterUrl={posterUrl} title={episodeTitle} onEnded={handleEpisodeEnded} />
+            <EpisodePlayer
+              videoUrl={videoUrl}
+              posterUrl={posterUrl}
+              title={episodeTitle}
+              onEnded={handleEpisodeEnded}
+            />
             <div className="part2-video-caption">
-              <div><strong>{episodeTitle}</strong><span>Feed Loves · Mini novelas</span></div>
-              <span className="part2-exclusive"><LockKeyhole size={13} /> Continuação</span>
+              <div>
+                <strong>{episodeTitle}</strong>
+                <span>Feed Loves · Mini novelas</span>
+              </div>
+              <span className="part2-exclusive">
+                <LockKeyhole size={13} /> Continuação
+              </span>
             </div>
           </div>
         </div>
@@ -299,29 +354,49 @@ function PartTwoPage() {
         <div className="part2-shell">
           {offerUnlocked ? (
             <>
-              <button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button>
-              <div id="planos-revelados"><PricingPlans className={plansHighlighted ? "is-highlighted" : ""} /></div>
+              <button type="button" className="part2-watch-cta" onClick={scrollToPlans}>
+                <Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO
+              </button>
+              <div id="planos-revelados">
+                <PricingPlans
+                  remotePlans={configuredPlans}
+                  className={plansHighlighted ? "is-highlighted" : ""}
+                />
+              </div>
             </>
           ) : (
-            <p className="part2-delayed-copy">Aqui você vai maratonar, se emocionar, chorar e rir muito! <span>♡</span></p>
+            <p className="part2-delayed-copy">
+              Aqui você vai maratonar, se emocionar, chorar e rir muito! <span>♡</span>
+            </p>
           )}
         </div>
       </section>
 
       <section className="part2-catalog">
         <div className="part2-shell">
-          <h2>E isso é <span>só o começo…</span></h2>
+          <h2>
+            E isso é <span>só o começo…</span>
+          </h2>
           <p className="part2-catalog-sub">Explore outras histórias disponíveis no Feed Loves.</p>
           <div className="part2-poster-grid">
             {posters.map((poster) => (
               <article className="part2-poster" key={poster.title}>
-                <div className="part2-poster-image"><img src={poster.src} alt={`Capa de ${poster.title}`} loading="lazy" /><span>{poster.category}</span></div>
+                <div className="part2-poster-image">
+                  <img src={poster.src} alt={`Capa de ${poster.title}`} loading="lazy" />
+                  <span>{poster.category}</span>
+                </div>
                 <h3>{poster.title}</h3>
                 <p>{poster.category}</p>
               </article>
             ))}
           </div>
-          {offerUnlocked ? <div style={{ textAlign: "center", paddingTop: 24 }}><button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button></div> : null}
+          {offerUnlocked ? (
+            <div style={{ textAlign: "center", paddingTop: 24 }}>
+              <button type="button" className="part2-watch-cta" onClick={scrollToPlans}>
+                <Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO
+              </button>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -339,17 +414,23 @@ function PartTwoPage() {
         </div>
       </section>
 
-      {offerUnlocked ? <section className="part2-final">
-        <h2>Pronta para a próxima história?</h2>
-        <p>Escolha seu plano e continue sua maratona no Feed Loves.</p>
-        <button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button>
-      </section> : null}
+      {offerUnlocked ? (
+        <section className="part2-final">
+          <h2>Pronta para a próxima história?</h2>
+          <p>Escolha seu plano e continue sua maratona no Feed Loves.</p>
+          <button type="button" className="part2-watch-cta" onClick={scrollToPlans}>
+            <Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO
+          </button>
+        </section>
+      ) : null}
 
       <footer className="part2-footer">
         <div className="part2-shell part2-footer-inner">
           <Link to="/" className="part2-brand" aria-label="Feed Loves — página inicial">
             <img src="/__l5e/assets-v1/93a77862-54bb-4a64-aedc-f2f5ba7697a3/brand.png" alt="" />
-            <span style={{ color: "var(--foreground)" }}>Feed <span>Loves</span></span>
+            <span style={{ color: "var(--foreground)" }}>
+              Feed <span>Loves</span>
+            </span>
           </Link>
           <span>Histórias para se apaixonar, capítulo a capítulo.</span>
           <nav className="part2-footer-links" aria-label="Links legais">
