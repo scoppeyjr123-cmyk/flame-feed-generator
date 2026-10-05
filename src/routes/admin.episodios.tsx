@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ListVideo, Plus, Trash2 } from "lucide-react";
+import { ListVideo, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -31,6 +31,7 @@ type EpisodeForm = {
   video_provider: string;
   thumbnail_url: string;
   duration_seconds: string;
+  scheduled_at: string;
   status: "draft" | "published" | "scheduled" | "hidden";
   access_type: "free" | "subscriber" | "specific_plan";
   plan_id: string;
@@ -44,6 +45,7 @@ const emptyEpisode: EpisodeForm = {
   video_provider: "vimeo",
   thumbnail_url: "",
   duration_seconds: "",
+  scheduled_at: "",
   status: "draft",
   access_type: "subscriber",
   plan_id: "",
@@ -55,11 +57,34 @@ function AdminEpisodes() {
     ...emptyEpisode,
     series_id: series[0]?.id ?? "",
   });
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
   const seriesMap = new Map(series.map((item) => [item.id, item.title]));
 
-  async function createEpisode(event: FormEvent<HTMLFormElement>) {
+  function startEdit(episode: (typeof episodes)[number]) {
+    setEditingId(episode.id);
+    setForm({
+      series_id: episode.series_id,
+      episode_number: episode.episode_number,
+      title: episode.title,
+      description: episode.description ?? "",
+      video_url: episode.video_url ?? "",
+      video_provider: episode.video_provider ?? "",
+      thumbnail_url: episode.thumbnail_url ?? "",
+      duration_seconds: episode.duration_seconds ? String(episode.duration_seconds) : "",
+      scheduled_at: episode.scheduled_at
+        ? new Date(episode.scheduled_at).toISOString().slice(0, 16)
+        : "",
+      status: episode.status,
+      access_type: episode.access_type,
+      plan_id: episode.plan_id ?? "",
+    });
+    setMessage("");
+    setShowForm(true);
+  }
+
+  async function saveEpisode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
     if (!form.series_id) return setMessage("Cadastre uma novela antes de adicionar episódios.");
@@ -67,27 +92,29 @@ function AdminEpisodes() {
       data: { user },
     } = await createClient().auth.getUser();
     if (!user) return setMessage("Sua sessão expirou. Entre novamente.");
-    const { error } = await createClient()
-      .from("episodes")
-      .insert({
-        series_id: form.series_id,
-        episode_number: Number(form.episode_number),
-        title: form.title,
-        description: form.description || null,
-        video_url: form.video_url || null,
-        video_provider: form.video_provider || null,
-        thumbnail_url: form.thumbnail_url || null,
-        duration_seconds: form.duration_seconds ? Number(form.duration_seconds) : null,
-        status: form.status,
-        access_type: form.access_type,
-        plan_id: form.access_type === "specific_plan" ? form.plan_id || null : null,
-        sort_order: Number(form.episode_number),
-      });
+    const payload = {
+      series_id: form.series_id,
+      episode_number: Number(form.episode_number),
+      title: form.title,
+      description: form.description || null,
+      video_url: form.video_url || null,
+      video_provider: form.video_provider || null,
+      thumbnail_url: form.thumbnail_url || null,
+      duration_seconds: form.duration_seconds ? Number(form.duration_seconds) : null,
+      scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
+      status: form.status,
+      access_type: form.access_type,
+      plan_id: form.access_type === "specific_plan" ? form.plan_id || null : null,
+      sort_order: Number(form.episode_number),
+    };
+    const { error } = editingId
+      ? await createClient().from("episodes").update(payload).eq("id", editingId)
+      : await createClient().from("episodes").insert(payload);
     if (error) return setMessage(error.message);
     window.location.reload();
   }
 
-  async function changeStatus(id: string, status: "draft" | "published" | "hidden") {
+  async function changeStatus(id: string, status: "draft" | "published" | "scheduled" | "hidden") {
     const { error } = await createClient().from("episodes").update({ status }).eq("id", id);
     if (error) return setMessage(error.message);
     window.location.reload();
@@ -109,7 +136,11 @@ function AdminEpisodes() {
           <button
             type="button"
             className="admin-primary-button"
-            onClick={() => setShowForm((value) => !value)}
+            onClick={() => {
+              setEditingId(null);
+              setForm({ ...emptyEpisode, series_id: series[0]?.id ?? "" });
+              setShowForm((value) => !value);
+            }}
           >
             <Plus size={15} /> Novo episódio
           </button>
@@ -123,7 +154,7 @@ function AdminEpisodes() {
       {showForm ? (
         <form
           className="admin-card admin-panel"
-          onSubmit={(event) => void createEpisode(event)}
+          onSubmit={(event) => void saveEpisode(event)}
           style={{ marginBottom: 16 }}
         >
           <div className="admin-form-grid">
@@ -217,6 +248,16 @@ function AdminEpisodes() {
               </select>
             </div>
             <div className="admin-field">
+              <label htmlFor="episode-scheduled-at">Publicar em</label>
+              <input
+                id="episode-scheduled-at"
+                type="datetime-local"
+                value={form.scheduled_at}
+                onChange={(event) => setForm({ ...form, scheduled_at: event.target.value })}
+                disabled={form.status !== "scheduled"}
+              />
+            </div>
+            <div className="admin-field">
               <label htmlFor="episode-access">Tipo de acesso</label>
               <select
                 id="episode-access"
@@ -265,7 +306,7 @@ function AdminEpisodes() {
               Cancelar
             </button>
             <button type="submit" className="admin-primary-button">
-              Salvar episódio
+              {editingId ? "Salvar alterações" : "Salvar episódio"}
             </button>
           </div>
         </form>
@@ -299,6 +340,13 @@ function AdminEpisodes() {
                   <td>{episode.video_url ? "Configurado" : "Não configurado"}</td>
                   <td>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        className="admin-ghost-button"
+                        onClick={() => startEdit(episode)}
+                      >
+                        <Pencil size={13} /> Editar
+                      </button>
                       <button
                         type="button"
                         className="admin-ghost-button"

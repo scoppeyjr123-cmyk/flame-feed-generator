@@ -131,7 +131,9 @@ export const getAdminSeries = createServerFn({ method: "GET" }).handler(async ()
       .order("created_at", { ascending: false }),
     supabase
       .from("episodes")
-      .select("id,series_id,episode_number,title,status,access_type,thumbnail_url,video_url")
+      .select(
+        "id,series_id,episode_number,title,description,status,access_type,plan_id,thumbnail_url,video_url,video_provider,duration_seconds,scheduled_at",
+      )
       .order("series_id")
       .order("sort_order"),
   ]);

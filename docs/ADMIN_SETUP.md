@@ -26,6 +26,15 @@ Todo usuário Auth novo recebe automaticamente o papel `customer`. A promoção 
 
 O bucket `feedloves-media` é público para leitura dos arquivos publicados e aceita upload, substituição e remoção somente por administradores via RLS.
 
+## Operação do painel
+
+- `/admin/assinaturas` permite conceder acesso manual, trocar plano, ativar, pausar, cancelar, remover acesso e conceder acesso vitalício. Cada mutação gera uma linha em `subscription_history` e passa pelo RLS de administrador.
+- `/admin/novelas` permite criar, editar, publicar, ocultar e excluir novelas, incluindo capa, banner, thumbnail, classificação e ordem.
+- `/admin/episodios` permite criar, editar, publicar, ocultar, agendar e excluir episódios, com provider, URL, thumbnail, duração, acesso por plano e ordem.
+- Clientes e assinaturas possuem busca e filtros por status e plano.
+
 ## Limites atuais
 
-O checkout público existente continua preservado nos componentes atuais até uma etapa separada de migração para consumir `plans` e `checkout_settings`. Nenhum preço, link, pixel, UTM ou script público foi alterado nesta etapa.
+O checkout público da Parte 2 já consulta `plans` e `checkout_settings` quando houver planos ativos e URLs principais configuradas. Enquanto o banco estiver vazio ou sem checkout configurado, os planos públicos atuais continuam como fallback para preservar o fluxo existente, preços, UTMs, Meta Pixel e links atuais.
+
+Ainda não há webhook de pagamento no projeto para sincronizar automaticamente eventos do provedor. A integração precisa ser adicionada quando o provedor de checkout e suas credenciais forem definidos.

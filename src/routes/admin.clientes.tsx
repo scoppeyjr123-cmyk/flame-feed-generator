@@ -21,15 +21,44 @@ export const Route = createFileRoute("/admin/clientes")({
 function AdminCustomers() {
   const { customers, subscriptions } = Route.useLoaderData();
   const [query, setQuery] = useState("");
-  const rows = useMemo(
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [planFilter, setPlanFilter] = useState("all");
+  const planOptions = useMemo(
     () =>
-      customers.filter((customer) =>
-        `${customer.name ?? ""} ${customer.email ?? ""}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
+      Array.from(
+        new Map(
+          subscriptions
+            .filter((subscription) => subscription.plan_id)
+            .map((subscription) => {
+              const plan =
+                subscription &&
+                "plans" in subscription &&
+                subscription.plans &&
+                typeof subscription.plans === "object" &&
+                "name" in subscription.plans
+                  ? String(subscription.plans.name)
+                  : "Plano vinculado";
+              return [subscription.plan_id as string, plan];
+            }),
+        ),
       ),
-    [customers, query],
+    [subscriptions],
   );
+  const rows = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const latestSubscription = new Map(
+      subscriptions.map((subscription) => [subscription.user_id, subscription]),
+    );
+    return customers.filter((customer) => {
+      const subscription = latestSubscription.get(customer.id);
+      return (
+        `${customer.name ?? ""} ${customer.email ?? ""}`.toLowerCase().includes(normalizedQuery) &&
+        (statusFilter === "all" ||
+          (statusFilter === "none" ? !subscription : subscription?.status === statusFilter)) &&
+        (planFilter === "all" || subscription?.plan_id === planFilter)
+      );
+    });
+  }, [customers, planFilter, query, statusFilter, subscriptions]);
   const latestSubscription = new Map(
     subscriptions.map((subscription) => [subscription.user_id, subscription]),
   );
@@ -41,20 +70,54 @@ function AdminCustomers() {
         description="Pesquise e acompanhe o estado atual de cada cliente."
       />
       <div className="admin-card admin-panel" style={{ marginBottom: 16 }}>
-        <div className="admin-field">
-          <label htmlFor="customer-search">Pesquisar cliente</label>
-          <div style={{ position: "relative" }}>
-            <Search
-              size={15}
-              style={{ position: "absolute", left: 11, top: 11, color: "#a8889d" }}
-            />
-            <input
-              id="customer-search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Nome ou e-mail"
-              style={{ paddingLeft: 34 }}
-            />
+        <div className="admin-form-grid">
+          <div className="admin-field">
+            <label htmlFor="customer-search">Pesquisar cliente</label>
+            <div style={{ position: "relative" }}>
+              <Search
+                size={15}
+                style={{ position: "absolute", left: 11, top: 11, color: "#a8889d" }}
+              />
+              <input
+                id="customer-search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Nome ou e-mail"
+                style={{ paddingLeft: 34 }}
+              />
+            </div>
+          </div>
+          <div className="admin-field">
+            <label htmlFor="customer-status-filter">Status</label>
+            <select
+              id="customer-status-filter"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+            >
+              <option value="all">Todos</option>
+              <option value="active">Ativa</option>
+              <option value="pending">Pendente</option>
+              <option value="paused">Pausada</option>
+              <option value="cancelled">Cancelada</option>
+              <option value="expired">Expirada</option>
+              <option value="lifetime">Vitalícia</option>
+              <option value="none">Sem assinatura</option>
+            </select>
+          </div>
+          <div className="admin-field">
+            <label htmlFor="customer-plan-filter">Plano</label>
+            <select
+              id="customer-plan-filter"
+              value={planFilter}
+              onChange={(event) => setPlanFilter(event.target.value)}
+            >
+              <option value="all">Todos</option>
+              {planOptions.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

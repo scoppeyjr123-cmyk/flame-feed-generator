@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Film, Plus, Trash2 } from "lucide-react";
+import { Film, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -28,6 +28,9 @@ type SeriesForm = {
   genre: string;
   cover_url: string;
   banner_url: string;
+  thumbnail_url: string;
+  age_rating: string;
+  sort_order: string;
   status: "draft" | "published" | "hidden";
   featured: boolean;
 };
@@ -40,6 +43,9 @@ const emptyForm: SeriesForm = {
   genre: "",
   cover_url: "",
   banner_url: "",
+  thumbnail_url: "",
+  age_rating: "",
+  sort_order: "0",
   status: "draft",
   featured: false,
 };
@@ -47,6 +53,7 @@ const emptyForm: SeriesForm = {
 function AdminSeries() {
   const { series, episodes } = Route.useLoaderData();
   const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
   const episodeCount = new Map<string, number>();
@@ -54,7 +61,28 @@ function AdminSeries() {
     episodeCount.set(episode.series_id, (episodeCount.get(episode.series_id) ?? 0) + 1),
   );
 
-  async function createSeries(event: FormEvent<HTMLFormElement>) {
+  function startEdit(item: (typeof series)[number]) {
+    setEditingId(item.id);
+    setForm({
+      title: item.title,
+      slug: item.slug,
+      short_description: item.short_description ?? "",
+      description: item.description ?? "",
+      category: item.category ?? "",
+      genre: item.genre ?? "",
+      cover_url: item.cover_url ?? "",
+      banner_url: item.banner_url ?? "",
+      thumbnail_url: item.thumbnail_url ?? "",
+      age_rating: item.age_rating ?? "",
+      sort_order: String(item.sort_order),
+      status: item.status === "scheduled" ? "draft" : item.status,
+      featured: item.featured,
+    });
+    setMessage("");
+    setShowForm(true);
+  }
+
+  async function saveSeries(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
     const supabase = createClient();
@@ -62,12 +90,15 @@ function AdminSeries() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return setMessage("Sua sessão expirou. Entre novamente.");
-    const { error } = await supabase.from("series").insert({
+    const payload = {
       ...form,
-      created_by: user.id,
+      sort_order: Number(form.sort_order),
       updated_by: user.id,
       published_at: form.status === "published" ? new Date().toISOString() : null,
-    });
+    };
+    const { error } = editingId
+      ? await supabase.from("series").update(payload).eq("id", editingId)
+      : await supabase.from("series").insert({ ...payload, created_by: user.id });
     if (error) return setMessage(error.message);
     window.location.reload();
   }
@@ -97,7 +128,11 @@ function AdminSeries() {
           <button
             type="button"
             className="admin-primary-button"
-            onClick={() => setShowForm((value) => !value)}
+            onClick={() => {
+              setEditingId(null);
+              setForm(emptyForm);
+              setShowForm((value) => !value);
+            }}
           >
             <Plus size={15} /> Nova novela
           </button>
@@ -111,7 +146,7 @@ function AdminSeries() {
       {showForm ? (
         <form
           className="admin-card admin-panel"
-          onSubmit={(event) => void createSeries(event)}
+          onSubmit={(event) => void saveSeries(event)}
           style={{ marginBottom: 16 }}
         >
           <div className="admin-form-grid">
@@ -169,6 +204,24 @@ function AdminSeries() {
                 onChange={(event) => setForm({ ...form, banner_url: event.target.value })}
               />
             </div>
+            <div className="admin-field">
+              <label htmlFor="series-thumbnail">URL da thumbnail</label>
+              <input
+                id="series-thumbnail"
+                type="url"
+                value={form.thumbnail_url}
+                onChange={(event) => setForm({ ...form, thumbnail_url: event.target.value })}
+              />
+            </div>
+            <div className="admin-field">
+              <label htmlFor="series-age-rating">Classificação indicativa</label>
+              <input
+                id="series-age-rating"
+                value={form.age_rating}
+                onChange={(event) => setForm({ ...form, age_rating: event.target.value })}
+                placeholder="Ex.: 12"
+              />
+            </div>
             <div className="admin-field full">
               <label htmlFor="series-short">Descrição curta</label>
               <input
@@ -210,13 +263,23 @@ function AdminSeries() {
                 <option value="yes">Sim</option>
               </select>
             </div>
+            <div className="admin-field">
+              <label htmlFor="series-order">Ordem de exibição</label>
+              <input
+                id="series-order"
+                type="number"
+                min="0"
+                value={form.sort_order}
+                onChange={(event) => setForm({ ...form, sort_order: event.target.value })}
+              />
+            </div>
           </div>
           <div className="admin-form-actions">
             <button type="button" className="admin-ghost-button" onClick={() => setShowForm(false)}>
               Cancelar
             </button>
             <button type="submit" className="admin-primary-button">
-              Salvar novela
+              {editingId ? "Salvar alterações" : "Salvar novela"}
             </button>
           </div>
         </form>
@@ -250,6 +313,13 @@ function AdminSeries() {
                   <td>{item.featured ? "Sim" : "Não"}</td>
                   <td>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        className="admin-ghost-button"
+                        onClick={() => startEdit(item)}
+                      >
+                        <Pencil size={13} /> Editar
+                      </button>
                       <button
                         type="button"
                         className="admin-ghost-button"
