@@ -26,6 +26,17 @@ export function EpisodePlayer({
   onEnded,
 }: EpisodePlayerProps) {
   useEffect(() => {
+    const registerVimeoEvents = () => {
+      const frame = document.getElementById("feedloves-episode") as HTMLIFrameElement | null;
+      if (!frame?.contentWindow) return;
+      ["play", "pause", "timeupdate", "ended"].forEach((name) =>
+        frame.contentWindow?.postMessage(
+          JSON.stringify({ method: "addEventListener", value: name }),
+          "https://player.vimeo.com",
+        ),
+      );
+    };
+
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== "https://player.vimeo.com") return;
       let parsedData: unknown;
@@ -37,6 +48,7 @@ export function EpisodePlayer({
       if (!parsedData || typeof parsedData !== "object") return;
       const data = parsedData as VimeoPlayerMessage;
       const eventName = data?.event;
+      if (eventName === "ready") registerVimeoEvents();
       if (eventName === "play") onPlaybackStateChange?.(true);
       if (eventName === "pause" || eventName === "ended") onPlaybackStateChange?.(false);
       if (eventName === "ended") onEnded?.();
@@ -82,7 +94,7 @@ export function EpisodePlayer({
             onLoad={(event) => {
               const frame = event.currentTarget;
               if (!/player\.vimeo\.com/.test(frame.src)) return;
-              ["play", "pause", "timeupdate", "ended"].forEach((name) => frame.contentWindow?.postMessage(JSON.stringify({ method: "addEventListener", value: name }), "https://player.vimeo.com"));
+              registerVimeoEvents();
             }}
           />
         )}
@@ -105,3 +117,4 @@ export function EpisodePlayer({
     </div>
   );
 }
+
