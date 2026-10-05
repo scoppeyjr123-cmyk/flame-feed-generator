@@ -85,9 +85,7 @@ function PartTwoPage() {
   const [offerUnlocked, setOfferUnlocked] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [plansHighlighted, setPlansHighlighted] = useState(false);
-  const unlockDeadlineRef = useRef<number | null>(null);
   const highlightTimerRef = useRef<number | undefined>(undefined);
-  const unlockAfterSeconds = 240; // 240 segundos desde a abertura da página.
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -105,33 +103,6 @@ function PartTwoPage() {
       });
     }
   }, []);
-
-  useEffect(() => {
-    if (offerUnlocked) return;
-    // Um único prazo absoluto impede reinícios em re-renderizações e compensa atrasos da aba.
-    if (unlockDeadlineRef.current === null) {
-      unlockDeadlineRef.current = Date.now() + unlockAfterSeconds * 1000;
-    }
-    let timerId: number | undefined;
-    const checkDeadline = () => {
-      if (timerId !== undefined) window.clearTimeout(timerId);
-      const remaining = (unlockDeadlineRef.current ?? Date.now()) - Date.now();
-      if (remaining <= 0) {
-        setOfferUnlocked(true);
-        return;
-      }
-      timerId = window.setTimeout(checkDeadline, remaining);
-    };
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") checkDeadline();
-    };
-    checkDeadline();
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      if (timerId !== undefined) window.clearTimeout(timerId);
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [offerUnlocked]);
 
   const scrollToPlans = useCallback(() => {
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth", block: "start" });
