@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { getPublishedSeriesBySlug } from "../lib/public/server-fns";
+import { createClient } from "../lib/supabase/client";
 
 export const Route = createFileRoute("/app/novela/$slug")({
   loader: ({ params }) => getPublishedSeriesBySlug({ data: params.slug }),
@@ -9,6 +11,38 @@ export const Route = createFileRoute("/app/novela/$slug")({
 
 function NovelPage() {
   const { series, error } = Route.useLoaderData();
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  async function toggleWatchlist() {
+    if (!series || saving) return;
+    setSaving(true);
+    const supabase = createClient();
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) {
+      setSaving(false);
+      return;
+    }
+    const { data: existing } = await supabase
+      .from("watchlist")
+      .select("series_id")
+      .eq("user_id", auth.user.id)
+      .eq("series_id", series.id)
+      .maybeSingle();
+    if (existing) {
+      await supabase
+        .from("watchlist")
+        .delete()
+        .eq("user_id", auth.user.id)
+        .eq("series_id", series.id);
+      setSaved(false);
+    } else {
+      await supabase.from("watchlist").insert({ user_id: auth.user.id, series_id: series.id });
+      setSaved(true);
+    }
+    setSaving(false);
+  }
+
   if (!series) return <p role="alert">{error || "Novela não encontrada."}</p>;
 
   return (
@@ -25,6 +59,9 @@ function NovelPage() {
             <span>•</span>
             <span>{series.episodes.length} episódios</span>
           </div>
+          <button className="novel-save" type="button" onClick={toggleWatchlist} disabled={saving}>
+            {saved ? "✓ Na minha lista" : "＋ Minha lista"}
+          </button>
         </div>
       </section>
       <section className="novel-episodes">
