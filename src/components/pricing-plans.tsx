@@ -64,9 +64,9 @@ function trackCheckoutClick(planId: string) {
   }
 }
 
-export function PricingPlans() {
+export function PricingPlans({ className = "" }: { className?: string }) {
   return (
-    <section className="part2-pricing" id="planos" aria-labelledby="part2-plans-title">
+    <section className={`part2-pricing ${className}`.trim()} id="planos" aria-labelledby="part2-plans-title">
       <div className="part2-section-heading">
         <p className="part2-eyebrow">SUA PRÓXIMA HISTÓRIA ESTÁ A UM CLIQUE</p>
         <h2 id="part2-plans-title">Escolha como você quer <span>maratonar ♡</span></h2>

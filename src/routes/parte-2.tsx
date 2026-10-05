@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronRight, Heart, LockKeyhole, MonitorSmartphone, Play } from "lucide-react";
 import { EpisodePlayer } from "../components/episode-player";
 import { PricingPlans } from "../components/pricing-plans";
+import { SubscriptionModal } from "../components/subscription-modal";
 
 export const Route = createFileRoute("/parte-2")({
   head: () => ({
@@ -53,7 +54,10 @@ function PartTwoPage() {
   const [posterUrl, setPosterUrl] = useState(episodePosterUrl);
   const [episodeTitle, setEpisodeTitle] = useState("Parte 2 — a história continua");
   const [offerUnlocked, setOfferUnlocked] = useState(false);
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [plansHighlighted, setPlansHighlighted] = useState(false);
   const unlockDeadlineRef = useRef<number | null>(null);
+  const highlightTimerRef = useRef<number | undefined>(undefined);
   const unlockAfterSeconds = 240; // 240 segundos desde a abertura da página.
 
   useEffect(() => {
@@ -97,9 +101,36 @@ function PartTwoPage() {
     };
   }, [offerUnlocked]);
 
-  const scrollToPlans = () => {
+  const scrollToPlans = useCallback(() => {
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  }, []);
+
+  const handleEpisodeEnded = useCallback(() => {
+    setOfferUnlocked(true);
+    setIsSubscriptionModalOpen(true);
+  }, []);
+
+  const handleSubscriptionContinue = useCallback(() => {
+    setOfferUnlocked(true);
+    setIsSubscriptionModalOpen(false);
+    setPlansHighlighted(true);
+
+    if (highlightTimerRef.current !== undefined) window.clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = window.setTimeout(() => {
+      setPlansHighlighted(false);
+      highlightTimerRef.current = undefined;
+    }, 1600);
+
+    window.requestAnimationFrame(scrollToPlans);
+  }, [scrollToPlans]);
+
+  const handleSubscriptionModalClose = useCallback(() => {
+    setIsSubscriptionModalOpen(false);
+  }, []);
+
+  useEffect(() => () => {
+    if (highlightTimerRef.current !== undefined) window.clearTimeout(highlightTimerRef.current);
+  }, []);
 
   return (
     <main className="part2-page">
@@ -153,6 +184,22 @@ function PartTwoPage() {
         .part2-scroll-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;margin-top:20px;padding:12px 22px;border-radius:999px;background:var(--primary);color:var(--primary-foreground)!important;font-size:12px;font-weight:800;box-shadow:0 8px 30px #f33ca82b;transition:transform .2s,background .2s}
         .part2-scroll-cta:hover{transform:translateY(-1px);background:var(--pink-soft)}
         .part2-pricing{padding:34px 0 40px;scroll-margin-top:78px}
+        .part2-pricing.is-highlighted{animation:part2-plans-highlight 1.6s ease-out both}
+        @keyframes part2-plans-highlight{0%{filter:drop-shadow(0 0 0 transparent)}25%{filter:drop-shadow(0 0 18px #ff4fb566)}100%{filter:drop-shadow(0 0 0 transparent)}}
+        .part2-modal-overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;overflow:auto;padding:max(20px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));background:#070307cc;backdrop-filter:blur(6px);animation:part2-modal-fade-in .24s ease-out both;overscroll-behavior:contain}
+        .part2-subscription-modal{position:relative;width:min(90vw,470px);max-height:calc(100dvh - 40px);overflow:auto;padding:42px clamp(22px,6vw,42px) 30px;border:1px solid #ff69c4aa;border-radius:22px;background:radial-gradient(ellipse at 50% 0%,#7d1b5a55,transparent 58%),linear-gradient(145deg,#260d23,#100611 72%);box-shadow:0 24px 80px #00000099,0 0 0 1px #ff4fb52b,0 0 34px #ff4fb533;text-align:center;animation:part2-modal-scale-in .24s ease-out both}
+        .part2-subscription-modal-close{position:absolute;top:12px;right:12px;display:grid;place-items:center;width:38px;height:38px;border:1px solid #ff69c466;border-radius:50%;background:#180918;color:#f8d5eb;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+        .part2-subscription-modal-close:hover,.part2-subscription-modal-close:focus-visible{border-color:var(--primary);background:#3b1232;color:#fff;outline:none}
+        .part2-subscription-modal-icon{display:block;color:#ff79c3;font-size:29px;line-height:1;text-shadow:0 0 20px #ff4fb588}
+        .part2-subscription-modal h2{margin:17px auto 0;max-width:360px;font:700 clamp(27px,6vw,38px)/1.1 "Playfair Display",Georgia,serif;letter-spacing:-.025em}
+        .part2-subscription-modal p{margin:15px auto 0;max-width:350px;color:#dec8d8;font-size:14px;line-height:1.7}
+        .part2-subscription-modal-cta{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin:24px auto 0;padding:14px 18px;border:1px solid var(--primary);border-radius:999px;background:var(--primary);color:var(--primary-foreground);font-size:12px;font-weight:800;letter-spacing:.015em;box-shadow:0 8px 30px #f33ca855;cursor:pointer;transition:filter .2s,transform .2s}
+        .part2-subscription-modal-cta:hover{filter:brightness(1.08);transform:translateY(-1px)}
+        .part2-subscription-modal-cta:focus-visible{outline:2px solid #ffd5ee;outline-offset:3px}
+        .part2-subscription-modal small{display:block;margin-top:14px;color:#c7aec0;font-size:11px;line-height:1.5}
+        @keyframes part2-modal-fade-in{from{opacity:0}to{opacity:1}}
+        @keyframes part2-modal-scale-in{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+        @media(prefers-reduced-motion:reduce){.part2-pricing.is-highlighted{animation:none;box-shadow:0 0 0 2px #ff4fb566}.part2-modal-overlay,.part2-subscription-modal{animation:none}.part2-subscription-modal-cta{transition:none}}
         .part2-section-heading{text-align:center}
         .part2-section-heading h2{margin:10px 0 0;font:700 clamp(27px,4.5vw,42px)/1.15 "Playfair Display",Georgia,serif}
         .part2-section-heading>p:not(.part2-eyebrow){margin:11px auto 0;color:var(--muted-foreground);font-size:13px;line-height:1.65}
@@ -239,7 +286,7 @@ function PartTwoPage() {
       <section className="part2-video-section" aria-label="Assistir à Parte 2">
         <div className="part2-shell">
           <div className="part2-video-wrap">
-            <EpisodePlayer videoUrl={videoUrl} posterUrl={posterUrl} title={episodeTitle} />
+            <EpisodePlayer videoUrl={videoUrl} posterUrl={posterUrl} title={episodeTitle} onEnded={handleEpisodeEnded} />
             <div className="part2-video-caption">
               <div><strong>{episodeTitle}</strong><span>Feed Loves · Mini novelas</span></div>
               <span className="part2-exclusive"><LockKeyhole size={13} /> Continuação</span>
@@ -253,7 +300,7 @@ function PartTwoPage() {
           {offerUnlocked ? (
             <>
               <button type="button" className="part2-watch-cta" onClick={scrollToPlans}><Play size={15} fill="currentColor" /> CONTINUE ASSISTINDO</button>
-              <div id="planos-revelados"><PricingPlans /></div>
+              <div id="planos-revelados"><PricingPlans className={plansHighlighted ? "is-highlighted" : ""} /></div>
             </>
           ) : (
             <p className="part2-delayed-copy">Aqui você vai maratonar, se emocionar, chorar e rir muito! <span>♡</span></p>
@@ -312,6 +359,12 @@ function PartTwoPage() {
           </nav>
         </div>
       </footer>
+
+      <SubscriptionModal
+        open={isSubscriptionModalOpen}
+        onClose={handleSubscriptionModalClose}
+        onContinue={handleSubscriptionContinue}
+      />
     </main>
   );
 }
