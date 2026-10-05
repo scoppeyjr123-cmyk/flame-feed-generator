@@ -44,7 +44,16 @@ function WatchPage() {
     }, 1000);
   }
 
-  if (!episode) return <p role="alert">{error || "Episódio não encontrado."}</p>;
+  if (!episode)
+    return (
+      <section className="watch-paywall">
+        <style>{`.watch-paywall{max-width:560px;margin:70px auto;border:1px solid #633454;border-radius:18px;background:#170c16;padding:32px;text-align:center}.watch-paywall h1{font:600 30px "Playfair Display",Georgia,serif}.watch-paywall p{margin-top:12px;color:#bda7b9;line-height:1.6}.watch-paywall a{display:inline-flex;margin-top:22px;border-radius:999px;background:#f45db2;color:#180b17;padding:12px 20px;font-size:12px;font-weight:800}`}</style>
+        <p className="app-kicker">Acesso exclusivo</p>
+        <h1>Este episódio faz parte da sua próxima maratona</h1>
+        <p>{error || "Assine um plano Feed Loves para continuar assistindo."}</p>
+        <a href="/#planos">Conhecer os planos</a>
+      </section>
+    );
 
   return (
     <div className="watch-page">
