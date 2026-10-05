@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useRef } from "react";
 
 import { EpisodePlayer } from "../components/episode-player";
 import { getPublishedEpisode } from "../lib/public/server-fns";
+import { createClient } from "../lib/supabase/client";
 
 export const Route = createFileRoute("/app/watch/$episodeId")({
   loader: ({ params }) => getPublishedEpisode({ data: params.episodeId }),
@@ -10,6 +12,32 @@ export const Route = createFileRoute("/app/watch/$episodeId")({
 
 function WatchPage() {
   const { episode, error } = Route.useLoaderData();
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function saveProgress(seconds: number) {
+    if (!episode || !Number.isFinite(seconds)) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) return;
+      await supabase.from("watch_progress").upsert(
+        {
+          user_id: data.user.id,
+          episode_id: episode.id,
+          position_seconds: Math.max(0, Math.floor(seconds)),
+          duration_seconds: episode.duration_seconds ?? 0,
+          completed:
+            episode.duration_seconds !== null &&
+            episode.duration_seconds > 0 &&
+            seconds >= episode.duration_seconds - 3,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,episode_id" },
+      );
+    }, 1000);
+  }
+
   if (!episode) return <p role="alert">{error || "Episódio não encontrado."}</p>;
 
   return (
@@ -23,6 +51,8 @@ function WatchPage() {
           videoUrl={episode.video_url || ""}
           posterUrl={episode.thumbnail_url || ""}
           title={episode.title}
+          onPlaybackSeconds={saveProgress}
+          onEnded={() => saveProgress(episode.duration_seconds ?? 0)}
         />
       </section>
       <section className="watch-heading">
