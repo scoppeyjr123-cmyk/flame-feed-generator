@@ -292,7 +292,7 @@ function PartTwoPage() {
       <header className="part2-header">
         <div className="part2-shell part2-header-inner">
           <Link to="/" className="part2-brand" aria-label="Feed Loves — página inicial">
-            <img src="/assets/brand-v3.png" alt="" />
+            <img src="/assets/brand-v4.jpg" alt="" />
             <span style={{ color: "var(--foreground)" }}>
               Feed <span>Loves</span>
             </span>
@@ -427,7 +427,7 @@ function PartTwoPage() {
       <footer className="part2-footer">
         <div className="part2-shell part2-footer-inner">
           <Link to="/" className="part2-brand" aria-label="Feed Loves — página inicial">
-            <img src="/assets/brand-v3.png" alt="" />
+            <img src="/assets/brand-v4.jpg" alt="" />
             <span style={{ color: "var(--foreground)" }}>
               Feed <span>Loves</span>
             </span>
