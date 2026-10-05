@@ -1,11 +1,11 @@
 {
+  "version": 1,
   "asset_id": "94218728-2e35-4ab0-b35b-d92d4530f498",
-  "content_type": "image/jpeg",
-  "created_at": "2026-09-30T00:03:25Z",
-  "original_filename": "poster5.jpg",
-  "project_id": "5d56aec4-73d9-4db2-9dc6-befe19c25b27",
-  "r2_key": "a/v1/5d56aec4-73d9-4db2-9dc6-befe19c25b27/94218728-2e35-4ab0-b35b-d92d4530f498/poster5.jpg",
-  "size": 107176,
+  "project_id": "c4f8ae44-5ca4-40f3-a3ad-492781a410b0",
   "url": "/__l5e/assets-v1/94218728-2e35-4ab0-b35b-d92d4530f498/poster5.jpg",
-  "version": 1
+  "r2_key": "a/v1/c4f8ae44-5ca4-40f3-a3ad-492781a410b0/94218728-2e35-4ab0-b35b-d92d4530f498/poster5.jpg",
+  "original_filename": "poster5.jpg",
+  "size": 107176,
+  "content_type": "image/jpeg",
+  "created_at": "2026-09-30T00:03:25Z"
 }
