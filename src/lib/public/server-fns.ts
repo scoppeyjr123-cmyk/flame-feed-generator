@@ -122,6 +122,21 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
     return { episode: data, error: null };
   });
 
+export const getCustomerEpisodeProgress = createServerFn({ method: "GET" })
+  .validator((episodeId: string) => episodeId)
+  .handler(async ({ data: episodeId }) => {
+    const session = await getCustomerSession();
+    if (!session.authenticated) return { progress: null };
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("watch_progress")
+      .select("position_seconds,duration_seconds,completed")
+      .eq("user_id", session.user.id)
+      .eq("episode_id", episodeId)
+      .maybeSingle();
+    return { progress: data ?? null };
+  });
+
 export const getCustomerWatchlist = createServerFn({ method: "GET" }).handler(async () => {
   const session = await getCustomerSession();
   if (!session.authenticated) return { items: [], error: "Faça login para acessar sua lista." };

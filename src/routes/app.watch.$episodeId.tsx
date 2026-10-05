@@ -2,16 +2,22 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef } from "react";
 
 import { EpisodePlayer } from "../components/episode-player";
-import { getPublishedEpisode } from "../lib/public/server-fns";
+import { getCustomerEpisodeProgress, getPublishedEpisode } from "../lib/public/server-fns";
 import { createClient } from "../lib/supabase/client";
 
 export const Route = createFileRoute("/app/watch/$episodeId")({
-  loader: ({ params }) => getPublishedEpisode({ data: params.episodeId }),
+  loader: async ({ params }) => {
+    const [episodeResult, progressResult] = await Promise.all([
+      getPublishedEpisode({ data: params.episodeId }),
+      getCustomerEpisodeProgress({ data: params.episodeId }),
+    ]);
+    return { ...episodeResult, progress: progressResult.progress };
+  },
   component: WatchPage,
 });
 
 function WatchPage() {
-  const { episode, error } = Route.useLoaderData();
+  const { episode, error, progress } = Route.useLoaderData();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function saveProgress(seconds: number) {
@@ -51,6 +57,7 @@ function WatchPage() {
           videoUrl={episode.video_url || ""}
           posterUrl={episode.thumbnail_url || ""}
           title={episode.title}
+          initialSeconds={progress?.completed ? 0 : (progress?.position_seconds ?? 0)}
           onPlaybackSeconds={saveProgress}
           onEnded={() => saveProgress(episode.duration_seconds ?? 0)}
         />

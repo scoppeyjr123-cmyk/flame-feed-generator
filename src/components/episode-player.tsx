@@ -2,6 +2,7 @@ import { Play } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 type VimeoPlayerInstance = {
+  setCurrentTime: (seconds: number) => Promise<number>;
   on: (
     event: "play" | "pause" | "timeupdate" | "ended",
     handler: (data?: { seconds?: number }) => void,
@@ -30,6 +31,7 @@ type EpisodePlayerProps = {
   onPlaybackSeconds?: (seconds: number) => void;
   onPlaybackStateChange?: (playing: boolean) => void;
   onEnded?: () => void;
+  initialSeconds?: number;
 };
 
 export function EpisodePlayer({
@@ -39,8 +41,11 @@ export function EpisodePlayer({
   onPlaybackSeconds,
   onPlaybackStateChange,
   onEnded,
+  initialSeconds = 0,
 }: EpisodePlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const restoredRef = useRef(false);
 
   useEffect(() => {
     const isVimeo = Boolean(videoUrl && /player\.vimeo\.com\/video\//.test(videoUrl));
@@ -55,6 +60,10 @@ export function EpisodePlayer({
       const Vimeo = (window as Window & { Vimeo?: VimeoGlobal }).Vimeo;
       if (!Vimeo) return;
       player = new Vimeo.Player(frame);
+      if (initialSeconds > 0 && !restoredRef.current) {
+        restoredRef.current = true;
+        void player.setCurrentTime(initialSeconds);
+      }
       player.on("play", () => onPlaybackStateChange?.(true));
       player.on("pause", () => onPlaybackStateChange?.(false));
       player.on("timeupdate", (data) => {
@@ -88,7 +97,7 @@ export function EpisodePlayer({
       }
       existingScript?.removeEventListener("load", attachPlayer);
     };
-  }, [videoUrl, onEnded, onPlaybackSeconds, onPlaybackStateChange]);
+  }, [videoUrl, initialSeconds, onEnded, onPlaybackSeconds, onPlaybackStateChange]);
 
   if (videoUrl) {
     const isDirectVideo = /\.(mp4|webm|ogg|m3u8)(?:[?#]|$)/i.test(videoUrl);
@@ -98,6 +107,7 @@ export function EpisodePlayer({
         {isDirectVideo ? (
           <video
             className="part2-player-video"
+            ref={videoRef}
             controls
             playsInline
             preload="metadata"
@@ -105,6 +115,12 @@ export function EpisodePlayer({
             src={videoUrl}
             aria-label={title}
             onTimeUpdate={(event) => onPlaybackSeconds?.(event.currentTarget.currentTime)}
+            onLoadedMetadata={(event) => {
+              if (initialSeconds > 0 && !restoredRef.current) {
+                restoredRef.current = true;
+                event.currentTarget.currentTime = initialSeconds;
+              }
+            }}
             onPlay={() => onPlaybackStateChange?.(true)}
             onPause={() => onPlaybackStateChange?.(false)}
             onEnded={() => {
