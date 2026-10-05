@@ -138,3 +138,22 @@ export const getCustomerWatchlist = createServerFn({ method: "GET" }).handler(as
   if (error) return { items: [], error: "Não foi possível carregar sua lista." };
   return { items: data ?? [], error: null };
 });
+
+export const getCustomerProgress = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await getCustomerSession();
+  if (!session.authenticated) return { items: [], error: "Faça login para continuar assistindo." };
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("watch_progress")
+    .select(
+      "position_seconds,duration_seconds,completed,updated_at,episodes(id,episode_number,title,thumbnail_url,series(id,title,slug,cover_url))",
+    )
+    .eq("user_id", session.user.id)
+    .eq("completed", false)
+    .order("updated_at", { ascending: false })
+    .limit(8);
+
+  if (error) return { items: [], error: "Não foi possível carregar seu progresso." };
+  return { items: data ?? [], error: null };
+});
