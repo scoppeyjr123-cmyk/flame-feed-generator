@@ -36,22 +36,22 @@ const posters = [
   {
     title: "My Queen, My Rules",
     category: "ROMANCE",
-    src: "/__l5e/assets-v1/464ea311-caac-41c1-b5e3-882fce3f3eb1/poster1.jpg",
+    src: "/assets/poster1.jpg",
   },
   {
     title: "Dolunay",
     category: "DUBLADO",
-    src: "/__l5e/assets-v1/24253758-3d5f-4dd6-a2e1-7ea2b22f249f/poster2.jpg",
+    src: "/assets/poster2.jpg",
   },
   {
     title: "Scandal",
     category: "ÉPOCA",
-    src: "/__l5e/assets-v1/2045f9a0-1c3a-439f-aca7-988d0a897445/poster3.jpg",
+    src: "/assets/poster3.jpg",
   },
   {
     title: "Muhtemel Aşk",
     category: "COMÉDIA ROMÂNTICA",
-    src: "/__l5e/assets-v1/9318291d-db42-4541-81fa-a4fdaff49aa0/poster4.jpg",
+    src: "/assets/poster4.jpg",
   },
 ];
 
@@ -292,7 +292,7 @@ function PartTwoPage() {
       <header className="part2-header">
         <div className="part2-shell part2-header-inner">
           <Link to="/" className="part2-brand" aria-label="Feed Loves — página inicial">
-            <img src="/__l5e/assets-v1/93a77862-54bb-4a64-aedc-f2f5ba7697a3/brand.png" alt="" />
+            <img src="/assets/brand.png" alt="" />
             <span style={{ color: "var(--foreground)" }}>
               Feed <span>Loves</span>
             </span>
@@ -427,7 +427,7 @@ function PartTwoPage() {
       <footer className="part2-footer">
         <div className="part2-shell part2-footer-inner">
           <Link to="/" className="part2-brand" aria-label="Feed Loves — página inicial">
-            <img src="/__l5e/assets-v1/93a77862-54bb-4a64-aedc-f2f5ba7697a3/brand.png" alt="" />
+            <img src="/assets/brand.png" alt="" />
             <span style={{ color: "var(--foreground)" }}>
               Feed <span>Loves</span>
             </span>

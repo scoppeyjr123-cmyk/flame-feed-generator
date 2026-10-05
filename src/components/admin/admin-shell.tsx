@@ -106,7 +106,7 @@ export function AdminShell({ children, title, description, actions }: AdminShell
       ) : null}
       <aside className={`admin-sidebar ${open ? "open" : ""}`}>
         <a href="/admin" className="admin-brand" onClick={() => setOpen(false)}>
-          <img src="/__l5e/assets-v1/93a77862-54bb-4a64-aedc-f2f5ba7697a3/brand.png" alt="" />
+          <img src="/assets/brand.png" alt="" />
           <span>
             Feed <span>Loves</span>
           </span>
