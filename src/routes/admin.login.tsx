@@ -62,7 +62,7 @@ function AdminLogin() {
       `}</style>
       <section className="admin-login-card" aria-labelledby="admin-login-title">
         <a href="/" className="admin-login-brand">
-          <img src="/assets/brand.png" alt="" /> Feed{" "}
+          <img src="/assets/brand-v2.png" alt="" /> Feed{" "}
           <span>Loves</span>
         </a>
         <p className="admin-login-kicker">Área administrativa</p>
