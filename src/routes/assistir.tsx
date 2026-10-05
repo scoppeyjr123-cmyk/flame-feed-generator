@@ -32,7 +32,7 @@ function WatchPage() {
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-lg">
         <div className="page-shell flex h-17 items-center justify-between gap-5">
           <Link to="/" aria-label="Feed Loves — início" className="inline-flex shrink-0 items-center gap-2.5">
-            <img alt="" className="size-11 rounded-full" src="/assets/brand-v2.png"/>
+            <img alt="" className="size-11 rounded-full" src="/assets/brand-v3.png"/>
             <span className="font-sans text-lg font-bold tracking-normal text-foreground">Feed <span className="text-primary">Loves</span></span>
           </Link>
           <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
@@ -105,7 +105,7 @@ function WatchPage() {
 
       <footer className="border-t border-border/50 bg-background py-8">
         <div className="page-shell flex flex-col gap-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 font-bold text-foreground"><img alt="" className="size-8 rounded-full" src="/assets/brand-v2.png"/> Feed <span className="text-primary">Loves</span></Link>
+          <Link to="/" className="inline-flex items-center gap-2 font-bold text-foreground"><img alt="" className="size-8 rounded-full" src="/assets/brand-v3.png"/> Feed <span className="text-primary">Loves</span></Link>
           <span>Histórias para se apaixonar, capítulo a capítulo.</span>
           <Link to="/" hash="planos" className="hover:text-primary">Conhecer os planos</Link>
         </div>
