@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as AssistirRouteImport } from './routes/assistir'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as Parte2RouteImport } from './routes/parte-2'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAssinaturasRouteImport } from './routes/admin.assinaturas'
@@ -25,6 +27,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminMidiaRouteImport } from './routes/admin.midia'
 import { Route as AdminNovelasRouteImport } from './routes/admin.novelas'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
+import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AssistirSlugRouteImport } from './routes/assistir.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -37,9 +40,19 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssistirRoute = AssistirRouteImport.update({
   id: '/assistir',
   path: '/assistir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Parte2Route = Parte2RouteImport.update({
@@ -107,6 +120,11 @@ const AdminPlanosRoute = AdminPlanosRouteImport.update({
   path: '/planos',
   getParentRoute: () => AdminRoute,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AssistirSlugRoute = AssistirSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -116,7 +134,9 @@ const AssistirSlugRoute = AssistirSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/app': typeof AppRouteWithChildren
   '/assistir': typeof AssistirRouteWithChildren
+  '/login': typeof LoginRoute
   '/parte-2': typeof Parte2Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -131,10 +151,12 @@ export interface FileRoutesByFullPath {
   '/admin/planos': typeof AdminPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
+  '/login': typeof LoginRoute
   '/parte-2': typeof Parte2Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -149,12 +171,15 @@ export interface FileRoutesByTo {
   '/admin/planos': typeof AdminPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/app': typeof AppRouteWithChildren
   '/assistir': typeof AssistirRouteWithChildren
+  '/login': typeof LoginRoute
   '/parte-2': typeof Parte2Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -169,13 +194,16 @@ export interface FileRoutesById {
   '/admin/planos': typeof AdminPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/app'
     | '/assistir'
+    | '/login'
     | '/parte-2'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -190,10 +218,12 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/assistir/$slug'
     | '/admin/'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/assistir'
+    | '/login'
     | '/parte-2'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -208,11 +238,14 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/assistir/$slug'
     | '/admin'
+    | '/app'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/app'
     | '/assistir'
+    | '/login'
     | '/parte-2'
     | '/admin/assinaturas'
     | '/admin/auditoria'
@@ -227,12 +260,15 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/assistir/$slug'
     | '/admin/'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AppRoute: typeof AppRouteWithChildren
   AssistirRoute: typeof AssistirRouteWithChildren
+  LoginRoute: typeof LoginRoute
   Parte2Route: typeof Parte2Route
 }
 
@@ -252,11 +288,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/assistir': {
       id: '/assistir'
       path: '/assistir'
       fullPath: '/assistir'
       preLoaderRoute: typeof AssistirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parte-2': {
@@ -350,6 +400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlanosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/assistir/$slug': {
       id: '/assistir/$slug'
       path: '/$slug'
@@ -392,6 +449,16 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface AppRouteChildren {
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 interface AssistirRouteChildren {
   AssistirSlugRoute: typeof AssistirSlugRoute
 }
@@ -407,7 +474,9 @@ const AssistirRouteWithChildren = AssistirRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AppRoute: AppRouteWithChildren,
   AssistirRoute: AssistirRouteWithChildren,
+  LoginRoute: LoginRoute,
   Parte2Route: Parte2Route,
 }
 export const routeTree = rootRouteImport

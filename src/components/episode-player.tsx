@@ -2,8 +2,14 @@ import { Play } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 type VimeoPlayerInstance = {
-  on: (event: "play" | "pause" | "timeupdate" | "ended", handler: (data?: { seconds?: number }) => void) => void;
-  off: (event: "play" | "pause" | "timeupdate" | "ended", handler: (data?: { seconds?: number }) => void) => void;
+  on: (
+    event: "play" | "pause" | "timeupdate" | "ended",
+    handler: (data?: { seconds?: number }) => void,
+  ) => void;
+  off: (
+    event: "play" | "pause" | "timeupdate" | "ended",
+    handler: (data?: { seconds?: number }) => void,
+  ) => void;
 };
 
 type VimeoGlobal = {
@@ -60,7 +66,9 @@ export function EpisodePlayer({
       });
     };
 
-    const existingScript = document.querySelector<HTMLScriptElement>('script[src="https://player.vimeo.com/api/player.js"]');
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      'script[src="https://player.vimeo.com/api/player.js"]',
+    );
     if (existingScript) {
       attachPlayer();
       existingScript.addEventListener("load", attachPlayer);
@@ -81,39 +89,6 @@ export function EpisodePlayer({
       existingScript?.removeEventListener("load", attachPlayer);
     };
   }, [videoUrl, onEnded, onPlaybackSeconds, onPlaybackStateChange]);
-
-  useEffect(() => {
-    const registerVimeoEvents = () => {
-      const frame = document.getElementById("feedloves-episode") as HTMLIFrameElement | null;
-      if (!frame?.contentWindow) return;
-      ["play", "pause", "timeupdate", "ended"].forEach((name) =>
-        frame.contentWindow?.postMessage(
-          JSON.stringify({ method: "addEventListener", value: name }),
-          "https://player.vimeo.com",
-        ),
-      );
-    };
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== "https://player.vimeo.com") return;
-      let parsedData: unknown;
-      try {
-        parsedData = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-      } catch {
-        return;
-      }
-      if (!parsedData || typeof parsedData !== "object") return;
-      const data = parsedData as VimeoPlayerMessage;
-      const eventName = data?.event;
-      if (eventName === "ready") registerVimeoEvents();
-      if (eventName === "play") onPlaybackStateChange?.(true);
-      if (eventName === "pause" || eventName === "ended") onPlaybackStateChange?.(false);
-      if (eventName === "ended") onEnded?.();
-      if (eventName === "timeupdate" && typeof data?.data?.seconds === "number") onPlaybackSeconds?.(data.data.seconds);
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [onEnded, onPlaybackSeconds, onPlaybackStateChange]);
 
   if (videoUrl) {
     const isDirectVideo = /\.(mp4|webm|ogg|m3u8)(?:[?#]|$)/i.test(videoUrl);
@@ -143,17 +118,16 @@ export function EpisodePlayer({
           <iframe
             className="part2-player-video"
             ref={iframeRef}
-            src={/vimeo\.com\/video\//.test(videoUrl) ? `${videoUrl}${videoUrl.includes("?") ? "&" : "?"}api=1&player_id=feedloves-episode` : videoUrl}
+            src={
+              /vimeo\.com\/video\//.test(videoUrl)
+                ? `${videoUrl}${videoUrl.includes("?") ? "&" : "?"}api=1&player_id=feedloves-episode`
+                : videoUrl
+            }
             title={title}
             id="feedloves-episode"
             allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
-            onLoad={(event) => {
-              const frame = event.currentTarget;
-              if (!/player\.vimeo\.com/.test(frame.src)) return;
-              registerVimeoEvents();
-            }}
           />
         )}
       </div>
@@ -161,11 +135,16 @@ export function EpisodePlayer({
   }
 
   return (
-    <div className="part2-player-frame part2-player-placeholder" aria-label="Player de vídeo aguardando configuração">
+    <div
+      className="part2-player-frame part2-player-placeholder"
+      aria-label="Player de vídeo aguardando configuração"
+    >
       {posterUrl ? <img src={posterUrl} alt="" className="part2-player-poster" /> : null}
       <div className="part2-player-overlay" />
       <div className="part2-player-placeholder-content">
-        <span className="part2-play-icon"><Play size={27} fill="currentColor" /></span>
+        <span className="part2-play-icon">
+          <Play size={27} fill="currentColor" />
+        </span>
         <p className="part2-player-label">CONTINUAÇÃO EXCLUSIVA</p>
         <h2>{title}</h2>
         <p className="part2-player-help">
