@@ -12,7 +12,7 @@ export const Route = createFileRoute("/app/perfil")({
 });
 
 function ProfilePage() {
-  const { session, subscription, history = [] } = Route.useLoaderData();
+  const { session, subscription, history = [], watchHistory = [] } = Route.useLoaderData();
   const [name, setName] = useState(session.user?.name ?? "");
   const [message, setMessage] = useState("");
   const router = useRouter();
@@ -64,6 +64,23 @@ function ProfilePage() {
               : "não definida"}
           </p>
         ) : null}
+        {watchHistory.length ? (
+          <div style={{ marginTop: 18 }}>
+            <strong>Histórico de episódios</strong>
+            {watchHistory.map((item) => {
+              const episode = Array.isArray(item.episodes) ? item.episodes[0] : item.episodes;
+              const series =
+                episode && (Array.isArray(episode.series) ? episode.series[0] : episode.series);
+              if (!episode) return null;
+              return (
+                <p key={`${episode.id}-${item.updated_at}`}>
+                  {series?.title ? `${series.title} · ` : ""}E{episode.episode_number} ·{" "}
+                  {episode.title} · {item.completed ? "concluído" : "em andamento"}
+                </p>
+              );
+            })}
+          </div>
+        ) : null}
         {history.length ? (
           <div style={{ marginTop: 18 }}>
             <strong>Histórico da assinatura</strong>
@@ -76,7 +93,7 @@ function ProfilePage() {
         ) : null}
         <div className="profile-actions">
           <Link to="/app/minha-lista">Minha lista</Link>
-          {!subscription ? <a href="/#planos">Ver planos</a> : null}
+          <Link to="/app/planos">Ver planos</Link>
           <button onClick={saveProfile}>Salvar perfil</button>
           <button onClick={changePassword}>Alterar senha</button>
           <button onClick={logout}>Sair da conta</button>

@@ -13,6 +13,14 @@ export const Route = createFileRoute("/app/")({
 function AppHome() {
   const { series, error, progress } = Route.useLoaderData();
   const featured = series.find((item) => item.featured) ?? series[0];
+  const progressBySeries = new Map(
+    progress.flatMap((item) => {
+      const episode = Array.isArray(item.episodes) ? item.episodes[0] : item.episodes;
+      const seriesItem =
+        episode && (Array.isArray(episode.series) ? episode.series[0] : episode.series);
+      return seriesItem ? [[seriesItem.id, item] as const] : [];
+    }),
+  );
   return (
     <div className="app-home">
       <style>{`.app-hero{position:relative;min-height:390px;display:flex;align-items:end;overflow:hidden;border:1px solid #3b1d35;border-radius:22px;background:#180b18;margin-bottom:38px}.app-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}.app-hero:after{position:absolute;inset:0;content:"";background:linear-gradient(90deg,#100710f5 0%,#100710b8 45%,#10071032 100%),linear-gradient(0deg,#100710 0%,transparent 55%)}.app-hero-copy{position:relative;z-index:1;max-width:540px;padding:clamp(24px,5vw,56px)}.app-kicker{color:#f56dbb;font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}.app-hero h1{margin-top:10px;font:700 clamp(32px,6vw,62px)/1.02 "Playfair Display",Georgia,serif}.app-hero p{margin-top:14px;color:#d2bbce;line-height:1.6}.app-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.app-action{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:12px 20px;background:var(--primary);color:var(--primary-foreground);font-size:12px;font-weight:800}.app-action.alt{border:1px solid #6c3a60;background:#1a0d1a;color:#f7dbea}.app-section{margin-top:34px}.app-section h2{font:600 25px "Playfair Display",Georgia,serif}.app-section h2 span{color:var(--primary)}.app-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:15px}.app-card{min-width:0}.app-card-cover{position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid #42243c;border-radius:10px;background:#1b0d1a}.app-card-cover img{width:100%;height:100%;object-fit:cover;transition:transform .25s}.app-card:hover img{transform:scale(1.04)}.app-card h3{margin-top:8px;font-size:13px}.app-card p{margin-top:3px;color:#a992a4;font-size:10px}.continue-section{margin-bottom:38px}.continue-heading{display:flex;align-items:end;justify-content:space-between;gap:20px}.continue-heading h2{margin-top:4px}.continue-heading>a{color:#f56dbb;font-size:12px}.continue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}.continue-card{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:10px;border:1px solid #42243c;border-radius:12px;background:#170c16}.continue-card img{width:120px;height:76px;object-fit:cover;border-radius:7px}.continue-card strong{font-size:12px}.continue-card p{margin-top:5px;color:#bda7b9;font-size:10px}.continue-card small{display:block;margin-top:5px;color:#a992a4;font-size:9px}.progress-track{height:4px;margin-top:13px;overflow:hidden;border-radius:99px;background:#382131}.progress-track span{display:block;height:100%;border-radius:inherit;background:#f45db2}@media(max-width:800px){.app-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.continue-grid{grid-template-columns:1fr}}`}</style>
@@ -127,6 +135,28 @@ function AppHome() {
                           </div>
                           <h3>{item.title}</h3>
                           <p>{item.category || item.genre || "Feed Loves"}</p>
+                          {progressBySeries.has(item.id) ? (
+                            <div className="progress-track" aria-label="Progresso da novela">
+                              <span
+                                style={{
+                                  width:
+                                    String(
+                                      Math.min(
+                                        100,
+                                        Math.round(
+                                          ((progressBySeries.get(item.id)?.position_seconds ?? 0) /
+                                            Math.max(
+                                              1,
+                                              progressBySeries.get(item.id)?.duration_seconds ?? 1,
+                                            )) *
+                                            100,
+                                        ),
+                                      ),
+                                    ) + "%",
+                                }}
+                              />
+                            </div>
+                          ) : null}
                         </Link>
                       ))}
                     </div>

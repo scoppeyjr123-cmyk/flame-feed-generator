@@ -1,8 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef } from "react";
 
 import { EpisodePlayer } from "../components/episode-player";
-import { getCustomerEpisodeProgress, getPublishedEpisode } from "../lib/public/server-fns";
+import {
+  getCustomerEpisodeProgress,
+  getPublishedEpisode,
+  getPublishedSeriesBySlug,
+} from "../lib/public/server-fns";
 import { createClient } from "../lib/supabase/client";
 
 export const Route = createFileRoute("/app/watch/$episodeId")({
@@ -11,13 +15,24 @@ export const Route = createFileRoute("/app/watch/$episodeId")({
       getPublishedEpisode({ data: params.episodeId }),
       getCustomerEpisodeProgress({ data: params.episodeId }),
     ]);
-    return { ...episodeResult, progress: progressResult.progress };
+    if (!episodeResult.episode) {
+      return { ...episodeResult, progress: progressResult.progress, nextEpisode: null };
+    }
+    const seriesResult = await getPublishedSeriesBySlug({
+      data: episodeResult.episode.series.slug,
+    });
+    const nextEpisode =
+      seriesResult.series?.episodes.find(
+        (item) => item.episode_number > episodeResult.episode!.episode_number,
+      ) ?? null;
+    return { ...episodeResult, progress: progressResult.progress, nextEpisode };
   },
   component: WatchPage,
 });
 
 function WatchPage() {
-  const { episode, error, progress } = Route.useLoaderData();
+  const { episode, error, progress, nextEpisode } = Route.useLoaderData();
+  const navigate = useNavigate();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function saveProgress(seconds: number) {
@@ -68,7 +83,17 @@ function WatchPage() {
           title={episode.title}
           initialSeconds={progress?.completed ? 0 : (progress?.position_seconds ?? 0)}
           onPlaybackSeconds={saveProgress}
-          onEnded={() => saveProgress(episode.duration_seconds ?? 0)}
+          onEnded={() => {
+            saveProgress(episode.duration_seconds ?? 0);
+            if (nextEpisode) {
+              window.setTimeout(() => {
+                void navigate({
+                  to: "/app/watch/$episodeId",
+                  params: { episodeId: nextEpisode.id },
+                });
+              }, 1200);
+            }
+          }}
         />
       </section>
       <section className="watch-heading">
@@ -84,6 +109,15 @@ function WatchPage() {
             Liberado pelo plano{" "}
             {Array.isArray(episode.plans) ? episode.plans[0]?.name : episode.plans.name}.
           </p>
+        ) : null}
+        {nextEpisode ? (
+          <Link
+            className="watch-next"
+            to="/app/watch/$episodeId"
+            params={{ episodeId: nextEpisode.id }}
+          >
+            Próximo episódio: E{nextEpisode.episode_number} · {nextEpisode.title} →
+          </Link>
         ) : null}
       </section>
     </div>

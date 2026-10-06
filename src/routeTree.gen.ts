@@ -31,6 +31,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppBuscarRouteImport } from './routes/app.buscar'
 import { Route as AppMinhaListaRouteImport } from './routes/app.minha-lista'
 import { Route as AppPerfilRouteImport } from './routes/app.perfil'
+import { Route as AppPlanosRouteImport } from './routes/app.planos'
 import { Route as AssistirSlugRouteImport } from './routes/assistir.$slug'
 import { Route as AppNovelaSlugRouteImport } from './routes/app.novela.$slug'
 import { Route as AppWatchEpisodeIdRouteImport } from './routes/app.watch.$episodeId'
@@ -145,6 +146,11 @@ const AppPerfilRoute = AppPerfilRouteImport.update({
   path: '/perfil',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPlanosRoute = AppPlanosRouteImport.update({
+  id: '/planos',
+  path: '/planos',
+  getParentRoute: () => AppRoute,
+} as any)
 const AssistirSlugRoute = AssistirSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/app/buscar': typeof AppBuscarRoute
   '/app/minha-lista': typeof AppMinhaListaRoute
   '/app/perfil': typeof AppPerfilRoute
+  '/app/planos': typeof AppPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -207,6 +214,7 @@ export interface FileRoutesByTo {
   '/app/buscar': typeof AppBuscarRoute
   '/app/minha-lista': typeof AppMinhaListaRoute
   '/app/perfil': typeof AppPerfilRoute
+  '/app/planos': typeof AppPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   '/app/buscar': typeof AppBuscarRoute
   '/app/minha-lista': typeof AppMinhaListaRoute
   '/app/perfil': typeof AppPerfilRoute
+  '/app/planos': typeof AppPlanosRoute
   '/assistir/$slug': typeof AssistirSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/app/buscar'
     | '/app/minha-lista'
     | '/app/perfil'
+    | '/app/planos'
     | '/assistir/$slug'
     | '/admin/'
     | '/app/'
@@ -289,6 +299,7 @@ export interface FileRouteTypes {
     | '/app/buscar'
     | '/app/minha-lista'
     | '/app/perfil'
+    | '/app/planos'
     | '/assistir/$slug'
     | '/admin'
     | '/app'
@@ -316,6 +327,7 @@ export interface FileRouteTypes {
     | '/app/buscar'
     | '/app/minha-lista'
     | '/app/perfil'
+    | '/app/planos'
     | '/assistir/$slug'
     | '/admin/'
     | '/app/'
@@ -488,6 +500,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPerfilRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/planos': {
+      id: '/app/planos'
+      path: '/planos'
+      fullPath: '/app/planos'
+      preLoaderRoute: typeof AppPlanosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/assistir/$slug': {
       id: '/assistir/$slug'
       path: '/$slug'
@@ -548,6 +567,7 @@ interface AppRouteChildren {
   AppBuscarRoute: typeof AppBuscarRoute
   AppMinhaListaRoute: typeof AppMinhaListaRoute
   AppPerfilRoute: typeof AppPerfilRoute
+  AppPlanosRoute: typeof AppPlanosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppNovelaSlugRoute: typeof AppNovelaSlugRoute
   AppWatchEpisodeIdRoute: typeof AppWatchEpisodeIdRoute
@@ -557,6 +577,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBuscarRoute: AppBuscarRoute,
   AppMinhaListaRoute: AppMinhaListaRoute,
   AppPerfilRoute: AppPerfilRoute,
+  AppPlanosRoute: AppPlanosRoute,
   AppIndexRoute: AppIndexRoute,
   AppNovelaSlugRoute: AppNovelaSlugRoute,
   AppWatchEpisodeIdRoute: AppWatchEpisodeIdRoute,

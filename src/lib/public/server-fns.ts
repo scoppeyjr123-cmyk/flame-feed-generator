@@ -177,7 +177,7 @@ export const getCustomerAccount = createServerFn({ method: "GET" }).handler(asyn
   const session = await getCustomerSession();
   if (!session.authenticated) return { session, subscription: null };
   const supabase = createClient();
-  const [{ data }, { data: history }] = await Promise.all([
+  const [{ data }, { data: history }, { data: watchHistory }] = await Promise.all([
     supabase
       .from("subscriptions")
       .select("status,starts_at,expires_at,renews_at,plans(name,billing_interval)")
@@ -192,6 +192,19 @@ export const getCustomerAccount = createServerFn({ method: "GET" }).handler(asyn
       .eq("user_id", session.user.id)
       .order("created_at", { ascending: false })
       .limit(10),
+    supabase
+      .from("watch_progress")
+      .select(
+        "position_seconds,duration_seconds,completed,updated_at,episodes(id,episode_number,title,series(title,slug))",
+      )
+      .eq("user_id", session.user.id)
+      .order("updated_at", { ascending: false })
+      .limit(12),
   ]);
-  return { session, subscription: data ?? null, history: history ?? [] };
+  return {
+    session,
+    subscription: data ?? null,
+    history: history ?? [],
+    watchHistory: watchHistory ?? [],
+  };
 });

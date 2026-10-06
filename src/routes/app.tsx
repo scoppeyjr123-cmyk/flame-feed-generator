@@ -21,6 +21,7 @@ function AppShell() {
           <Link to="/app">Séries Turcas</Link>
           <Link to="/app">Novelinhas</Link>
           <Link to="/app/minha-lista">Minha Lista</Link>
+          <Link to="/app/planos">Planos</Link>
         </nav>
         <Link to="/app/perfil" className="feed-app-brand" aria-label="Perfil">
           Perfil
