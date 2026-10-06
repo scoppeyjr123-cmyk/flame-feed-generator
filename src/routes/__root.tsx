@@ -146,27 +146,39 @@ type InstallPromptEvent = Event & {
 function InstallAppPrompt() {
   const [installEvent, setInstallEvent] = useState<InstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
+  const [fallbackMessage, setFallbackMessage] = useState("");
 
   useEffect(() => {
     void navigator.serviceWorker?.register("/sw.js").catch(() => undefined);
+    if (window.location.pathname !== "/") return;
     if (
       window.matchMedia("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone
     )
       return;
+    const showFallbackPrompt = window.setTimeout(() => setVisible(true), 1200);
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
       setInstallEvent(event as InstallPromptEvent);
       setVisible(true);
     };
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => {
+      window.clearTimeout(showFallbackPrompt);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
   }, []);
 
-  if (!visible || !installEvent) return null;
+  if (!visible) return null;
   const pendingInstall = installEvent;
 
   async function install() {
+    if (!pendingInstall) {
+      setFallbackMessage(
+        "Abra o menu do navegador e escolha 'Instalar Feed Loves' ou 'Adicionar à tela inicial'.",
+      );
+      return;
+    }
     await pendingInstall.prompt();
     await pendingInstall.userChoice;
     setVisible(false);
@@ -178,7 +190,7 @@ function InstallAppPrompt() {
       <img src="/assets/brand-v4.jpg" alt="" />
       <div className="install-app-prompt-copy">
         <strong>Feed Loves</strong>
-        <span>Adicione à tela inicial para acesso rápido</span>
+        <span>{fallbackMessage || "Adicione à tela inicial para acesso rápido"}</span>
       </div>
       <button type="button" onClick={() => void install()}>
         Instalar
