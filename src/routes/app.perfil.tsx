@@ -1,15 +1,17 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 
 import { requireCustomer } from "../lib/customer/guard";
+import { getCustomerAccount } from "../lib/public/server-fns";
 import { createClient } from "../lib/supabase/client";
 
 export const Route = createFileRoute("/app/perfil")({
   beforeLoad: requireCustomer,
+  loader: () => getCustomerAccount(),
   component: ProfilePage,
 });
 
 function ProfilePage() {
-  const session = Route.useRouteContext();
+  const { session, subscription } = Route.useLoaderData();
   const router = useRouter();
   async function logout() {
     await createClient().auth.signOut();
@@ -21,10 +23,15 @@ function ProfilePage() {
       <p className="app-kicker">Sua conta</p>
       <h1>Perfil</h1>
       <div className="profile-box">
-        <strong>{session.user.email}</strong>
-        <p>Gerencie sua experiência Feed Loves e acompanhe suas histórias favoritas.</p>
+        <strong>{session.user?.email}</strong>
+        <p>
+          {subscription
+            ? `Plano ${Array.isArray(subscription.plans) ? subscription.plans[0]?.name : subscription.plans?.name} · ${subscription.status === "lifetime" ? "acesso vitalício" : "assinatura ativa"}.`
+            : "Você está no acesso gratuito. Assine para liberar o catálogo completo."}
+        </p>
         <div className="profile-actions">
           <Link to="/app/minha-lista">Minha lista</Link>
+          {!subscription ? <a href="/#planos">Ver planos</a> : null}
           <button onClick={logout}>Sair da conta</button>
         </div>
       </div>

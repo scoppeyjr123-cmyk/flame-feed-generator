@@ -172,3 +172,18 @@ export const getCustomerProgress = createServerFn({ method: "GET" }).handler(asy
   if (error) return { items: [], error: "Não foi possível carregar seu progresso." };
   return { items: data ?? [], error: null };
 });
+
+export const getCustomerAccount = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await getCustomerSession();
+  if (!session.authenticated) return { session, subscription: null };
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("status,starts_at,expires_at,renews_at,plans(name,billing_interval)")
+    .eq("user_id", session.user.id)
+    .in("status", ["active", "lifetime"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return { session, subscription: data ?? null };
+});
