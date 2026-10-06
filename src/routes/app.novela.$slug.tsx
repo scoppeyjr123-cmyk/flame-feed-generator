@@ -2,17 +2,26 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { getPublishedSeriesBySlug } from "../lib/public/server-fns";
+import { getCustomerAccount } from "../lib/public/server-fns";
 import { createClient } from "../lib/supabase/client";
+import { UpgradeModal } from "../components/upgrade-modal";
 
 export const Route = createFileRoute("/app/novela/$slug")({
-  loader: ({ params }) => getPublishedSeriesBySlug({ data: params.slug }),
+  loader: async ({ params }) => {
+    const [catalog, account] = await Promise.all([
+      getPublishedSeriesBySlug({ data: params.slug }),
+      getCustomerAccount(),
+    ]);
+    return { ...catalog, account };
+  },
   component: NovelPage,
 });
 
 function NovelPage() {
-  const { series, error } = Route.useLoaderData();
+  const { series, error, account } = Route.useLoaderData();
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [upgradePlan, setUpgradePlan] = useState<string | null>(null);
 
   useEffect(() => {
     if (!series) return;
@@ -111,19 +120,20 @@ function NovelPage() {
                 </h3>
                 <p>{episode.description || "Assista agora no Feed Loves."}</p>
               </div>
-              <Link
-                className="novel-episode-action"
-                to="/app/watch/$episodeId"
-                params={{ episodeId: episode.id }}
-              >
-                ▶ Assistir
-              </Link>
+              {episode.access_type === "free" || (account.subscription && (account.subscription.status === "active" || account.subscription.status === "lifetime") && (episode.access_type === "subscriber" || episode.plan_id === account.subscription.plan_id)) ? (
+                <Link className="novel-episode-action" to="/app/watch/$episodeId" params={{ episodeId: episode.id }}>▶ Assistir</Link>
+              ) : (
+                <button className="novel-episode-action" type="button" onClick={() => setUpgradePlan(episode.plan_name)}>
+                  🔒 Premium
+                </button>
+              )}
             </article>
           ))
         ) : (
           <p style={{ color: "#a992a4", marginTop: 12 }}>Nenhum episódio publicado ainda.</p>
         )}
       </section>
+      <UpgradeModal open={upgradePlan !== null} planName={upgradePlan} onClose={() => setUpgradePlan(null)} />
     </div>
   );
 }

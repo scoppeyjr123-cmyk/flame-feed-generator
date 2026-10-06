@@ -184,9 +184,22 @@ function Index() {
     buttons
       .filter((button) => ["Entrar", "Já sou assinante"].includes(button.textContent?.trim() ?? ""))
       .forEach((button) => {
-        button.addEventListener("click", openDialog);
-        cleanups.push(() => button.removeEventListener("click", openDialog));
+        const handler = () => {
+          window.location.href = "/login";
+        };
+        button.addEventListener("click", handler);
+        cleanups.push(() => button.removeEventListener("click", handler));
       });
+
+    const subscriberButton = buttons.find((button) => button.textContent?.trim() === "Já sou assinante");
+    const actions = subscriberButton?.parentElement;
+    if (actions && !actions.querySelector(".home-create-account")) {
+      const link = document.createElement("a");
+      link.className = "home-create-account inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-pink-soft";
+      link.href = "/criar-conta";
+      link.textContent = "CRIAR CONTA GRÁTIS";
+      actions.insertBefore(link, subscriberButton);
+    }
     return () => cleanups.forEach((cleanup) => cleanup());
   }, []);
 

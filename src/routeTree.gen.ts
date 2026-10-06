@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AssistirRouteImport } from './routes/assistir'
+import { Route as CriarContaRouteImport } from './routes/criar-conta'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as Parte2RouteImport } from './routes/parte-2'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -54,6 +55,11 @@ const AppRoute = AppRouteImport.update({
 const AssistirRoute = AssistirRouteImport.update({
   id: '/assistir',
   path: '/assistir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CriarContaRoute = CriarContaRouteImport.update({
+  id: '/criar-conta',
+  path: '/criar-conta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/assistir': typeof AssistirRouteWithChildren
+  '/criar-conta': typeof CriarContaRoute
   '/login': typeof LoginRoute
   '/parte-2': typeof Parte2Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistir': typeof AssistirRouteWithChildren
+  '/criar-conta': typeof CriarContaRoute
   '/login': typeof LoginRoute
   '/parte-2': typeof Parte2Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/assistir': typeof AssistirRouteWithChildren
+  '/criar-conta': typeof CriarContaRoute
   '/login': typeof LoginRoute
   '/parte-2': typeof Parte2Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/assistir'
+    | '/criar-conta'
     | '/login'
     | '/parte-2'
     | '/admin/assinaturas'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/assistir'
+    | '/criar-conta'
     | '/login'
     | '/parte-2'
     | '/admin/assinaturas'
@@ -311,6 +322,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/assistir'
+    | '/criar-conta'
     | '/login'
     | '/parte-2'
     | '/admin/assinaturas'
@@ -340,6 +352,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   AssistirRoute: typeof AssistirRouteWithChildren
+  CriarContaRoute: typeof CriarContaRoute
   LoginRoute: typeof LoginRoute
   Parte2Route: typeof Parte2Route
 }
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/assistir'
       fullPath: '/assistir'
       preLoaderRoute: typeof AssistirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/criar-conta': {
+      id: '/criar-conta'
+      path: '/criar-conta'
+      fullPath: '/criar-conta'
+      preLoaderRoute: typeof CriarContaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -602,6 +622,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AssistirRoute: AssistirRouteWithChildren,
+  CriarContaRoute: CriarContaRoute,
   LoginRoute: LoginRoute,
   Parte2Route: Parte2Route,
 }

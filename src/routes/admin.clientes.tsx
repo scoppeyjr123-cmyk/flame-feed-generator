@@ -19,10 +19,11 @@ export const Route = createFileRoute("/admin/clientes")({
 });
 
 function AdminCustomers() {
-  const { customers, subscriptions } = Route.useLoaderData();
+  const { customers, subscriptions, roles } = Route.useLoaderData();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [planFilter, setPlanFilter] = useState("all");
+  const [accountTypeFilter, setAccountTypeFilter] = useState("all");
   const planOptions = useMemo(
     () =>
       Array.from(
@@ -49,16 +50,19 @@ function AdminCustomers() {
     const latestSubscription = new Map(
       subscriptions.map((subscription) => [subscription.user_id, subscription]),
     );
+    const roleMap = new Map(roles.map((role) => [role.user_id, role.role]));
     return customers.filter((customer) => {
       const subscription = latestSubscription.get(customer.id);
+      const accountType = roleMap.get(customer.id) === "admin" ? "admin" : subscription && ["active", "lifetime"].includes(subscription.status) ? "subscriber" : "free";
       return (
         `${customer.name ?? ""} ${customer.email ?? ""}`.toLowerCase().includes(normalizedQuery) &&
         (statusFilter === "all" ||
           (statusFilter === "none" ? !subscription : subscription?.status === statusFilter)) &&
-        (planFilter === "all" || subscription?.plan_id === planFilter)
+        (planFilter === "all" || subscription?.plan_id === planFilter) &&
+        (accountTypeFilter === "all" || accountType === accountTypeFilter)
       );
     });
-  }, [customers, planFilter, query, statusFilter, subscriptions]);
+  }, [accountTypeFilter, customers, planFilter, query, roles, statusFilter, subscriptions]);
   const latestSubscription = new Map(
     subscriptions.map((subscription) => [subscription.user_id, subscription]),
   );
@@ -105,6 +109,12 @@ function AdminCustomers() {
             </select>
           </div>
           <div className="admin-field">
+            <label htmlFor="customer-account-type-filter">Tipo de conta</label>
+            <select id="customer-account-type-filter" value={accountTypeFilter} onChange={(event) => setAccountTypeFilter(event.target.value)}>
+              <option value="all">Todos</option><option value="free">Grátis</option><option value="subscriber">Assinantes</option><option value="admin">Admin</option>
+            </select>
+          </div>
+          <div className="admin-field">
             <label htmlFor="customer-plan-filter">Plano</label>
             <select
               id="customer-plan-filter"
@@ -137,6 +147,8 @@ function AdminCustomers() {
             <tbody>
               {rows.map((customer) => {
                 const subscription = latestSubscription.get(customer.id);
+                const role = roles.find((item) => item.user_id === customer.id)?.role;
+                const accountType = role === "admin" ? "ADMIN" : subscription && ["active", "lifetime"].includes(subscription.status) ? "ASSINANTE" : "FREE";
                 const plan =
                   subscription &&
                   "plans" in subscription &&
@@ -156,7 +168,7 @@ function AdminCustomers() {
                         {customer.email || "E-mail não informado"}
                       </span>
                     </td>
-                    <td>{plan}</td>
+                    <td>{plan}<br /><span className="admin-muted">{accountType}</span></td>
                     <td>
                       {subscription ? (
                         <AdminStatus status={subscription.status} />

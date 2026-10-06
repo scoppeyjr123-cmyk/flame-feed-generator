@@ -87,20 +87,19 @@ export const getPublishedSeriesBySlug = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("series")
       .select(
-        "id,title,slug,short_description,description,category,genre,cover_url,banner_url,thumbnail_url,featured,episodes(id,episode_number,title,description,video_url,thumbnail_url,duration_seconds,status,access_type,sort_order)",
+        "id,title,slug,short_description,description,category,genre,cover_url,banner_url,thumbnail_url,featured",
       )
       .eq("slug", slug)
       .eq("status", "published")
       .maybeSingle();
 
     if (error || !data) return { series: null, error: "Novela não encontrada." };
+    const { data: episodes, error: episodesError } = await supabase.rpc("get_published_episode_catalog", {
+      target_series_id: data.id,
+    });
+    if (episodesError) return { series: null, error: "Não foi possível carregar os episódios." };
     return {
-      series: {
-        ...data,
-        episodes: (data.episodes ?? [])
-          .filter((episode) => episode.status === "published")
-          .sort((a, b) => a.sort_order - b.sort_order || a.episode_number - b.episode_number),
-      },
+      series: { ...data, episodes: episodes ?? [] },
       error: null,
     };
   });
@@ -180,7 +179,7 @@ export const getCustomerAccount = createServerFn({ method: "GET" }).handler(asyn
   const [{ data }, { data: history }, { data: watchHistory }] = await Promise.all([
     supabase
       .from("subscriptions")
-      .select("status,starts_at,expires_at,renews_at,plans(name,billing_interval)")
+      .select("plan_id,status,starts_at,expires_at,renews_at,plans(name,billing_interval)")
       .eq("user_id", session.user.id)
       .in("status", ["active", "lifetime"])
       .order("created_at", { ascending: false })

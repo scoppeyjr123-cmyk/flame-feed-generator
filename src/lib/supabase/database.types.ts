@@ -629,7 +629,23 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_published_episode_catalog: {
+        Args: { target_series_id?: string | null };
+        Returns: {
+          id: string;
+          series_id: string;
+          episode_number: number;
+          title: string;
+          description: string | null;
+          thumbnail_url: string | null;
+          duration_seconds: number | null;
+          status: Database["public"]["Enums"]["content_status"];
+          access_type: Database["public"]["Enums"]["episode_access_type"];
+          plan_id: string | null;
+          plan_name: string | null;
+          sort_order: number;
+        }[];
+      };
     };
     Enums: {
       app_role: "admin" | "customer";

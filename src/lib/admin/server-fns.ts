@@ -93,7 +93,7 @@ export const getAdminDashboard = createServerFn({ method: "GET" }).handler(async
 
 export const getAdminCustomers = createServerFn({ method: "GET" }).handler(async () => {
   const { supabase } = await assertAdmin();
-  const [{ data: customers, error }, { data: subscriptions, error: subscriptionsError }] =
+  const [{ data: customers, error }, { data: subscriptions, error: subscriptionsError }, { data: roles, error: rolesError }] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -103,11 +103,13 @@ export const getAdminCustomers = createServerFn({ method: "GET" }).handler(async
         .from("subscriptions")
         .select("id,user_id,status,starts_at,expires_at,renews_at,origin,plan_id,plans(name)")
         .order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("user_id,role"),
     ]);
 
   if (error) throw new Error(error.message);
   if (subscriptionsError) throw new Error(subscriptionsError.message);
-  return { customers: customers ?? [], subscriptions: subscriptions ?? [] };
+  if (rolesError) throw new Error(rolesError.message);
+  return { customers: customers ?? [], subscriptions: subscriptions ?? [], roles: roles ?? [] };
 });
 
 export const getAdminPlans = createServerFn({ method: "GET" }).handler(async () => {
