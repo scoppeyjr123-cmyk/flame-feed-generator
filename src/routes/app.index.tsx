@@ -99,29 +99,42 @@ function AppHome() {
             </div>
           </section>
         ) : null}
-        <h2>
-          Em alta no <span>Feed Loves</span>
-        </h2>
         {series.length ? (
-          <div className="app-grid">
-            {series.map((item) => (
-              <Link
-                className="app-card"
-                to="/app/novela/$slug"
-                params={{ slug: item.slug }}
-                key={item.id}
-              >
-                <div className="app-card-cover">
-                  <img
-                    src={item.cover_url || item.thumbnail_url || "/assets/poster1.jpg"}
-                    alt={`Capa de ${item.title}`}
-                  />
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.category || item.genre || "Feed Loves"}</p>
-              </Link>
-            ))}
-          </div>
+          <>
+            {Array.from(new Set(series.map((item) => item.category || "Destaques"))).map(
+              (category) => {
+                const categorySeries = series.filter(
+                  (item) => (item.category || "Destaques") === category,
+                );
+                return (
+                  <section className="catalog-row" key={category}>
+                    <h2>
+                      {category} <span>Feed Loves</span>
+                    </h2>
+                    <div className="app-grid">
+                      {categorySeries.map((item) => (
+                        <Link
+                          className="app-card"
+                          to="/app/novela/$slug"
+                          params={{ slug: item.slug }}
+                          key={item.id}
+                        >
+                          <div className="app-card-cover">
+                            <img
+                              src={item.cover_url || item.thumbnail_url || "/assets/poster1.jpg"}
+                              alt={`Capa de ${item.title}`}
+                            />
+                          </div>
+                          <h3>{item.title}</h3>
+                          <p>{item.category || item.genre || "Feed Loves"}</p>
+                        </Link>
+                      ))}
+                    </div>
+                  </section>
+                );
+              },
+            )}
+          </>
         ) : (
           <p style={{ color: "#a992a4", marginTop: 12 }}>Nenhuma novela publicada ainda.</p>
         )}
