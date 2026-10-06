@@ -8,7 +8,7 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -82,10 +82,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Doramas, séries turcas e novelinhas em um só lugar." },
       { name: "author", content: "Feed Loves" },
       { property: "og:title", content: "Feed Loves" },
-      { property: "og:description", content: "Doramas, séries turcas e novelinhas em um só lugar." },
+      {
+        property: "og:description",
+        content: "Doramas, séries turcas e novelinhas em um só lugar.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "theme-color", content: "#120812" },
     ],
     links: [
       {
@@ -94,8 +98,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap",
+      },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootShell,
@@ -123,8 +131,66 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <InstallAppPrompt />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
+  );
+}
+
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
+
+function InstallAppPrompt() {
+  const [installEvent, setInstallEvent] = useState<InstallPromptEvent | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    void navigator.serviceWorker?.register("/sw.js").catch(() => undefined);
+    if (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone
+    )
+      return;
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallEvent(event as InstallPromptEvent);
+      setVisible(true);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  }, []);
+
+  if (!visible || !installEvent) return null;
+  const pendingInstall = installEvent;
+
+  async function install() {
+    await pendingInstall.prompt();
+    await pendingInstall.userChoice;
+    setVisible(false);
+    setInstallEvent(null);
+  }
+
+  return (
+    <div className="install-app-prompt" role="region" aria-label="Instalar Feed Loves">
+      <img src="/assets/brand-v4.jpg" alt="" />
+      <div className="install-app-prompt-copy">
+        <strong>Feed Loves</strong>
+        <span>Adicione à tela inicial para acesso rápido</span>
+      </div>
+      <button type="button" onClick={() => void install()}>
+        Instalar
+      </button>
+      <button
+        type="button"
+        className="install-app-prompt-close"
+        aria-label="Fechar convite de instalação"
+        onClick={() => setVisible(false)}
+      >
+        ×
+      </button>
+    </div>
   );
 }
