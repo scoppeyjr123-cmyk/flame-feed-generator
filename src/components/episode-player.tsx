@@ -17,11 +17,14 @@ type VimeoGlobal = {
   Player: new (element: HTMLIFrameElement) => VimeoPlayerInstance;
 };
 
-type VimeoPlayerMessage = {
-  event?: string;
-  data?: {
-    seconds?: unknown;
-  };
+type PlayerJsInstance = {
+  on: (event: string, handler: (data?: unknown) => void) => void;
+  off?: (event: string, handler: (data?: unknown) => void) => void;
+  setCurrentTime?: (seconds: number) => void;
+};
+
+type PlayerJsGlobal = {
+  Player: new (element: HTMLIFrameElement | string) => PlayerJsInstance;
 };
 
 type EpisodePlayerProps = {
@@ -46,6 +49,67 @@ export function EpisodePlayer({
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const restoredRef = useRef(false);
+
+  useEffect(() => {
+    const isBunny = Boolean(videoUrl && /(?:iframe|player)\.mediadelivery\.net\/embed\//.test(videoUrl));
+    if (!isBunny || !iframeRef.current) return;
+
+    let cancelled = false;
+    let player: PlayerJsInstance | null = null;
+    const frame = iframeRef.current;
+
+    const readSeconds = (data?: unknown) => {
+      if (typeof data === "number") return data;
+      if (!data || typeof data !== "object") return null;
+      const value = data as { seconds?: unknown; currentTime?: unknown; time?: unknown };
+      for (const candidate of [value.seconds, value.currentTime, value.time]) {
+        if (typeof candidate === "number" && Number.isFinite(candidate)) return candidate;
+      }
+      return null;
+    };
+
+    const attach = () => {
+      if (cancelled || player) return;
+      const playerjs = (window as Window & { playerjs?: PlayerJsGlobal }).playerjs;
+      if (!playerjs) return;
+      player = new playerjs.Player(frame);
+
+      player.on("ready", () => {
+        if (initialSeconds > 0 && !restoredRef.current && player?.setCurrentTime) {
+          restoredRef.current = true;
+          player.setCurrentTime(initialSeconds);
+        }
+      });
+      player.on("play", () => onPlaybackStateChange?.(true));
+      player.on("pause", () => onPlaybackStateChange?.(false));
+      player.on("timeupdate", (data) => {
+        const seconds = readSeconds(data);
+        if (seconds !== null) onPlaybackSeconds?.(seconds);
+      });
+      player.on("ended", () => {
+        onPlaybackStateChange?.(false);
+        onEnded?.();
+      });
+    };
+
+    const src = "https://assets.mediadelivery.net/playerjs/player-0.1.0.min.js";
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
+    if (existing) {
+      attach();
+      existing.addEventListener("load", attach);
+    } else {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.addEventListener("load", attach);
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      cancelled = true;
+      existing?.removeEventListener("load", attach);
+    };
+  }, [videoUrl, initialSeconds, onEnded, onPlaybackSeconds, onPlaybackStateChange]);
 
   useEffect(() => {
     const isVimeo = Boolean(videoUrl && /player\.vimeo\.com\/video\//.test(videoUrl));
