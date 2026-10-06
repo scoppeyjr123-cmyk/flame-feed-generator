@@ -150,8 +150,8 @@ function PartTwoPage() {
         .part2-brand{display:inline-flex;align-items:center;gap:9px;font-size:18px;font-weight:800;letter-spacing:-.3px}
         .part2-brand img{width:36px;height:36px;border-radius:50%;object-fit:cover}
         .part2-brand span{color:var(--primary)}
-        .part2-member{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 15px;border:1px solid var(--border);border-radius:999px;color:var(--foreground);font-size:12px;font-weight:600;transition:border-color .2s,color .2s}
-        .part2-member:hover{border-color:var(--primary);color:var(--primary)}
+        .part2-member{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 15px;border:1px solid #8b5cf6;border-radius:999px;color:#c084fc;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;transition:border-color .2s,color .2s,background .2s}
+        .part2-member:hover{border-color:#a78bfa;color:#e9d5ff;background:#8b5cf61a}
         .part2-header-actions{display:flex;align-items:center;gap:10px}.part2-create-account{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 15px;border-radius:999px;background:var(--primary);color:var(--primary-foreground)!important;font-size:12px;font-weight:800;transition:background .2s}.part2-create-account:hover{background:var(--pink-soft)}
         .part2-hero{padding:28px 0 24px;text-align:center;background:radial-gradient(ellipse at 50% 0%,color-mix(in oklab,var(--primary) 11%,transparent),transparent 65%)}
         .part2-eyebrow{display:flex;align-items:center;justify-content:center;gap:7px;color:var(--primary);font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
@@ -271,7 +271,7 @@ function PartTwoPage() {
           </Link>
           <div className="part2-header-actions">
             <Link className="part2-create-account" to="/criar-conta">CRIAR CONTA GRÁTIS</Link>
-            <a className="part2-member" href="/login">Já sou assinante</a>
+            <a className="part2-member" href="/login">JÁ SOU ASSINANTE</a>
           </div>
         </div>
       </header>
