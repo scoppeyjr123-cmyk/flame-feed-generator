@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getPublishedSeriesBySlug } from "../lib/public/server-fns";
 import { createClient } from "../lib/supabase/client";
@@ -13,6 +13,36 @@ function NovelPage() {
   const { series, error } = Route.useLoaderData();
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!series) return;
+    const supabase = createClient();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      void supabase
+        .from("watchlist")
+        .select("series_id")
+        .eq("user_id", data.user.id)
+        .eq("series_id", series.id)
+        .maybeSingle()
+        .then(({ data: item }) => setSaved(Boolean(item)));
+      channel = supabase
+        .channel(`watchlist-${series.id}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "watchlist", filter: `series_id=eq.${series.id}` },
+          (payload) => {
+            const row = (payload.new || payload.old) as { user_id?: string; series_id?: string };
+            if (row.user_id === data.user.id) setSaved(payload.eventType !== "DELETE");
+          },
+        )
+        .subscribe();
+    });
+    return () => {
+      if (channel) void supabase.removeChannel(channel);
+    };
+  }, [series]);
 
   async function toggleWatchlist() {
     if (!series || saving) return;

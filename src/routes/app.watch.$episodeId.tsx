@@ -79,6 +79,12 @@ function WatchPage() {
         <span className="watch-badge">
           {episode.access_type === "free" ? "Grátis" : "Assinantes"}
         </span>
+        {episode.access_type !== "free" && episode.plans ? (
+          <p className="watch-plan">
+            Liberado pelo plano{" "}
+            {Array.isArray(episode.plans) ? episode.plans[0]?.name : episode.plans.name}.
+          </p>
+        ) : null}
       </section>
     </div>
   );

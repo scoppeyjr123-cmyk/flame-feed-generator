@@ -112,7 +112,7 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("episodes")
       .select(
-        "id,episode_number,title,description,video_url,video_provider,thumbnail_url,duration_seconds,status,access_type,plan_id,series(id,title,slug)",
+        "id,episode_number,title,description,video_url,video_provider,thumbnail_url,duration_seconds,status,access_type,plan_id,plans(name,slug,price,currency,billing_interval),series(id,title,slug)",
       )
       .eq("id", episodeId)
       .eq("status", "published")
@@ -177,13 +177,21 @@ export const getCustomerAccount = createServerFn({ method: "GET" }).handler(asyn
   const session = await getCustomerSession();
   if (!session.authenticated) return { session, subscription: null };
   const supabase = createClient();
-  const { data } = await supabase
-    .from("subscriptions")
-    .select("status,starts_at,expires_at,renews_at,plans(name,billing_interval)")
-    .eq("user_id", session.user.id)
-    .in("status", ["active", "lifetime"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return { session, subscription: data ?? null };
+  const [{ data }, { data: history }] = await Promise.all([
+    supabase
+      .from("subscriptions")
+      .select("status,starts_at,expires_at,renews_at,plans(name,billing_interval)")
+      .eq("user_id", session.user.id)
+      .in("status", ["active", "lifetime"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("subscription_history")
+      .select("action,created_at")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
+  return { session, subscription: data ?? null, history: history ?? [] };
 });
