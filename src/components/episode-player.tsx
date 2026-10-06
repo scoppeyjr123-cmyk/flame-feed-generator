@@ -167,7 +167,7 @@ export function EpisodePlayer({
     const isDirectVideo = /\.(mp4|webm|ogg|m3u8)(?:[?#]|$)/i.test(videoUrl);
 
     return (
-      <div className="part2-player-frame">
+      <div className="part2-player-frame" style={{ width: "100%", height: "100%", minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#000" }}>
         {isDirectVideo ? (
           <video
             className="part2-player-video"
@@ -178,6 +178,7 @@ export function EpisodePlayer({
             poster={posterUrl || undefined}
             src={videoUrl}
             aria-label={title}
+            style={{ width: "100%", height: "100%", display: "block", objectFit: "contain", background: "#000" }}
             onTimeUpdate={(event) => onPlaybackSeconds?.(event.currentTarget.currentTime)}
             onLoadedMetadata={(event) => {
               if (initialSeconds > 0 && !restoredRef.current) {
@@ -208,6 +209,7 @@ export function EpisodePlayer({
             allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
+            style={{ width: "100%", height: "100%", display: "block", border: 0, background: "#000" }}
           />
         )}
       </div>
