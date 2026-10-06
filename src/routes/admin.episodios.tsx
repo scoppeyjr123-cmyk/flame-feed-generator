@@ -15,7 +15,7 @@ import {
 } from "../lib/admin/bunny-server-fns";
 import { requireAdmin } from "../lib/admin/guard";
 import { getAdminPlans, getAdminSeries } from "../lib/admin/server-fns";
-import { uploadFileToBunnyTus } from "../lib/bunny/tus-upload.client";
+import { uploadFileToBunnyTus } from "../lib/bunny/tus-upload";
 import { createClient } from "../lib/supabase/client";
 
 export const Route = createFileRoute("/admin/episodios")({
