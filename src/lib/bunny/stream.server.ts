@@ -19,13 +19,14 @@ export type BunnyVideo = {
 function getConfig() {
   const libraryId = process.env.BUNNY_STREAM_LIBRARY_ID;
   const apiKey = process.env.BUNNY_STREAM_API_KEY;
+  const tokenKey = process.env.BUNNY_STREAM_TOKEN_KEY;
 
   if (!libraryId || !/^\d+$/.test(libraryId)) {
     throw new Error("BUNNY_STREAM_LIBRARY_ID is missing or invalid");
   }
   if (!apiKey) throw new Error("BUNNY_STREAM_API_KEY is missing");
 
-  return { libraryId: Number(libraryId), apiKey };
+  return { libraryId: Number(libraryId), apiKey, tokenKey };
 }
 
 async function bunnyRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -50,6 +51,21 @@ async function bunnyRequest<T>(path: string, init: RequestInit = {}): Promise<T>
 
 export function getBunnyLibraryId() {
   return getConfig().libraryId;
+}
+
+export function createBunnySignedEmbedUrl(videoId: string, ttlSeconds = 2 * 60 * 60) {
+  const { libraryId, tokenKey } = getConfig();
+  if (!tokenKey) throw new Error("BUNNY_STREAM_TOKEN_KEY is missing");
+
+  const expires = Math.floor(Date.now() / 1000) + Math.max(60, ttlSeconds);
+  const token = createHash("sha256")
+    .update(`${tokenKey}${videoId}${expires}`)
+    .digest("hex");
+
+  return {
+    url: `https://iframe.mediadelivery.net/embed/${libraryId}/${encodeURIComponent(videoId)}?token=${token}&expires=${expires}`,
+    expires,
+  };
 }
 
 export async function createBunnyVideo(title: string) {
