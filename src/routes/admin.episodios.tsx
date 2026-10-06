@@ -1,5 +1,5 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Copy, ListVideo, Pencil, Plus, Trash2 } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { ListVideo, Pencil, Plus, RefreshCw, Trash2, Upload } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -8,8 +8,14 @@ import {
   AdminShell,
   AdminStatus,
 } from "../components/admin/admin-shell";
+import {
+  createEpisodeBunnyAsset,
+  markEpisodeBunnyUploadComplete,
+  refreshEpisodeBunnyStatus,
+} from "../lib/admin/bunny-server-fns";
 import { requireAdmin } from "../lib/admin/guard";
 import { getAdminPlans, getAdminSeries } from "../lib/admin/server-fns";
+import { uploadFileToBunnyTus } from "../lib/bunny/tus-upload.client";
 import { createClient } from "../lib/supabase/client";
 
 export const Route = createFileRoute("/admin/episodios")({
@@ -27,33 +33,36 @@ type EpisodeForm = {
   episode_number: number;
   title: string;
   description: string;
-  video_url: string;
-  video_provider: string;
   thumbnail_url: string;
-  duration_seconds: string;
   scheduled_at: string;
   status: "draft" | "published" | "scheduled" | "hidden";
   access_type: "free" | "subscriber" | "specific_plan";
   plan_id: string;
 };
+
 const emptyEpisode: EpisodeForm = {
   series_id: "",
   episode_number: 1,
   title: "",
   description: "",
-  video_url: "",
-  video_provider: "vimeo",
   thumbnail_url: "",
-  duration_seconds: "",
   scheduled_at: "",
   status: "draft",
   access_type: "subscriber",
   plan_id: "",
 };
 
+function videoStatusLabel(status?: string | null, progress?: number | null) {
+  if (!status || status === "none") return "Não enviado";
+  if (status === "uploading") return "Enviando";
+  if (status === "processing") return `Processando ${progress ?? 0}%`;
+  if (status === "ready") return "Pronto";
+  if (status === "error") return "Erro";
+  return "Criado";
+}
+
 function AdminEpisodes() {
   const { series, episodes, plans } = Route.useLoaderData();
-  const router = useRouter();
   const [form, setForm] = useState<EpisodeForm>({
     ...emptyEpisode,
     series_id: series[0]?.id ?? "",
@@ -61,19 +70,21 @@ function AdminEpisodes() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
   const seriesMap = new Map(series.map((item) => [item.id, item.title]));
 
   function startEdit(episode: (typeof episodes)[number]) {
     setEditingId(episode.id);
+    setVideoFile(null);
+    setUploadProgress(0);
     setForm({
       series_id: episode.series_id,
       episode_number: episode.episode_number,
       title: episode.title,
       description: episode.description ?? "",
-      video_url: episode.video_url ?? "",
-      video_provider: episode.video_provider ?? "",
       thumbnail_url: episode.thumbnail_url ?? "",
-      duration_seconds: episode.duration_seconds ? String(episode.duration_seconds) : "",
       scheduled_at: episode.scheduled_at
         ? new Date(episode.scheduled_at).toISOString().slice(0, 16)
         : "",
@@ -85,34 +96,75 @@ function AdminEpisodes() {
     setShowForm(true);
   }
 
+  async function uploadEpisodeVideo(episodeId: string, title: string, file: File) {
+    const session = await createEpisodeBunnyAsset({ data: { episodeId, title } });
+    await uploadFileToBunnyTus(file, session.upload, setUploadProgress);
+    await markEpisodeBunnyUploadComplete({ data: { episodeId } });
+  }
+
   async function saveEpisode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
     if (!form.series_id) return setMessage("Cadastre uma novela antes de adicionar episódios.");
+
     const {
       data: { user },
     } = await createClient().auth.getUser();
     if (!user) return setMessage("Sua sessão expirou. Entre novamente.");
-    const payload = {
-      series_id: form.series_id,
-      episode_number: Number(form.episode_number),
-      title: form.title,
-      description: form.description || null,
-      video_url: form.video_url || null,
-      video_provider: form.video_provider || null,
-      thumbnail_url: form.thumbnail_url || null,
-      duration_seconds: form.duration_seconds ? Number(form.duration_seconds) : null,
-      scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
-      status: form.status,
-      access_type: form.access_type,
-      plan_id: form.access_type === "specific_plan" ? form.plan_id || null : null,
-      sort_order: Number(form.episode_number),
-    };
-    const { error } = editingId
-      ? await createClient().from("episodes").update(payload).eq("id", editingId)
-      : await createClient().from("episodes").insert(payload);
-    if (error) return setMessage(error.message);
-    window.location.reload();
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        series_id: form.series_id,
+        episode_number: Number(form.episode_number),
+        title: form.title,
+        description: form.description || null,
+        thumbnail_url: form.thumbnail_url || null,
+        scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
+        status: form.status,
+        access_type: form.access_type,
+        plan_id: form.access_type === "specific_plan" ? form.plan_id || null : null,
+        sort_order: Number(form.episode_number),
+      };
+
+      let episodeId = editingId;
+      if (editingId) {
+        const { error } = await createClient().from("episodes").update(payload).eq("id", editingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await createClient()
+          .from("episodes")
+          .insert(payload)
+          .select("id")
+          .single();
+        if (error) throw error;
+        episodeId = data.id;
+      }
+
+      if (videoFile && episodeId) {
+        const existing = episodes.find((episode) => episode.id === episodeId);
+        if (existing?.bunny_video_id) {
+          throw new Error("Este episódio já possui um vídeo no Bunny. A substituição será adicionada em uma etapa separada.");
+        }
+        await uploadEpisodeVideo(episodeId, form.title, videoFile);
+      }
+
+      window.location.reload();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Não foi possível salvar o episódio.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function syncVideoStatus(id: string) {
+    setMessage("");
+    try {
+      await refreshEpisodeBunnyStatus({ data: { episodeId: id } });
+      window.location.reload();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Não foi possível atualizar o status.");
+    }
   }
 
   async function changeStatus(id: string, status: "draft" | "published" | "scheduled" | "hidden") {
@@ -128,53 +180,19 @@ function AdminEpisodes() {
     window.location.reload();
   }
 
-  async function duplicateEpisode(episode: (typeof episodes)[number]) {
-    if (!window.confirm("Duplicar este episódio?\n\nSerá criada uma cópia como rascunho e o vídeo não será duplicado.")) return;
-    setMessage("");
-    const siblings = episodes.filter((item) => item.series_id === episode.series_id);
-    const nextNumber = Math.max(0, ...siblings.map((item) => item.episode_number)) + 1;
-    const nextNumberLabel = String(nextNumber).padStart(2, "0");
-    const titleWithoutEpisodePrefix = episode.title.replace(/^EP\s*\d+\s*:\s*/i, "");
-    const duplicatedTitle = `EP${nextNumberLabel}: ${titleWithoutEpisodePrefix}`;
-    const { data, error } = await createClient()
-      .from("episodes")
-      .insert({
-        series_id: episode.series_id,
-        episode_number: nextNumber,
-        title: duplicatedTitle,
-        description: episode.description,
-        video_url: null,
-        video_provider: null,
-        thumbnail_url: episode.thumbnail_url,
-        duration_seconds: null,
-        scheduled_at: null,
-        status: "draft",
-        access_type: episode.access_type,
-        plan_id: episode.access_type === "specific_plan" ? episode.plan_id : null,
-        sort_order: nextNumber,
-      })
-      .select("*")
-      .single();
-    if (error || !data) {
-      setMessage(error?.message || "Não foi possível duplicar o episódio.");
-      return;
-    }
-    setMessage("Episódio duplicado com sucesso. A cópia foi criada como rascunho.");
-    startEdit(data);
-    await router.invalidate();
-  }
-
   return (
     <AdminShell title="Episódios" description="Vídeos, acesso e publicação por novela.">
       <AdminPageHeader
         title="Episódios"
-        description="Cadastre o vídeo, defina o acesso e publique quando estiver pronto."
+        description="Envie o vídeo diretamente ao Bunny Stream, defina o acesso e publique quando estiver pronto."
         action={
           <button
             type="button"
             className="admin-primary-button"
             onClick={() => {
               setEditingId(null);
+              setVideoFile(null);
+              setUploadProgress(0);
               setForm({ ...emptyEpisode, series_id: series[0]?.id ?? "" });
               setShowForm((value) => !value);
             }}
@@ -183,11 +201,13 @@ function AdminEpisodes() {
           </button>
         }
       />
+
       {message ? (
         <p className="admin-alert" role="alert">
           {message}
         </p>
       ) : null}
+
       {showForm ? (
         <form
           className="admin-card admin-panel"
@@ -211,6 +231,7 @@ function AdminEpisodes() {
                 ))}
               </select>
             </div>
+
             <div className="admin-field">
               <label htmlFor="episode-number">Número</label>
               <input
@@ -224,6 +245,7 @@ function AdminEpisodes() {
                 }
               />
             </div>
+
             <div className="admin-field">
               <label htmlFor="episode-title">Título</label>
               <input
@@ -233,23 +255,7 @@ function AdminEpisodes() {
                 onChange={(event) => setForm({ ...form, title: event.target.value })}
               />
             </div>
-            <div className="admin-field">
-              <label htmlFor="episode-provider">Provider do vídeo</label>
-              <input
-                id="episode-provider"
-                value={form.video_provider}
-                onChange={(event) => setForm({ ...form, video_provider: event.target.value })}
-              />
-            </div>
-            <div className="admin-field full">
-              <label htmlFor="episode-video">URL do vídeo</label>
-              <input
-                id="episode-video"
-                type="url"
-                value={form.video_url}
-                onChange={(event) => setForm({ ...form, video_url: event.target.value })}
-              />
-            </div>
+
             <div className="admin-field">
               <label htmlFor="episode-thumb">URL da thumbnail</label>
               <input
@@ -259,16 +265,32 @@ function AdminEpisodes() {
                 onChange={(event) => setForm({ ...form, thumbnail_url: event.target.value })}
               />
             </div>
-            <div className="admin-field">
-              <label htmlFor="episode-duration">Duração em segundos</label>
+
+            <div className="admin-field full">
+              <label htmlFor="episode-video-file">Arquivo do episódio</label>
               <input
-                id="episode-duration"
-                type="number"
-                min="0"
-                value={form.duration_seconds}
-                onChange={(event) => setForm({ ...form, duration_seconds: event.target.value })}
+                id="episode-video-file"
+                type="file"
+                accept="video/*,.mkv,.mov,.avi,.webm"
+                onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)}
               />
+              <small>
+                O vídeo vai direto do navegador para o Bunny Stream. A chave privada não é exposta.
+              </small>
+              {videoFile ? (
+                <small>
+                  <Upload size={13} style={{ display: "inline", marginRight: 4 }} />
+                  {videoFile.name} · {(videoFile.size / 1024 / 1024).toFixed(1)} MB
+                </small>
+              ) : null}
+              {isSaving && videoFile ? (
+                <div>
+                  <progress value={uploadProgress} max={100} style={{ width: "100%" }} />
+                  <small>{uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : "Upload concluído. Processando..."}</small>
+                </div>
+              ) : null}
             </div>
+
             <div className="admin-field">
               <label htmlFor="episode-status">Status</label>
               <select
@@ -284,6 +306,7 @@ function AdminEpisodes() {
                 <option value="hidden">Oculto</option>
               </select>
             </div>
+
             <div className="admin-field">
               <label htmlFor="episode-scheduled-at">Publicar em</label>
               <input
@@ -294,6 +317,7 @@ function AdminEpisodes() {
                 disabled={form.status !== "scheduled"}
               />
             </div>
+
             <div className="admin-field">
               <label htmlFor="episode-access">Tipo de acesso</label>
               <select
@@ -311,6 +335,7 @@ function AdminEpisodes() {
                 <option value="specific_plan">Plano específico</option>
               </select>
             </div>
+
             {form.access_type === "specific_plan" ? (
               <div className="admin-field">
                 <label htmlFor="episode-plan">Plano permitido</label>
@@ -329,6 +354,7 @@ function AdminEpisodes() {
                 </select>
               </div>
             ) : null}
+
             <div className="admin-field full">
               <label htmlFor="episode-description">Descrição</label>
               <textarea
@@ -338,16 +364,29 @@ function AdminEpisodes() {
               />
             </div>
           </div>
+
           <div className="admin-form-actions">
-            <button type="button" className="admin-ghost-button" onClick={() => setShowForm(false)}>
+            <button
+              type="button"
+              className="admin-ghost-button"
+              onClick={() => setShowForm(false)}
+              disabled={isSaving}
+            >
               Cancelar
             </button>
-            <button type="submit" className="admin-primary-button">
-              {editingId ? "Salvar alterações" : "Salvar episódio"}
+            <button type="submit" className="admin-primary-button" disabled={isSaving}>
+              {isSaving
+                ? videoFile
+                  ? `Enviando vídeo... ${uploadProgress}%`
+                  : "Salvando..."
+                : editingId
+                  ? "Salvar alterações"
+                  : "Salvar episódio"}
             </button>
           </div>
         </form>
       ) : null}
+
       {episodes.length ? (
         <div className="admin-table-wrap">
           <table className="admin-table">
@@ -368,13 +407,24 @@ function AdminEpisodes() {
                     <strong>
                       #{episode.episode_number} · {episode.title}
                     </strong>
+                    {episode.video_error ? <small>{episode.video_error}</small> : null}
                   </td>
                   <td>{seriesMap.get(episode.series_id) || "—"}</td>
                   <td>{episode.access_type}</td>
                   <td>
                     <AdminStatus status={episode.status} />
                   </td>
-                  <td>{episode.video_url ? "Configurado" : "Não configurado"}</td>
+                  <td>
+                    <strong>
+                      {videoStatusLabel(
+                        episode.video_processing_status,
+                        episode.video_encode_progress,
+                      )}
+                    </strong>
+                    {episode.bunny_video_id ? (
+                      <small style={{ display: "block" }}>Bunny conectado</small>
+                    ) : null}
+                  </td>
                   <td>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       <button
@@ -384,13 +434,15 @@ function AdminEpisodes() {
                       >
                         <Pencil size={13} /> Editar
                       </button>
-                      <button
-                        type="button"
-                        className="admin-ghost-button"
-                        onClick={() => void duplicateEpisode(episode)}
-                      >
-                        <Copy size={13} /> Duplicar
-                      </button>
+                      {episode.bunny_video_id ? (
+                        <button
+                          type="button"
+                          className="admin-ghost-button"
+                          onClick={() => void syncVideoStatus(episode.id)}
+                        >
+                          <RefreshCw size={13} /> Atualizar vídeo
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         className="admin-ghost-button"
