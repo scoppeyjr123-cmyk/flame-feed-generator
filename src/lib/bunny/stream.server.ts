@@ -63,7 +63,7 @@ export function createBunnySignedEmbedUrl(videoId: string, ttlSeconds = 2 * 60 *
     .digest("hex");
 
   return {
-    url: `https://iframe.mediadelivery.net/embed/${libraryId}/${encodeURIComponent(videoId)}?token=${token}&expires=${expires}`,
+    url: `https://player.mediadelivery.net/embed/${libraryId}/${encodeURIComponent(videoId)}?token=${token}&expires=${expires}`,
     expires,
   };
 }
