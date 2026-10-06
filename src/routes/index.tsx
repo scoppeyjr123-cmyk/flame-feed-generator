@@ -193,6 +193,10 @@ function Index() {
 
     const subscriberButton = buttons.find((button) => button.textContent?.trim() === "Já sou assinante");
     const loginButton = buttons.find((button) => button.textContent?.trim() === "Entrar");
+    if (subscriberButton) {
+      subscriberButton.textContent = "JÁ SOU ASSINANTE";
+      subscriberButton.className = "home-subscriber-button inline-flex items-center justify-center whitespace-nowrap rounded-full border border-purple-400 px-4 py-2 text-[11px] font-extrabold tracking-[.04em] text-purple-300 transition-colors hover:border-purple-300 hover:bg-purple-400/10 hover:text-purple-100";
+    }
     const actions = (subscriberButton ?? loginButton)?.parentElement;
     if (actions && !actions.querySelector(".home-create-account")) {
       const link = document.createElement("a");
