@@ -152,6 +152,7 @@ function PartTwoPage() {
         .part2-brand span{color:var(--primary)}
         .part2-member{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 15px;border:1px solid var(--border);border-radius:999px;color:var(--foreground);font-size:12px;font-weight:600;transition:border-color .2s,color .2s}
         .part2-member:hover{border-color:var(--primary);color:var(--primary)}
+        .part2-header-actions{display:flex;align-items:center;gap:10px}.part2-create-account{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 15px;border-radius:999px;background:var(--primary);color:var(--primary-foreground)!important;font-size:12px;font-weight:800;transition:background .2s}.part2-create-account:hover{background:var(--pink-soft)}
         .part2-hero{padding:28px 0 24px;text-align:center;background:radial-gradient(ellipse at 50% 0%,color-mix(in oklab,var(--primary) 11%,transparent),transparent 65%)}
         .part2-eyebrow{display:flex;align-items:center;justify-content:center;gap:7px;color:var(--primary);font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
         .part2-hero h1{margin:11px auto 0;font-family:"Playfair Display",Georgia,serif;font-size:clamp(28px,5vw,44px);line-height:1.12;letter-spacing:-.025em}
@@ -268,9 +269,10 @@ function PartTwoPage() {
               Feed <span>Loves</span>
             </span>
           </Link>
-          <a className="part2-member" href="/#planos">
-            Já sou assinante
-          </a>
+          <div className="part2-header-actions">
+            <Link className="part2-create-account" to="/criar-conta">CRIAR CONTA GRÁTIS</Link>
+            <a className="part2-member" href="/login">Já sou assinante</a>
+          </div>
         </div>
       </header>
 

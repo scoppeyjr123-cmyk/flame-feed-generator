@@ -192,13 +192,14 @@ function Index() {
       });
 
     const subscriberButton = buttons.find((button) => button.textContent?.trim() === "Já sou assinante");
-    const actions = subscriberButton?.parentElement;
+    const loginButton = buttons.find((button) => button.textContent?.trim() === "Entrar");
+    const actions = (subscriberButton ?? loginButton)?.parentElement;
     if (actions && !actions.querySelector(".home-create-account")) {
       const link = document.createElement("a");
       link.className = "home-create-account inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-pink-soft";
       link.href = "/criar-conta";
       link.textContent = "CRIAR CONTA GRÁTIS";
-      actions.insertBefore(link, subscriberButton);
+      actions.insertBefore(link, subscriberButton ?? loginButton ?? null);
     }
     return () => cleanups.forEach((cleanup) => cleanup());
   }, []);
