@@ -1,4 +1,7 @@
+import { createHash } from "node:crypto";
+
 const BUNNY_API_BASE = "https://video.bunnycdn.com";
+const BUNNY_TUS_ENDPOINT = "https://video.bunnycdn.com/tusupload";
 
 export type BunnyVideo = {
   videoLibraryId: number;
@@ -57,6 +60,22 @@ export async function createBunnyVideo(title: string) {
   });
 }
 
+export function createBunnyTusCredentials(videoId: string) {
+  const { libraryId, apiKey } = getConfig();
+  const expirationTime = Math.floor(Date.now() / 1000) + 6 * 60 * 60;
+  const signature = createHash("sha256")
+    .update(`${libraryId}${apiKey}${expirationTime}${videoId}`)
+    .digest("hex");
+
+  return {
+    endpoint: BUNNY_TUS_ENDPOINT,
+    libraryId: String(libraryId),
+    videoId,
+    expirationTime,
+    signature,
+  };
+}
+
 export async function getBunnyVideo(videoId: string) {
   const { libraryId } = getConfig();
   return bunnyRequest<BunnyVideo>(`/library/${libraryId}/videos/${encodeURIComponent(videoId)}`);
@@ -69,9 +88,9 @@ export async function deleteBunnyVideo(videoId: string) {
   });
 }
 
-export function normalizeBunnyStatus(status: number): "created" | "uploading" | "processing" | "ready" | "error" {
-  // Bunny VideoModelStatus: 0 queued, 1 processing, 2 encoding, 3 finished,
-  // 4 resolution finished, 5 failed, 6 presigned upload started, 7 presigned upload finished, 8 ready.
+export function normalizeBunnyStatus(
+  status: number,
+): "created" | "uploading" | "processing" | "ready" | "error" {
   if (status === 5) return "error";
   if (status === 6 || status === 7) return "uploading";
   if (status === 3 || status === 8) return "ready";
