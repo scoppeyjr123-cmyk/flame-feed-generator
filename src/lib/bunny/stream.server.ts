@@ -109,7 +109,7 @@ export function normalizeBunnyStatus(
 ): "created" | "uploading" | "processing" | "ready" | "error" {
   if (status === 5) return "error";
   if (status === 6 || status === 7) return "uploading";
-  if (status === 3 || status === 8) return "ready";
-  if (status === 1 || status === 2 || status === 4) return "processing";
+  if (status === 3 || status === 4 || status === 8) return "ready";
+  if (status === 1 || status === 2) return "processing";
   return "created";
 }
