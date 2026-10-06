@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { createClient } from "../supabase/server";
+import { createBunnySignedEmbedUrl } from "../bunny/stream.server";
 import { getCustomerSession } from "../supabase/auth-server-fns";
 import type { Json } from "../supabase/database.types";
 
@@ -107,17 +108,62 @@ export const getPublishedSeriesBySlug = createServerFn({ method: "GET" })
 export const getPublishedEpisode = createServerFn({ method: "GET" })
   .validator((episodeId: string) => episodeId)
   .handler(async ({ data: episodeId }) => {
+    const session = await getCustomerSession();
+    if (!session.authenticated) {
+      return { episode: null, error: "Faça login para assistir este episódio." };
+    }
+
     const supabase = createClient();
     const { data, error } = await supabase
       .from("episodes")
       .select(
-        "id,episode_number,title,description,video_url,video_provider,thumbnail_url,duration_seconds,status,access_type,plan_id,plans(name,slug,price,currency,billing_interval),series(id,title,slug)",
+        "id,episode_number,title,description,video_url,video_provider,thumbnail_url,duration_seconds,status,access_type,plan_id,bunny_video_id,video_processing_status,plans(name,slug,price,currency,billing_interval),series(id,title,slug)",
       )
       .eq("id", episodeId)
       .eq("status", "published")
       .maybeSingle();
 
-    if (error || !data) return { episode: null, error: "Episódio não encontrado ou sem acesso." };
+    if (error || !data) return { episode: null, error: "Episódio não encontrado." };
+
+    let allowed = data.access_type === "free";
+    if (!allowed) {
+      const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("plan_id,status")
+        .eq("user_id", session.user.id)
+        .in("status", ["active", "lifetime"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      allowed = Boolean(
+        subscription &&
+          (data.access_type === "subscriber" ||
+            (data.access_type === "specific_plan" && data.plan_id === subscription.plan_id)),
+      );
+    }
+
+    if (!allowed) {
+      return {
+        episode: null,
+        error: "Este episódio exige uma assinatura ou plano compatível.",
+      };
+    }
+
+    if (data.video_provider === "bunny") {
+      if (!data.bunny_video_id || data.video_processing_status !== "ready") {
+        return {
+          episode: null,
+          error: "O vídeo deste episódio ainda está sendo processado.",
+        };
+      }
+      const signed = createBunnySignedEmbedUrl(data.bunny_video_id);
+      return {
+        episode: { ...data, video_url: signed.url, playback_expires_at: signed.expires },
+        error: null,
+      };
+    }
+
     return { episode: data, error: null };
   });
 
