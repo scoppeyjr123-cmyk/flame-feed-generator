@@ -25,7 +25,7 @@ function AppShell() {
           <Link to="/app">Séries Turcas</Link>
           <Link to="/app">Novelinhas</Link>
           <Link to="/app/minha-lista">Minha Lista</Link>
-          <Link to="/app/planos">Planos</Link>
+          <Link to="/app/planos" preload="intent">Planos</Link>
         </nav>
         <Link to="/app/perfil" className="feed-app-brand" aria-label="Perfil">
           Perfil
@@ -33,7 +33,7 @@ function AppShell() {
       </header>
       <div className="feed-app-content">
         <style>{`.feed-free-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;padding:14px 18px;border:1px solid #72395d;border-radius:14px;background:#241022}.feed-free-banner div{display:grid;gap:4px}.feed-free-banner strong{font-size:13px}.feed-free-banner span{color:#c7aabd;font-size:11px}.feed-free-banner a{flex-shrink:0;border-radius:999px;background:var(--primary);padding:10px 14px;color:#fff;font-size:10px;font-weight:800}@media(max-width:650px){.feed-free-banner{align-items:stretch;flex-direction:column}.feed-free-banner a{text-align:center}}`}</style>
-        {!hasSubscription ? <div className="feed-free-banner"><div><strong>Você está usando o Feed Loves Grátis ♡</strong><span>Assine para liberar todo o catálogo e assistir sem limitações.</span></div><Link to="/app/planos">LIBERAR TODO O CATÁLOGO</Link></div> : null}
+        {!hasSubscription ? <div className="feed-free-banner"><div><strong>Você está usando o Feed Loves Grátis ♡</strong><span>Assine para liberar todo o catálogo e assistir sem limitações.</span></div><Link to="/app/planos" preload="intent">LIBERAR TODO O CATÁLOGO</Link></div> : null}
         <Outlet />
       </div>
       <nav className="feed-app-mobile-nav" aria-label="Navegação mobile">

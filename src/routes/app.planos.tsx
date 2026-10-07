@@ -4,6 +4,7 @@ import { getPublicPlans, type PublicPlan } from "../lib/public/server-fns";
 
 export const Route = createFileRoute("/app/planos")({
   loader: () => getPublicPlans(),
+  staleTime: 5 * 60 * 1000,
   component: PlansPage,
 });
 
