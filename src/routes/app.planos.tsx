@@ -18,7 +18,7 @@ function PlansPage() {
   const { plans, error } = Route.useLoaderData();
   return (
     <div className="plans-page">
-      <Link className="plans-back" to="/app/perfil">
+      <Link className="plans-back" to="/app">
         ← Voltar ao perfil
       </Link>
       <p className="app-kicker">Acesso premium</p>
