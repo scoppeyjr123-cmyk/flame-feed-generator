@@ -41,6 +41,16 @@ export const getPublicPlans = createServerFn({ method: "GET" }).handler(async ()
         error: (error ?? checkoutError)?.message ?? "Não foi possível carregar os planos.",
       };
     const checkoutMap = new Map((checkout ?? []).map((item) => [item.plan_id, item.primary_url]));
+    if (!plans?.length) {
+      return {
+        plans: [
+          { id: "fallback-weekly", slug: "weekly", name: "Semanal", description: "7 dias de acesso ilimitado", price: 9.9, currency: "BRL", billing_interval: "week", benefits: ["Acesso completo ao catálogo", "Doramas, séries turcas e novelinhas", "Dublado e legendado", "Sem anúncios", "Dispositivos compatíveis", "Liberação imediata"], featured: false, sort_order: 1, checkout_url: "https://pay.wiapy.com/D1rAjQcO8bo_" },
+          { id: "fallback-annual", slug: "annual", name: "Anual", description: "12 meses de acesso ilimitado", price: 99.9, currency: "BRL", billing_interval: "year", benefits: ["Acesso completo ao catálogo", "Doramas, séries turcas e novelinhas", "Dublado e legendado", "Sem anúncios", "Dispositivos compatíveis", "Liberação imediata"], featured: true, sort_order: 2, checkout_url: "https://pay.wiapy.com/JQcBx7Tif3vh" },
+          { id: "fallback-monthly", slug: "monthly", name: "Mensal", description: "30 dias de acesso ilimitado", price: 19.9, currency: "BRL", billing_interval: "month", benefits: ["Acesso completo ao catálogo", "Doramas, séries turcas e novelinhas", "Dublado e legendado", "Sem anúncios", "Dispositivos compatíveis", "Liberação imediata"], featured: false, sort_order: 3, checkout_url: "https://pay.wiapy.com/KaF1EsAXWGPC" },
+        ] as PublicPlan[],
+        error: null,
+      };
+    }
     return {
       plans: (plans ?? []).map((plan) => ({
         ...plan,
