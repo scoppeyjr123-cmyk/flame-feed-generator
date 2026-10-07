@@ -33,6 +33,9 @@ type EpisodeForm = {
   episode_number: number;
   title: string;
   description: string;
+  video_mode: "bunny" | "url";
+  video_url: string;
+  video_provider: string;
   thumbnail_url: string;
   scheduled_at: string;
   status: "draft" | "published" | "scheduled" | "hidden";
@@ -45,6 +48,9 @@ const emptyEpisode: EpisodeForm = {
   episode_number: 1,
   title: "",
   description: "",
+  video_mode: "bunny",
+  video_url: "",
+  video_provider: "bunny",
   thumbnail_url: "",
   scheduled_at: "",
   status: "draft",
@@ -85,6 +91,9 @@ function AdminEpisodes() {
       episode_number: episode.episode_number,
       title: episode.title,
       description: episode.description ?? "",
+      video_mode: episode.video_url && !episode.bunny_video_id ? "url" : "bunny",
+      video_url: episode.video_url ?? "",
+      video_provider: episode.video_provider ?? "",
       thumbnail_url: episode.thumbnail_url ?? "",
       scheduled_at: episode.scheduled_at
         ? new Date(episode.scheduled_at).toISOString().slice(0, 16)
@@ -112,6 +121,9 @@ function AdminEpisodes() {
       data: { user },
     } = await createClient().auth.getUser();
     if (!user) return setMessage("Sua sessão expirou. Entre novamente.");
+    if (form.video_mode === "url" && !form.video_url.trim()) {
+      return setMessage("Informe a URL do vídeo para usar este modo.");
+    }
 
     setIsSaving(true);
     try {
@@ -120,6 +132,8 @@ function AdminEpisodes() {
         episode_number: Number(form.episode_number),
         title: form.title,
         description: form.description || null,
+        video_url: form.video_mode === "url" ? form.video_url || null : null,
+        video_provider: form.video_mode === "url" ? form.video_provider || "url" : null,
         thumbnail_url: form.thumbnail_url || null,
         scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
         status: form.status,
@@ -142,12 +156,16 @@ function AdminEpisodes() {
         episodeId = data.id;
       }
 
-      if (videoFile && episodeId) {
+      if (videoFile && form.video_mode === "bunny" && episodeId) {
         const existing = episodes.find((episode) => episode.id === episodeId);
         if (existing?.bunny_video_id) {
           throw new Error("Este episódio já possui um vídeo no Bunny. A substituição será adicionada em uma etapa separada.");
         }
         await uploadEpisodeVideo(episodeId, form.title, videoFile);
+      }
+
+      if (form.video_mode === "url" && !form.video_url.trim()) {
+        throw new Error("Informe a URL do vídeo para usar este modo.");
       }
 
       window.location.reload();
@@ -303,29 +321,27 @@ function AdminEpisodes() {
             </div>
 
             <div className="admin-field full">
-              <label htmlFor="episode-video-file">Arquivo do episódio</label>
-              <input
-                id="episode-video-file"
-                type="file"
-                accept="video/*,.mkv,.mov,.avi,.webm"
-                onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)}
-              />
-              <small>
-                O vídeo vai direto do navegador para o Bunny Stream. A chave privada não é exposta.
-              </small>
-              {videoFile ? (
-                <small>
-                  <Upload size={13} style={{ display: "inline", marginRight: 4 }} />
-                  {videoFile.name} · {(videoFile.size / 1024 / 1024).toFixed(1)} MB
-                </small>
-              ) : null}
-              {isSaving && videoFile ? (
-                <div>
-                  <progress value={uploadProgress} max={100} style={{ width: "100%" }} />
-                  <small>{uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : "Upload concluído. Processando..."}</small>
-                </div>
-              ) : null}
+              <label htmlFor="episode-video-mode">Forma de reprodução</label>
+              <select id="episode-video-mode" value={form.video_mode} onChange={(event) => { setVideoFile(null); setForm({ ...form, video_mode: event.target.value as EpisodeForm["video_mode"] }); }}>
+                <option value="bunny">Enviar arquivo para o Bunny Stream</option>
+                <option value="url">Reproduzir através de URL</option>
+              </select>
             </div>
+            {form.video_mode === "bunny" ? (
+              <div className="admin-field full">
+                <label htmlFor="episode-video-file">Arquivo do episódio</label>
+                <input id="episode-video-file" type="file" accept="video/*,.mkv,.mov,.avi,.webm" onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)} />
+                <small>O vídeo vai direto do navegador para o Bunny Stream. A chave privada não é exposta.</small>
+                {videoFile ? <small><Upload size={13} style={{ display: "inline", marginRight: 4 }} />{videoFile.name} · {(videoFile.size / 1024 / 1024).toFixed(1)} MB</small> : null}
+                {isSaving && videoFile ? <div><progress value={uploadProgress} max={100} style={{ width: "100%" }} /><small>{uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : "Upload concluído. Processando..."}</small></div> : null}
+              </div>
+            ) : (
+              <div className="admin-field full">
+                <label htmlFor="episode-video-url">URL do vídeo</label>
+                <input id="episode-video-url" type="url" required value={form.video_url} placeholder="https://..." onChange={(event) => setForm({ ...form, video_url: event.target.value, video_provider: "url" })} />
+                <small>Use quando o episódio já estiver hospedado em outro serviço compatível.</small>
+              </div>
+            )}
 
             <div className="admin-field">
               <label htmlFor="episode-status">Status</label>
