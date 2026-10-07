@@ -48,6 +48,10 @@ function toEmbeddableVideoUrl(videoUrl: string) {
         const embed = new URL(`https://www.youtube.com/embed/${encodeURIComponent(videoId)}`);
         const playlist = url.searchParams.get("list");
         const index = url.searchParams.get("index");
+        embed.searchParams.set("modestbranding", "1");
+        embed.searchParams.set("rel", "0");
+        embed.searchParams.set("iv_load_policy", "3");
+        embed.searchParams.set("playsinline", "1");
         if (playlist) embed.searchParams.set("list", playlist);
         if (index) embed.searchParams.set("index", index);
         return embed.toString();
@@ -56,7 +60,14 @@ function toEmbeddableVideoUrl(videoUrl: string) {
 
     if (hostname === "youtu.be") {
       const videoId = url.pathname.slice(1);
-      if (videoId) return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+      if (videoId) {
+        const embed = new URL(`https://www.youtube.com/embed/${encodeURIComponent(videoId)}`);
+        embed.searchParams.set("modestbranding", "1");
+        embed.searchParams.set("rel", "0");
+        embed.searchParams.set("iv_load_policy", "3");
+        embed.searchParams.set("playsinline", "1");
+        return embed.toString();
+      }
     }
 
     return videoUrl;
