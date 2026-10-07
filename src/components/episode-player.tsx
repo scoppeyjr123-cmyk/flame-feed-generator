@@ -37,6 +37,34 @@ type EpisodePlayerProps = {
   initialSeconds?: number;
 };
 
+function toEmbeddableVideoUrl(videoUrl: string) {
+  try {
+    const url = new URL(videoUrl);
+    const hostname = url.hostname.replace(/^www\./, "").toLowerCase();
+
+    if (hostname === "youtube.com" || hostname === "m.youtube.com") {
+      const videoId = url.searchParams.get("v");
+      if (videoId) {
+        const embed = new URL(`https://www.youtube.com/embed/${encodeURIComponent(videoId)}`);
+        const playlist = url.searchParams.get("list");
+        const index = url.searchParams.get("index");
+        if (playlist) embed.searchParams.set("list", playlist);
+        if (index) embed.searchParams.set("index", index);
+        return embed.toString();
+      }
+    }
+
+    if (hostname === "youtu.be") {
+      const videoId = url.pathname.slice(1);
+      if (videoId) return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+    }
+
+    return videoUrl;
+  } catch {
+    return videoUrl;
+  }
+}
+
 export function EpisodePlayer({
   videoUrl = "",
   posterUrl,
@@ -165,6 +193,7 @@ export function EpisodePlayer({
 
   if (videoUrl) {
     const isDirectVideo = /\.(mp4|webm|ogg|m3u8)(?:[?#]|$)/i.test(videoUrl);
+    const embeddableVideoUrl = toEmbeddableVideoUrl(videoUrl);
 
     return (
       <div className="part2-player-frame" style={{ width: "100%", height: "100%", minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#000" }}>
@@ -200,9 +229,9 @@ export function EpisodePlayer({
             className="part2-player-video"
             ref={iframeRef}
             src={
-              /vimeo\.com\/video\//.test(videoUrl)
-                ? `${videoUrl}${videoUrl.includes("?") ? "&" : "?"}api=1&player_id=feedloves-episode`
-                : videoUrl
+              /vimeo\.com\/video\//.test(embeddableVideoUrl)
+                ? `${embeddableVideoUrl}${embeddableVideoUrl.includes("?") ? "&" : "?"}api=1&player_id=feedloves-episode`
+                : embeddableVideoUrl
             }
             title={title}
             id="feedloves-episode"
