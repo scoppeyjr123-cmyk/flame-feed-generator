@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ListVideo, Pencil, Plus, Trash2 } from "lucide-react";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Copy, ListVideo, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -53,6 +53,7 @@ const emptyEpisode: EpisodeForm = {
 
 function AdminEpisodes() {
   const { series, episodes, plans } = Route.useLoaderData();
+  const router = useRouter();
   const [form, setForm] = useState<EpisodeForm>({
     ...emptyEpisode,
     series_id: series[0]?.id ?? "",
@@ -125,6 +126,42 @@ function AdminEpisodes() {
     const { error } = await createClient().from("episodes").delete().eq("id", id);
     if (error) return setMessage(error.message);
     window.location.reload();
+  }
+
+  async function duplicateEpisode(episode: (typeof episodes)[number]) {
+    if (!window.confirm("Duplicar este episódio?\n\nSerá criada uma cópia como rascunho e o vídeo não será duplicado.")) return;
+    setMessage("");
+    const siblings = episodes.filter((item) => item.series_id === episode.series_id);
+    const nextNumber = Math.max(0, ...siblings.map((item) => item.episode_number)) + 1;
+    const nextNumberLabel = String(nextNumber).padStart(2, "0");
+    const titleWithoutEpisodePrefix = episode.title.replace(/^EP\s*\d+\s*:\s*/i, "");
+    const duplicatedTitle = `EP${nextNumberLabel}: ${titleWithoutEpisodePrefix}`;
+    const { data, error } = await createClient()
+      .from("episodes")
+      .insert({
+        series_id: episode.series_id,
+        episode_number: nextNumber,
+        title: duplicatedTitle,
+        description: episode.description,
+        video_url: null,
+        video_provider: null,
+        thumbnail_url: episode.thumbnail_url,
+        duration_seconds: null,
+        scheduled_at: null,
+        status: "draft",
+        access_type: episode.access_type,
+        plan_id: episode.access_type === "specific_plan" ? episode.plan_id : null,
+        sort_order: nextNumber,
+      })
+      .select("*")
+      .single();
+    if (error || !data) {
+      setMessage(error?.message || "Não foi possível duplicar o episódio.");
+      return;
+    }
+    setMessage("Episódio duplicado com sucesso. A cópia foi criada como rascunho.");
+    startEdit(data);
+    await router.invalidate();
   }
 
   return (
@@ -346,6 +383,13 @@ function AdminEpisodes() {
                         onClick={() => startEdit(episode)}
                       >
                         <Pencil size={13} /> Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-ghost-button"
+                        onClick={() => void duplicateEpisode(episode)}
+                      >
+                        <Copy size={13} /> Duplicar
                       </button>
                       <button
                         type="button"
