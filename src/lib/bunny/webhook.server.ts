@@ -15,8 +15,8 @@ function secureEqualHex(a: string, b: string) {
 }
 
 function getSupabaseAdmin() {
-  const url = process.env.VITE_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env["VITE_SUPABASE_URL"];
+  const serviceRoleKey = process.env["SUPABASE_SECRET_KEY"] ?? process.env["SUPABASE_SERVICE_ROLE_KEY"];
   if (!url) throw new Error("VITE_SUPABASE_URL is missing");
   if (!serviceRoleKey) throw new Error("SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY is missing");
 
@@ -34,7 +34,7 @@ export async function handleBunnyWebhook(request: Request) {
   const signature = request.headers.get("x-bunnystream-signature") ?? "";
   const version = request.headers.get("x-bunnystream-signature-version") ?? "";
   const algorithm = request.headers.get("x-bunnystream-signature-algorithm") ?? "";
-  const readOnlyKey = process.env.BUNNY_STREAM_READ_ONLY_API_KEY;
+  const readOnlyKey = process.env["BUNNY_STREAM_READ_ONLY_API_KEY"];
 
   if (!readOnlyKey) {
     console.error("BUNNY_STREAM_READ_ONLY_API_KEY is missing");

@@ -17,9 +17,9 @@ export type BunnyVideo = {
 };
 
 function getConfig() {
-  const libraryId = process.env.BUNNY_STREAM_LIBRARY_ID;
-  const apiKey = process.env.BUNNY_STREAM_API_KEY;
-  const tokenKey = process.env.BUNNY_STREAM_TOKEN_KEY;
+  const libraryId = process.env["BUNNY_STREAM_LIBRARY_ID"];
+  const apiKey = process.env["BUNNY_STREAM_API_KEY"];
+  const tokenKey = process.env["BUNNY_STREAM_TOKEN_KEY"];
 
   if (!libraryId || !/^\d+$/.test(libraryId)) {
     throw new Error("BUNNY_STREAM_LIBRARY_ID is missing or invalid");

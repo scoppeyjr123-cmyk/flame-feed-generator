@@ -94,6 +94,8 @@ export type Database = {
       episodes: {
         Row: {
           access_type: Database["public"]["Enums"]["episode_access_type"];
+          bunny_library_id: number | null;
+          bunny_video_id: string | null;
           created_at: string;
           description: string | null;
           duration_seconds: number | null;
@@ -109,9 +111,16 @@ export type Database = {
           updated_at: string;
           video_provider: string | null;
           video_url: string | null;
+          video_processing_status: string;
+          video_encode_progress: number | null;
+          video_storage_bytes: number | null;
+          video_error: string | null;
+          video_ready_at: string | null;
         };
         Insert: {
           access_type?: Database["public"]["Enums"]["episode_access_type"];
+          bunny_library_id?: number | null;
+          bunny_video_id?: string | null;
           created_at?: string;
           description?: string | null;
           duration_seconds?: number | null;
@@ -127,9 +136,16 @@ export type Database = {
           updated_at?: string;
           video_provider?: string | null;
           video_url?: string | null;
+          video_processing_status?: string;
+          video_encode_progress?: number | null;
+          video_storage_bytes?: number | null;
+          video_error?: string | null;
+          video_ready_at?: string | null;
         };
         Update: {
           access_type?: Database["public"]["Enums"]["episode_access_type"];
+          bunny_library_id?: number | null;
+          bunny_video_id?: string | null;
           created_at?: string;
           description?: string | null;
           duration_seconds?: number | null;
@@ -145,6 +161,11 @@ export type Database = {
           updated_at?: string;
           video_provider?: string | null;
           video_url?: string | null;
+          video_processing_status?: string;
+          video_encode_progress?: number | null;
+          video_storage_bytes?: number | null;
+          video_error?: string | null;
+          video_ready_at?: string | null;
         };
         Relationships: [
           {
