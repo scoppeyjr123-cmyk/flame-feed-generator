@@ -467,15 +467,26 @@ function AdminEpisodes() {
                     <AdminStatus status={episode.status} />
                   </td>
                   <td>
-                    <strong>
-                      {videoStatusLabel(
-                        episode.video_processing_status,
-                        episode.video_encode_progress,
-                      )}
-                    </strong>
                     {episode.bunny_video_id ? (
-                      <small style={{ display: "block" }}>Bunny conectado</small>
-                    ) : null}
+                      <>
+                        <strong>
+                          {videoStatusLabel(
+                            episode.video_processing_status,
+                            episode.video_encode_progress,
+                          )}
+                        </strong>
+                        <small style={{ display: "block" }}>Bunny conectado</small>
+                      </>
+                    ) : episode.video_url ? (
+                      <>
+                        <strong>URL configurada</strong>
+                        <small style={{ display: "block" }}>
+                          {episode.video_provider || "URL externa"}
+                        </small>
+                      </>
+                    ) : (
+                      <strong>Não enviado</strong>
+                    )}
                   </td>
                   <td>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
