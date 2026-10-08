@@ -19,6 +19,29 @@ export type PublicPlan = {
   checkout_url: string | null;
 };
 
+export type PlayerSettings = {
+  accentColor: string;
+  backgroundColor: string;
+  borderRadius: number;
+  logoUrl: string;
+  showBrand: boolean;
+};
+
+export const getPublicPlayerSettings = createServerFn({ method: "GET" }).handler(async () => {
+  const fallback: PlayerSettings = {
+    accentColor: "#ff3ca8",
+    backgroundColor: "#080508",
+    borderRadius: 16,
+    logoUrl: "",
+    showBrand: true,
+  };
+  const { data } = await createClient().from("site_settings").select("media_settings").eq("id", true).maybeSingle();
+  const player = data?.media_settings && typeof data.media_settings === "object" && !Array.isArray(data.media_settings)
+    ? (data.media_settings as Record<string, unknown>)["player"]
+    : null;
+  return { ...fallback, ...(player && typeof player === "object" ? player : {}) } as PlayerSettings;
+});
+
 export const getPublicPlans = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const supabase = createClient();

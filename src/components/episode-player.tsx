@@ -36,6 +36,13 @@ type EpisodePlayerProps = {
   onEnded?: () => void;
   initialSeconds?: number;
   autoPlay?: boolean;
+  settings?: {
+    accentColor?: string;
+    backgroundColor?: string;
+    borderRadius?: number;
+    logoUrl?: string;
+    showBrand?: boolean;
+  };
 };
 
 function toEmbeddableVideoUrl(videoUrl: string) {
@@ -86,6 +93,7 @@ export function EpisodePlayer({
   onEnded,
   initialSeconds = 0,
   autoPlay = false,
+  settings,
 }: EpisodePlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -209,7 +217,7 @@ export function EpisodePlayer({
     const embeddableVideoUrl = toEmbeddableVideoUrl(videoUrl);
 
     return (
-      <div className="part2-player-frame" style={{ width: "100%", height: "100%", minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#000" }}>
+      <div className="part2-player-frame" style={{ width: "100%", height: "100%", minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: settings?.backgroundColor || "#000", borderColor: settings?.accentColor, borderRadius: settings?.borderRadius }}>
         {isDirectVideo ? (
           <video
             className="part2-player-video"
@@ -260,6 +268,7 @@ export function EpisodePlayer({
             style={{ width: "100%", height: "100%", display: "block", border: 0, background: "#000" }}
           />
         )}
+        {settings?.showBrand && settings.logoUrl ? <img src={settings.logoUrl} alt="" aria-hidden="true" style={{ position: "absolute", top: 14, left: 14, zIndex: 2, maxWidth: 110, maxHeight: 30, objectFit: "contain", pointerEvents: "none" }} /> : null}
       </div>
     );
   }

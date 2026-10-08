@@ -5,18 +5,20 @@ import { EpisodePlayer } from "../components/episode-player";
 import {
   getCustomerEpisodeProgress,
   getPublishedEpisode,
+  getPublicPlayerSettings,
   getPublishedSeriesBySlug,
 } from "../lib/public/server-fns";
 import { createClient } from "../lib/supabase/client";
 
 export const Route = createFileRoute("/app/watch/$episodeId")({
   loader: async ({ params }) => {
-    const [episodeResult, progressResult] = await Promise.all([
+    const [episodeResult, progressResult, playerSettings] = await Promise.all([
       getPublishedEpisode({ data: params.episodeId }),
       getCustomerEpisodeProgress({ data: params.episodeId }),
+      getPublicPlayerSettings(),
     ]);
     if (!episodeResult.episode) {
-      return { ...episodeResult, progress: progressResult.progress, nextEpisode: null };
+      return { ...episodeResult, progress: progressResult.progress, nextEpisode: null, playerSettings };
     }
     const seriesResult = await getPublishedSeriesBySlug({
       data: episodeResult.episode.series.slug,
@@ -25,13 +27,13 @@ export const Route = createFileRoute("/app/watch/$episodeId")({
       seriesResult.series?.episodes.find(
         (item) => item.episode_number > episodeResult.episode!.episode_number,
       ) ?? null;
-    return { ...episodeResult, progress: progressResult.progress, nextEpisode };
+    return { ...episodeResult, progress: progressResult.progress, nextEpisode, playerSettings };
   },
   component: WatchPage,
 });
 
 function WatchPage() {
-  const { episode, error, progress, nextEpisode } = Route.useLoaderData();
+  const { episode, error, progress, nextEpisode, playerSettings } = Route.useLoaderData();
   const navigate = useNavigate();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -82,6 +84,7 @@ function WatchPage() {
           posterUrl={episode.thumbnail_url || ""}
           title={episode.title}
           autoPlay
+          settings={playerSettings}
           initialSeconds={progress?.completed ? 0 : (progress?.position_seconds ?? 0)}
           onPlaybackSeconds={saveProgress}
           onEnded={() => {
