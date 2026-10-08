@@ -133,7 +133,7 @@ function AdminEpisodes() {
         title: form.title,
         description: form.description || null,
         video_url: form.video_mode === "url" ? form.video_url || null : null,
-        video_provider: form.video_mode === "url" ? form.video_provider || "url" : null,
+        video_provider: form.video_mode === "url" ? form.video_provider || "url" : "bunny",
         thumbnail_url: form.thumbnail_url || null,
         scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
         status: form.status,

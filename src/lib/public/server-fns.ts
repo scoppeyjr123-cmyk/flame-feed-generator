@@ -183,7 +183,7 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
       };
     }
 
-    if (data.video_provider === "bunny") {
+    if (data.bunny_video_id) {
       if (!data.bunny_video_id || data.video_processing_status !== "ready") {
         return {
           episode: null,
