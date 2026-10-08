@@ -153,7 +153,7 @@ function Index() {
           const nav = document.createElement("nav");
           nav.className = "copied-mobile-menu";
           nav.innerHTML =
-            '<a href="#catalogo">Catálogo</a><a href="#planos">Planos</a><a href="#faq">Dúvidas</a><a href="#faq">Suporte</a>';
+            '<a href="/criar-conta">CRIAR CONTA GRÁTIS</a><a href="#catalogo">Catálogo</a><a href="#planos">Planos</a><a href="#faq">Dúvidas</a><a href="#faq">Suporte</a>';
           header.append(nav);
           menuButton.setAttribute("aria-label", "Fechar menu");
           menuButton.innerHTML =
@@ -200,13 +200,16 @@ function Index() {
       subscriberButton.style.setProperty("background-color", "#9333ea", "important");
       subscriberButton.style.setProperty("border-color", "transparent", "important");
     }
-    const actions = (subscriberButton ?? loginButton)?.parentElement;
+    const signButton = Array.from(document.querySelectorAll("header a")).find(
+      (link) => link.textContent?.trim() === "ASSINAR",
+    );
+    const actions = signButton?.parentElement ?? (subscriberButton ?? loginButton)?.parentElement;
     if (actions && !actions.querySelector(".home-create-account")) {
       const link = document.createElement("a");
       link.className = "home-create-account inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-pink-soft";
       link.href = "/criar-conta";
       link.textContent = "CRIAR CONTA GRÁTIS";
-      actions.insertBefore(link, subscriberButton ?? loginButton ?? null);
+      actions.insertBefore(link, signButton ?? subscriberButton ?? loginButton ?? null);
     }
     return () => cleanups.forEach((cleanup) => cleanup());
   }, []);
