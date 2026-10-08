@@ -35,6 +35,7 @@ type EpisodePlayerProps = {
   onPlaybackStateChange?: (playing: boolean) => void;
   onEnded?: () => void;
   initialSeconds?: number;
+  autoPlay?: boolean;
 };
 
 function toEmbeddableVideoUrl(videoUrl: string) {
@@ -84,6 +85,7 @@ export function EpisodePlayer({
   onPlaybackStateChange,
   onEnded,
   initialSeconds = 0,
+  autoPlay = false,
 }: EpisodePlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -214,6 +216,8 @@ export function EpisodePlayer({
             ref={videoRef}
             controls
             playsInline
+            autoPlay={autoPlay}
+            muted={autoPlay}
             preload="metadata"
             poster={posterUrl || undefined}
             src={videoUrl}
@@ -239,11 +243,15 @@ export function EpisodePlayer({
           <iframe
             className="part2-player-video"
             ref={iframeRef}
-            src={
-              /vimeo\.com\/video\//.test(embeddableVideoUrl)
-                ? `${embeddableVideoUrl}${embeddableVideoUrl.includes("?") ? "&" : "?"}api=1&player_id=feedloves-episode`
-                : embeddableVideoUrl
-            }
+            src={(() => {
+              const playerUrl = new URL(embeddableVideoUrl);
+              if (/vimeo\.com\/video\//.test(embeddableVideoUrl)) {
+                playerUrl.searchParams.set("api", "1");
+                playerUrl.searchParams.set("player_id", "feedloves-episode");
+              }
+              if (autoPlay) playerUrl.searchParams.set("autoplay", "1");
+              return playerUrl.toString();
+            })()}
             title={title}
             id="feedloves-episode"
             allow="autoplay; fullscreen; picture-in-picture; encrypted-media"

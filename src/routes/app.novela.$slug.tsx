@@ -104,6 +104,7 @@ function NovelPage() {
         </div>
       </section>
       <section className="novel-episodes">
+        <style>{`.novel-episode-thumb{position:relative}.novel-episode-thumb-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#10071066;color:#fff;font-size:24px;opacity:0;transition:opacity .18s,background .18s}.novel-episode-thumb:hover .novel-episode-thumb-play,.novel-episode-thumb:focus-within .novel-episode-thumb-play{opacity:1;background:#10071099}.novel-episode-thumb-play span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--primary);box-shadow:0 4px 20px #ff3ca866}`}</style>
         <h2>Episódios</h2>
         {series.episodes.length ? (
           series.episodes.map((episode) => (
@@ -113,6 +114,11 @@ function NovelPage() {
                   src={episode.thumbnail_url || series.cover_url || "/assets/poster1.jpg"}
                   alt=""
                 />
+                {episode.access_type === "free" || (account.subscription && (account.subscription.status === "active" || account.subscription.status === "lifetime") && (episode.access_type === "subscriber" || episode.plan_id === account.subscription.plan_id)) ? (
+                  <Link className="novel-episode-thumb-play" to="/app/watch/$episodeId" params={{ episodeId: episode.id }} aria-label={`Assistir E${episode.episode_number}`}>
+                    <span aria-hidden="true">▶</span>
+                  </Link>
+                ) : null}
               </div>
               <div>
                 <h3>

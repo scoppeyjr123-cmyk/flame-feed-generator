@@ -81,6 +81,7 @@ function WatchPage() {
           videoUrl={episode.video_url || ""}
           posterUrl={episode.thumbnail_url || ""}
           title={episode.title}
+          autoPlay
           initialSeconds={progress?.completed ? 0 : (progress?.position_seconds ?? 0)}
           onPlaybackSeconds={saveProgress}
           onEnded={() => {
