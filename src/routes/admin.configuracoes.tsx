@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Save, Settings } from "lucide-react";
+import { Save } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
-import { AdminEmptyState, AdminPageHeader, AdminShell } from "../components/admin/admin-shell";
+import { AdminPageHeader, AdminShell } from "../components/admin/admin-shell";
 import { requireAdmin } from "../lib/admin/guard";
 import { getAdminSettings } from "../lib/admin/server-fns";
 import { createClient } from "../lib/supabase/client";
@@ -92,8 +92,7 @@ function AdminSettings() {
           {message}
         </p>
       ) : null}
-      {settings ? (
-        <form className="admin-card admin-panel" onSubmit={(event) => void save(event)}>
+      <form className="admin-card admin-panel" onSubmit={(event) => void save(event)}>
           <div className="admin-form-grid">
             <div className="admin-field full">
               <label>Player personalizado</label>
@@ -144,14 +143,7 @@ function AdminSettings() {
               <Save size={14} /> Salvar configurações
             </button>
           </div>
-        </form>
-      ) : (
-        <AdminEmptyState
-          title="Configurações ainda não inicializadas"
-          description="Salve os primeiros parâmetros gerais pelo painel Home."
-          icon={Settings}
-        />
-      )}
+      </form>
     </AdminShell>
   );
 }
