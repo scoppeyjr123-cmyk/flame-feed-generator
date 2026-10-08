@@ -28,6 +28,7 @@ function AdminCheckout() {
         {
           plan_id: planId,
           provider: String(data.get("provider") || "").trim() || null,
+          provider_checkout_id: String(data.get("provider_checkout_id") || "").trim() || null,
           primary_url: String(data.get("primary_url") || "").trim() || null,
           alternate_url: String(data.get("alternate_url") || "").trim() || null,
           primary_enabled: data.get("primary_enabled") === "on",
@@ -76,6 +77,10 @@ function AdminCheckout() {
                   <span className="admin-badge">{config?.provider || "Não configurado"}</span>
                 </div>
                 <div className="admin-form-grid">
+                  <div className="admin-field">
+                    <label htmlFor={`provider-checkout-${plan.id}`}>ID do checkout na Wiapy</label>
+                    <input id={`provider-checkout-${plan.id}`} name="provider_checkout_id" defaultValue={config?.provider_checkout_id ?? ""} placeholder="ID recebido no webhook" />
+                  </div>
                   <div className="admin-field">
                     <label htmlFor={`provider-${plan.id}`}>Provider</label>
                     <input

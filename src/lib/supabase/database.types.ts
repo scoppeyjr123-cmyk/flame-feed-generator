@@ -54,6 +54,7 @@ export type Database = {
           primary_enabled: boolean;
           primary_url: string | null;
           provider: string | null;
+          provider_checkout_id: string | null;
           public_parameters: Json;
           updated_at: string;
         };
@@ -66,6 +67,7 @@ export type Database = {
           primary_enabled?: boolean;
           primary_url?: string | null;
           provider?: string | null;
+          provider_checkout_id?: string | null;
           public_parameters?: Json;
           updated_at?: string;
         };
@@ -78,6 +80,7 @@ export type Database = {
           primary_enabled?: boolean;
           primary_url?: string | null;
           provider?: string | null;
+          provider_checkout_id?: string | null;
           public_parameters?: Json;
           updated_at?: string;
         };
