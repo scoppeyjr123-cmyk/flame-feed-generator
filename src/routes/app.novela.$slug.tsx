@@ -104,7 +104,7 @@ function NovelPage() {
         </div>
       </section>
       <section className="novel-episodes">
-        <style>{`.novel-episode-thumb{position:relative}.novel-episode-thumb-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#10071066;color:#fff;font-size:24px;opacity:0;transition:opacity .18s,background .18s}.novel-episode-thumb:hover .novel-episode-thumb-play,.novel-episode-thumb:focus-within .novel-episode-thumb-play{opacity:1;background:#10071099}.novel-episode-thumb-play span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--primary);box-shadow:0 4px 20px #ff3ca866}`}</style>
+        <style>{`.novel-episode-thumb{position:relative}.novel-episode-thumb-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border:0;background:#10071066;color:#fff;font-size:24px;cursor:pointer;opacity:0;transition:opacity .18s,background .18s}.novel-episode-thumb:hover .novel-episode-thumb-play,.novel-episode-thumb:focus-within .novel-episode-thumb-play{opacity:1;background:#10071099}.novel-episode-thumb-play span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--primary);box-shadow:0 4px 20px #ff3ca866}@media (hover:none){.novel-episode-thumb-play{opacity:1;background:#10071066}}`}</style>
         <h2>Episódios</h2>
         {series.episodes.length ? (
           series.episodes.map((episode) => (
@@ -118,7 +118,11 @@ function NovelPage() {
                   <Link className="novel-episode-thumb-play" to="/app/watch/$episodeId" params={{ episodeId: episode.id }} aria-label={`Assistir E${episode.episode_number}`}>
                     <span aria-hidden="true">▶</span>
                   </Link>
-                ) : null}
+                ) : (
+                  <button className="novel-episode-thumb-play" type="button" onClick={() => setUpgradePlan(episode.plan_name)} aria-label={`Ver planos para E${episode.episode_number}`}>
+                    <span aria-hidden="true">▶</span>
+                  </button>
+                )}
               </div>
               <div>
                 <h3>
@@ -130,7 +134,7 @@ function NovelPage() {
                 <Link className="novel-episode-action" to="/app/watch/$episodeId" params={{ episodeId: episode.id }}>▶ Assistir</Link>
               ) : (
                 <button className="novel-episode-action" type="button" onClick={() => setUpgradePlan(episode.plan_name)}>
-                  🔒 Premium
+                  ▶ Premium
                 </button>
               )}
             </article>
