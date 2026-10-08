@@ -39,7 +39,10 @@ export async function handleWiapyWebhook(request: Request) {
     supabase.from("profiles").select("id,email").ilike("email", email).maybeSingle(),
     supabase.from("checkout_settings").select("plan_id").eq("provider_checkout_id", checkoutId).maybeSingle(),
   ]);
-  if (!profile?.id || !checkout?.plan_id) return new Response("Customer or checkout not mapped", { status: 202 });
+  if (!profile?.id || !checkout?.plan_id) {
+    console.warn("Wiapy webhook accepted without local mapping", { email, checkoutId });
+    return Response.json({ ok: true, processed: false, reason: "Customer or checkout not mapped" });
+  }
 
   const subscription = payload.subscription;
   const providerSubscriptionId = subscription?.id || payload.payment?.id || null;
