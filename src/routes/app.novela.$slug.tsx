@@ -82,6 +82,10 @@ function NovelPage() {
     setSaving(false);
   }
 
+  function openUpgrade(planName?: string | null) {
+    setUpgradePlan(planName || "assinantes");
+  }
+
   if (!series) return <p role="alert">{error || "Novela não encontrada."}</p>;
 
   return (
@@ -104,7 +108,7 @@ function NovelPage() {
         </div>
       </section>
       <section className="novel-episodes">
-        <style>{`.novel-episode-thumb{position:relative}.novel-episode-thumb-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border:0;background:#10071066;color:#fff;font-size:24px;cursor:pointer;opacity:0;transition:opacity .18s,background .18s}.novel-episode-thumb:hover .novel-episode-thumb-play,.novel-episode-thumb:focus-within .novel-episode-thumb-play{opacity:1;background:#10071099}.novel-episode-thumb-play span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--primary);box-shadow:0 4px 20px #ff3ca866}@media (hover:none){.novel-episode-thumb-play{opacity:1;background:#10071066}}`}</style>
+        <style>{`.novel-episode-thumb{position:relative}.novel-episode-thumb-play{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;border:0;background:#10071066;color:#fff;font-size:24px;cursor:pointer;pointer-events:auto;opacity:0;transition:opacity .18s,background .18s}.novel-episode-thumb:hover .novel-episode-thumb-play,.novel-episode-thumb:focus-within .novel-episode-thumb-play{opacity:1;background:#10071099}.novel-episode-thumb-play span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--primary);box-shadow:0 4px 20px #ff3ca866}@media (hover:none){.novel-episode-thumb-play{opacity:1;background:#10071066}}`}</style>
         <h2>Episódios</h2>
         {series.episodes.length ? (
           series.episodes.map((episode) => (
@@ -119,7 +123,7 @@ function NovelPage() {
                     <span aria-hidden="true">▶</span>
                   </Link>
                 ) : (
-                  <button className="novel-episode-thumb-play" type="button" onClick={() => setUpgradePlan(episode.plan_name)} aria-label={`Ver planos para E${episode.episode_number}`}>
+                  <button className="novel-episode-thumb-play" type="button" onClick={() => openUpgrade(episode.plan_name)} aria-label={`Ver planos para E${episode.episode_number}`}>
                     <span aria-hidden="true">▶</span>
                   </button>
                 )}
@@ -133,7 +137,7 @@ function NovelPage() {
               {episode.access_type === "free" || (account.subscription && (account.subscription.status === "active" || account.subscription.status === "lifetime") && (episode.access_type === "subscriber" || episode.plan_id === account.subscription.plan_id)) ? (
                 <Link className="novel-episode-action" to="/app/watch/$episodeId" params={{ episodeId: episode.id }}>▶ Assistir</Link>
               ) : (
-                <button className="novel-episode-action" type="button" onClick={() => setUpgradePlan(episode.plan_name)}>
+                <button className="novel-episode-action" type="button" onClick={() => openUpgrade(episode.plan_name)}>
                   ▶ Premium
                 </button>
               )}
