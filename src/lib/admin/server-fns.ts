@@ -134,7 +134,7 @@ export const getAdminSeries = createServerFn({ method: "GET" }).handler(async ()
     supabase
       .from("episodes")
       .select(
-        "id,series_id,episode_number,title,description,status,access_type,plan_id,thumbnail_url,video_url,video_provider,duration_seconds,scheduled_at,bunny_video_id,bunny_library_id,video_processing_status,video_encode_progress,video_storage_bytes,video_error,video_ready_at",
+        "id,series_id,episode_number,title,description,status,access_type,plan_id,thumbnail_url,video_url,video_provider,video_source,telegram_chat_id,telegram_message_id,telegram_file_id,telegram_import_status,telegram_import_error,duration_seconds,scheduled_at,bunny_video_id,bunny_library_id,video_processing_status,video_encode_progress,video_storage_bytes,video_error,video_ready_at",
       )
       .order("series_id")
       .order("sort_order"),

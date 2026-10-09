@@ -27,6 +27,34 @@ export type PlayerSettings = {
   showBrand: boolean;
 };
 
+export type PartTwoSettings = {
+  headline: string;
+  subheadline: string;
+  videoUrl: string;
+  posterUrl: string;
+  videoProvider: "url" | "bunny";
+  ctaText: string;
+  eyebrow: string;
+};
+
+export const getPublicPartTwoSettings = createServerFn({ method: "GET" }).handler(async () => {
+  const fallback: PartTwoSettings = {
+    headline: "Parte 2 — a história continua",
+    subheadline: "Você chegou até aqui. Agora descubra o que acontece depois.",
+    videoUrl: "https://player.vimeo.com/video/1231112345",
+    posterUrl: "",
+    videoProvider: "url",
+    ctaText: "CONTINUE ASSISTINDO",
+    eyebrow: "CONTINUAÇÃO EXCLUSIVA",
+  };
+  const { data } = await createClient().from("site_settings").select("content_settings").eq("id", true).maybeSingle();
+  const content = data?.content_settings && typeof data.content_settings === "object" && !Array.isArray(data.content_settings)
+    ? (data.content_settings as Record<string, unknown>)
+    : {};
+  const value = content["partTwo"];
+  return { ...fallback, ...(value && typeof value === "object" ? value : {}) } as PartTwoSettings;
+});
+
 export const getPublicPlayerSettings = createServerFn({ method: "GET" }).handler(async () => {
   const fallback: PlayerSettings = {
     accentColor: "#ff3ca8",

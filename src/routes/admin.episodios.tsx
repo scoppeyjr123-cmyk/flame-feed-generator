@@ -33,9 +33,12 @@ type EpisodeForm = {
   episode_number: number;
   title: string;
   description: string;
-  video_mode: "bunny" | "url";
+  video_mode: "bunny" | "url" | "telegram";
   video_url: string;
   video_provider: string;
+  telegram_chat_id: string;
+  telegram_message_id: string;
+  telegram_file_id: string;
   thumbnail_url: string;
   scheduled_at: string;
   status: "draft" | "published" | "scheduled" | "hidden";
@@ -51,6 +54,9 @@ const emptyEpisode: EpisodeForm = {
   video_mode: "bunny",
   video_url: "",
   video_provider: "bunny",
+  telegram_chat_id: "",
+  telegram_message_id: "",
+  telegram_file_id: "",
   thumbnail_url: "",
   scheduled_at: "",
   status: "draft",
@@ -91,9 +97,12 @@ function AdminEpisodes() {
       episode_number: episode.episode_number,
       title: episode.title,
       description: episode.description ?? "",
-      video_mode: episode.video_url && !episode.bunny_video_id ? "url" : "bunny",
+      video_mode: episode.video_source === "telegram" ? "telegram" : episode.video_url && !episode.bunny_video_id ? "url" : "bunny",
       video_url: episode.video_url ?? "",
       video_provider: episode.video_provider ?? "",
+      telegram_chat_id: episode.telegram_chat_id ?? "",
+      telegram_message_id: episode.telegram_message_id ? String(episode.telegram_message_id) : "",
+      telegram_file_id: episode.telegram_file_id ?? "",
       thumbnail_url: episode.thumbnail_url ?? "",
       scheduled_at: episode.scheduled_at
         ? new Date(episode.scheduled_at).toISOString().slice(0, 16)
@@ -124,6 +133,12 @@ function AdminEpisodes() {
     if (form.video_mode === "url" && !form.video_url.trim()) {
       return setMessage("Informe a URL do vídeo para usar este modo.");
     }
+    if (form.video_mode === "url" && /(?:^|\.)t\.me\//i.test(form.video_url.trim())) {
+      return setMessage("Link do Telegram não é uma URL de vídeo reproduzível. Use 'Importar vídeo do Telegram' e informe os dados do arquivo, ou use uma URL direta de vídeo.");
+    }
+    if (form.video_mode === "telegram" && (!form.telegram_chat_id.trim() || !form.telegram_message_id.trim() || !form.telegram_file_id.trim())) {
+      return setMessage("Informe chat_id, message_id e file_id do Telegram para importar o vídeo.");
+    }
 
     setIsSaving(true);
     try {
@@ -133,7 +148,13 @@ function AdminEpisodes() {
         title: form.title,
         description: form.description || null,
         video_url: form.video_mode === "url" ? form.video_url || null : null,
-        video_provider: form.video_mode === "url" ? form.video_provider || "url" : "bunny",
+        video_provider: form.video_mode === "url" ? form.video_provider || "url" : form.video_mode,
+        video_source: form.video_mode,
+        telegram_chat_id: form.video_mode === "telegram" ? form.telegram_chat_id.trim() : null,
+        telegram_message_id: form.video_mode === "telegram" ? Number(form.telegram_message_id) : null,
+        telegram_file_id: form.video_mode === "telegram" ? form.telegram_file_id.trim() : null,
+        telegram_import_status: form.video_mode === "telegram" ? "pending" : "not_configured",
+        telegram_import_error: null,
         thumbnail_url: form.thumbnail_url || null,
         scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
         status: form.status,
@@ -325,6 +346,7 @@ function AdminEpisodes() {
               <select id="episode-video-mode" value={form.video_mode} onChange={(event) => { setVideoFile(null); setForm({ ...form, video_mode: event.target.value as EpisodeForm["video_mode"] }); }}>
                 <option value="bunny">Enviar arquivo para o Bunny Stream</option>
                 <option value="url">Reproduzir através de URL</option>
+                <option value="telegram">Importar vídeo do Telegram</option>
               </select>
             </div>
             {form.video_mode === "bunny" ? (
@@ -335,11 +357,21 @@ function AdminEpisodes() {
                 {videoFile ? <small><Upload size={13} style={{ display: "inline", marginRight: 4 }} />{videoFile.name} · {(videoFile.size / 1024 / 1024).toFixed(1)} MB</small> : null}
                 {isSaving && videoFile ? <div><progress value={uploadProgress} max={100} style={{ width: "100%" }} /><small>{uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : "Upload concluído. Processando..."}</small></div> : null}
               </div>
-            ) : (
+            ) : form.video_mode === "url" ? (
               <div className="admin-field full">
                 <label htmlFor="episode-video-url">URL do vídeo</label>
                 <input id="episode-video-url" type="url" required value={form.video_url} placeholder="https://..." onChange={(event) => setForm({ ...form, video_url: event.target.value, video_provider: "url" })} />
                 <small>Use quando o episódio já estiver hospedado em outro serviço compatível.</small>
+              </div>
+            ) : (
+              <div className="admin-field full">
+                <label>Origem do vídeo no Telegram</label>
+                <div className="admin-form-grid">
+                  <input required placeholder="chat_id do canal/grupo" value={form.telegram_chat_id} onChange={(event) => setForm({ ...form, telegram_chat_id: event.target.value })} />
+                  <input required type="number" placeholder="message_id" value={form.telegram_message_id} onChange={(event) => setForm({ ...form, telegram_message_id: event.target.value })} />
+                  <input required className="full" placeholder="file_id recebido pelo bot" value={form.telegram_file_id} onChange={(event) => setForm({ ...form, telegram_file_id: event.target.value })} />
+                </div>
+                <small>O bot precisa estar no canal/grupo e o file_id será usado pelo importador privado. O token do bot nunca vai para o navegador.</small>
               </div>
             )}
 

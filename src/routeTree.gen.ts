@@ -27,6 +27,7 @@ import { Route as AdminHomeRouteImport } from './routes/admin.home'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminMidiaRouteImport } from './routes/admin.midia'
 import { Route as AdminNovelasRouteImport } from './routes/admin.novelas'
+import { Route as AdminParte2RouteImport } from './routes/admin.parte-2'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppBuscarRouteImport } from './routes/app.buscar'
@@ -127,6 +128,11 @@ const AdminNovelasRoute = AdminNovelasRouteImport.update({
   path: '/novelas',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminParte2Route = AdminParte2RouteImport.update({
+  id: '/parte-2',
+  path: '/parte-2',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPlanosRoute = AdminPlanosRouteImport.update({
   id: '/planos',
   path: '/planos',
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/midia': typeof AdminMidiaRoute
   '/admin/novelas': typeof AdminNovelasRoute
+  '/admin/parte-2': typeof AdminParte2Route
   '/admin/planos': typeof AdminPlanosRoute
   '/app/buscar': typeof AppBuscarRoute
   '/app/minha-lista': typeof AppMinhaListaRoute
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/midia': typeof AdminMidiaRoute
   '/admin/novelas': typeof AdminNovelasRoute
+  '/admin/parte-2': typeof AdminParte2Route
   '/admin/planos': typeof AdminPlanosRoute
   '/app/buscar': typeof AppBuscarRoute
   '/app/minha-lista': typeof AppMinhaListaRoute
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/midia': typeof AdminMidiaRoute
   '/admin/novelas': typeof AdminNovelasRoute
+  '/admin/parte-2': typeof AdminParte2Route
   '/admin/planos': typeof AdminPlanosRoute
   '/app/buscar': typeof AppBuscarRoute
   '/app/minha-lista': typeof AppMinhaListaRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/midia'
     | '/admin/novelas'
+    | '/admin/parte-2'
     | '/admin/planos'
     | '/app/buscar'
     | '/app/minha-lista'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/midia'
     | '/admin/novelas'
+    | '/admin/parte-2'
     | '/admin/planos'
     | '/app/buscar'
     | '/app/minha-lista'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/midia'
     | '/admin/novelas'
+    | '/admin/parte-2'
     | '/admin/planos'
     | '/app/buscar'
     | '/app/minha-lista'
@@ -485,6 +497,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNovelasRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/parte-2': {
+      id: '/admin/parte-2'
+      path: '/parte-2'
+      fullPath: '/admin/parte-2'
+      preLoaderRoute: typeof AdminParte2RouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/planos': {
       id: '/admin/planos'
       path: '/planos'
@@ -562,6 +581,7 @@ interface AdminRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMidiaRoute: typeof AdminMidiaRoute
   AdminNovelasRoute: typeof AdminNovelasRoute
+  AdminParte2Route: typeof AdminParte2Route
   AdminPlanosRoute: typeof AdminPlanosRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -577,6 +597,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminMidiaRoute: AdminMidiaRoute,
   AdminNovelasRoute: AdminNovelasRoute,
+  AdminParte2Route: AdminParte2Route,
   AdminPlanosRoute: AdminPlanosRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

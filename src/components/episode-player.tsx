@@ -213,6 +213,21 @@ export function EpisodePlayer({
   }, [videoUrl, initialSeconds, onEnded, onPlaybackSeconds, onPlaybackStateChange]);
 
   if (videoUrl) {
+    const isTelegramMessageUrl = /(?:^|\.)t\.me\//i.test(videoUrl);
+    if (isTelegramMessageUrl) {
+      return (
+        <div className="part2-player-frame part2-player-placeholder" aria-label="Fonte do vídeo não reproduzível">
+          {posterUrl ? <img src={posterUrl} alt="" className="part2-player-poster" /> : null}
+          <div className="part2-player-overlay" />
+          <div className="part2-player-placeholder-content">
+            <span className="part2-play-icon"><Play size={27} fill="currentColor" /></span>
+            <p className="part2-player-label">VÍDEO DO TELEGRAM</p>
+            <h2>{title}</h2>
+            <p className="part2-player-help">Este link abre uma mensagem do Telegram, não um arquivo de vídeo. O vídeo precisa ser importado pelo Admin para o Bunny Stream.</p>
+          </div>
+        </div>
+      );
+    }
     const isDirectVideo = /\.(mp4|webm|ogg|m3u8)(?:[?#]|$)/i.test(videoUrl);
     const embeddableVideoUrl = toEmbeddableVideoUrl(videoUrl);
 

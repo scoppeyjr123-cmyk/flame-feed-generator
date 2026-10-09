@@ -119,6 +119,12 @@ export type Database = {
           video_storage_bytes: number | null;
           video_error: string | null;
           video_ready_at: string | null;
+          video_source: string;
+          telegram_chat_id: string | null;
+          telegram_message_id: number | null;
+          telegram_file_id: string | null;
+          telegram_import_status: string;
+          telegram_import_error: string | null;
         };
         Insert: {
           access_type?: Database["public"]["Enums"]["episode_access_type"];
@@ -144,6 +150,12 @@ export type Database = {
           video_storage_bytes?: number | null;
           video_error?: string | null;
           video_ready_at?: string | null;
+          video_source?: string;
+          telegram_chat_id?: string | null;
+          telegram_message_id?: number | null;
+          telegram_file_id?: string | null;
+          telegram_import_status?: string;
+          telegram_import_error?: string | null;
         };
         Update: {
           access_type?: Database["public"]["Enums"]["episode_access_type"];
@@ -169,6 +181,12 @@ export type Database = {
           video_storage_bytes?: number | null;
           video_error?: string | null;
           video_ready_at?: string | null;
+          video_source?: string;
+          telegram_chat_id?: string | null;
+          telegram_message_id?: number | null;
+          telegram_file_id?: string | null;
+          telegram_import_status?: string;
+          telegram_import_error?: string | null;
         };
         Relationships: [
           {

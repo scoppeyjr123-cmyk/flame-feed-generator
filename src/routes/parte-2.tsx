@@ -4,10 +4,13 @@ import { Check, ChevronRight, Heart, LockKeyhole, MonitorSmartphone, Play } from
 import { EpisodePlayer } from "../components/episode-player";
 import { PricingPlans } from "../components/pricing-plans";
 import { SubscriptionModal } from "../components/subscription-modal";
-import { getPublicPlans } from "../lib/public/server-fns";
+import { getPublicPartTwoSettings, getPublicPlans } from "../lib/public/server-fns";
 
 export const Route = createFileRoute("/parte-2")({
-  loader: () => getPublicPlans(),
+  loader: async () => {
+    const [plans, partTwo] = await Promise.all([getPublicPlans(), getPublicPartTwoSettings()]);
+    return { ...plans, partTwo };
+  },
   head: () => ({
     meta: [
       { title: "Parte 2 — a história continua | Feed Loves" },
@@ -29,9 +32,6 @@ export const Route = createFileRoute("/parte-2")({
 
 // Troque por uma URL pública de MP4/HLS quando o vídeo definitivo estiver pronto.
 // Também é possível passar ?video=URL&capa=URL&titulo=Nome%20da%20historia na campanha.
-const episodeVideoUrl = "https://player.vimeo.com/video/1231112345";
-const episodePosterUrl = "";
-
 const posters = [
   {
     title: "My Queen, My Rules",
@@ -78,10 +78,10 @@ const faqItems = [
 ];
 
 function PartTwoPage() {
-  const { plans: configuredPlans } = Route.useLoaderData();
-  const [videoUrl, setVideoUrl] = useState(episodeVideoUrl);
-  const [posterUrl, setPosterUrl] = useState(episodePosterUrl);
-  const [episodeTitle, setEpisodeTitle] = useState("Parte 2 — a história continua");
+  const { plans: configuredPlans, partTwo } = Route.useLoaderData();
+  const [videoUrl, setVideoUrl] = useState(partTwo.videoUrl);
+  const [posterUrl, setPosterUrl] = useState(partTwo.posterUrl);
+  const [episodeTitle, setEpisodeTitle] = useState(partTwo.headline);
   const [offerUnlocked, setOfferUnlocked] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [plansHighlighted, setPlansHighlighted] = useState(false);
@@ -89,9 +89,9 @@ function PartTwoPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setVideoUrl(params.get("video") || episodeVideoUrl);
-    setPosterUrl(params.get("capa") || episodePosterUrl);
-    setEpisodeTitle(params.get("titulo") || "Parte 2 — a história continua");
+    setVideoUrl(params.get("video") || partTwo.videoUrl);
+    setPosterUrl(params.get("capa") || partTwo.posterUrl);
+    setEpisodeTitle(params.get("titulo") || partTwo.headline);
 
     // Only use a Meta Pixel that the host site has already initialized.
     // No pixel IDs or third-party tracking scripts are added by this route.
@@ -102,7 +102,7 @@ function PartTwoPage() {
         content_category: "episode",
       });
     }
-  }, []);
+  }, [partTwo]);
 
   const scrollToPlans = useCallback(() => {
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -279,7 +279,7 @@ function PartTwoPage() {
       <section className="part2-hero">
         <div className="part2-shell">
           <p className="part2-eyebrow">
-            <Play size={12} fill="currentColor" /> CONTINUAÇÃO EXCLUSIVA
+            <Play size={12} fill="currentColor" /> {partTwo.eyebrow}
           </p>
           <h1>
             {(() => {
@@ -295,9 +295,7 @@ function PartTwoPage() {
               );
             })()}
           </h1>
-          <p className="part2-hero-copy">
-            Você chegou até aqui. Agora descubra o que acontece depois.
-          </p>
+          <p className="part2-hero-copy">{partTwo.subheadline}</p>
         </div>
       </section>
 
