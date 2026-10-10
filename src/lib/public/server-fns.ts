@@ -52,7 +52,24 @@ export const getPublicPartTwoSettings = createServerFn({ method: "GET" }).handle
     ? (data.content_settings as Record<string, unknown>)
     : {};
   const value = content["partTwo"];
-  return { ...fallback, ...(value && typeof value === "object" ? value : {}) } as PartTwoSettings;
+  const settings = { ...fallback, ...(value && typeof value === "object" ? value : {}) } as PartTwoSettings;
+
+  // Bunny libraries with token authentication enabled reject the unsigned
+  // embed URL with HTTP 403. Keep only the public video id in the database and
+  // sign the player URL on the server for each page request.
+  if (settings.videoProvider === "bunny") {
+    const match = settings.videoUrl.match(/(?:iframe|player)\.mediadelivery\.net\/embed\/\d+\/([^/?#]+)/i);
+    if (match?.[1]) {
+      try {
+        settings.videoUrl = createBunnySignedEmbedUrl(decodeURIComponent(match[1])).url;
+      } catch {
+        // If Bunny signing is not configured, preserve the saved URL so the
+        // admin can still diagnose the missing token-key configuration.
+      }
+    }
+  }
+
+  return settings;
 });
 
 export const getPublicPlayerSettings = createServerFn({ method: "GET" }).handler(async () => {
