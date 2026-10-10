@@ -70,6 +70,19 @@ export const createEpisodeBunnyAsset = createServerFn({ method: "POST" })
     };
   });
 
+export const createPartTwoBunnyAsset = createServerFn({ method: "POST" })
+  .inputValidator((input: { title: string }) => input)
+  .handler(async ({ data }) => {
+    const { user } = await assertAdmin();
+    const video = await createBunnyVideo(data.title);
+    return {
+      videoId: video.guid,
+      embedUrl: `https://iframe.mediadelivery.net/embed/${getBunnyLibraryId()}/${encodeURIComponent(video.guid)}`,
+      upload: createBunnyTusCredentials(video.guid),
+      adminId: user.id,
+    };
+  });
+
 export const markEpisodeBunnyUploadComplete = createServerFn({ method: "POST" })
   .inputValidator((input: { episodeId: string }) => input)
   .handler(async ({ data }) => {

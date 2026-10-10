@@ -3,6 +3,8 @@ import { Save, Upload } from "lucide-react";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 
 import { AdminPageHeader, AdminShell } from "../components/admin/admin-shell";
+import { createPartTwoBunnyAsset } from "../lib/admin/bunny-server-fns";
+import { uploadFileToBunnyTus } from "../lib/bunny/tus-upload";
 import { requireAdmin } from "../lib/admin/guard";
 import { getAdminSettings } from "../lib/admin/server-fns";
 import { createClient } from "../lib/supabase/client";
@@ -32,6 +34,7 @@ function AdminPartTwo() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   async function uploadVideo(event: ChangeEvent<HTMLInputElement>) {
     const selected = event.target.files?.[0];
@@ -50,12 +53,18 @@ function AdminPartTwo() {
       if (!auth.user) throw new Error("Sua sessão expirou. Entre novamente.");
       let videoUrl = String(form.videoUrl || "").trim();
       if (file) {
-        const path = `part-2/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-        const upload = await supabase.storage.from("feedloves-media").upload(path, file, { upsert: false, contentType: file.type });
-        if (upload.error) throw new Error(upload.error.message);
-        videoUrl = supabase.storage.from("feedloves-media").getPublicUrl(path).data.publicUrl;
+        if (form.videoProvider === "bunny") {
+          const bunny = await createPartTwoBunnyAsset({ data: { title: String(form.headline) } });
+          await uploadFileToBunnyTus(file, bunny.upload, setUploadProgress);
+          videoUrl = bunny.embedUrl;
+        } else {
+          const path = `part-2/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+          const upload = await supabase.storage.from("feedloves-media").upload(path, file, { upsert: false, contentType: file.type });
+          if (upload.error) throw new Error(upload.error.message);
+          videoUrl = supabase.storage.from("feedloves-media").getPublicUrl(path).data.publicUrl;
+        }
       }
-      const updatedContent = { ...content, partTwo: { ...form, videoUrl, videoProvider: file ? "url" : form.videoProvider } };
+      const updatedContent = { ...content, partTwo: { ...form, videoUrl, videoProvider: form.videoProvider } };
       const { error } = await supabase.from("site_settings").upsert({ id: true, content_settings: updatedContent, updated_by: auth.user.id }, { onConflict: "id" });
       if (error) throw new Error(error.message);
       setForm((current) => ({ ...current, videoUrl })); setFile(null); setMessage("Página da Parte 2 salva com sucesso.");
@@ -74,7 +83,7 @@ function AdminPartTwo() {
         <div className="admin-field"><label htmlFor="part2-provider">Fonte do vídeo</label><select id="part2-provider" value={String(form.videoProvider)} onChange={(e) => setForm({ ...form, videoProvider: e.target.value })}><option value="url">URL externa</option><option value="bunny">Bunny Stream</option></select></div>
         <div className="admin-field"><label htmlFor="part2-cta">Texto do CTA</label><input id="part2-cta" value={String(form.ctaText)} onChange={(e) => setForm({ ...form, ctaText: e.target.value })} /></div>
         <div className="admin-field full"><label htmlFor="part2-video-url">URL do vídeo</label><input id="part2-video-url" type="url" value={String(form.videoUrl)} placeholder="https://..." onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} /><small>Use uma URL direta ou uma URL de player compatível, como Vimeo/Bunny. Link de mensagem do Telegram não funciona como vídeo.</small></div>
-        <div className="admin-field full"><label htmlFor="part2-video-file">Ou enviar arquivo</label><input id="part2-video-file" type="file" accept="video/*,.mkv,.mov,.avi,.webm" onChange={(e) => void uploadVideo(e)} /><small>{file ? <><Upload size={13} style={{ display: "inline", marginRight: 4 }} />{file.name} será enviado ao Storage público.</> : "O upload substitui a URL atual e gera uma URL pública."}</small></div>
+        <div className="admin-field full"><label htmlFor="part2-video-file">Ou enviar arquivo</label><input id="part2-video-file" type="file" accept="video/*,.mkv,.mov,.avi,.webm" onChange={(e) => void uploadVideo(e)} /><small>{file ? <><Upload size={13} style={{ display: "inline", marginRight: 4 }} />{file.name} será enviado para {form.videoProvider === "bunny" ? "o Bunny Stream" : "o Storage público"}.</> : form.videoProvider === "bunny" ? "Arquivos grandes serão enviados diretamente ao Bunny Stream, sem o limite do Storage do Supabase." : "O upload substitui a URL atual e gera uma URL pública."}</small>{saving && file && form.videoProvider === "bunny" ? <><progress value={uploadProgress} max={100} style={{ width: "100%" }} /><small>Enviando… {uploadProgress}%</small></> : null}</div>
         <div className="admin-field full"><label htmlFor="part2-poster">URL da capa/poster</label><input id="part2-poster" type="url" value={String(form.posterUrl)} placeholder="https://..." onChange={(e) => setForm({ ...form, posterUrl: e.target.value })} /></div>
       </div>
       <div className="admin-form-actions"><button type="submit" className="admin-primary-button" disabled={saving}><Save size={14} /> {saving ? "Salvando…" : "Salvar Parte 2"}</button></div>
