@@ -37,40 +37,44 @@ export type PartTwoSettings = {
   eyebrow: string;
 };
 
-export const getPublicPartTwoSettings = createServerFn({ method: "GET" }).handler(async () => {
-  const fallback: PartTwoSettings = {
-    headline: "Parte 2 — a história continua",
-    subheadline: "Você chegou até aqui. Agora descubra o que acontece depois.",
-    videoUrl: "https://player.vimeo.com/video/1231112345",
-    posterUrl: "",
-    videoProvider: "url",
-    ctaText: "CONTINUE ASSISTINDO",
-    eyebrow: "CONTINUAÇÃO EXCLUSIVA",
-  };
+const partTwoFallback: PartTwoSettings = {
+  headline: "Parte 2 — a história continua",
+  subheadline: "Você chegou até aqui. Agora descubra o que acontece depois.",
+  videoUrl: "https://player.vimeo.com/video/1231112345",
+  posterUrl: "",
+  videoProvider: "url",
+  ctaText: "CONTINUE ASSISTINDO",
+  eyebrow: "CONTINUAÇÃO EXCLUSIVA",
+};
+
+async function readPartTwoSettings(key: string): Promise<PartTwoSettings> {
   const { data } = await createClient().from("site_settings").select("content_settings").eq("id", true).maybeSingle();
   const content = data?.content_settings && typeof data.content_settings === "object" && !Array.isArray(data.content_settings)
     ? (data.content_settings as Record<string, unknown>)
     : {};
-  const value = content["partTwo"];
-  const settings = { ...fallback, ...(value && typeof value === "object" ? value : {}) } as PartTwoSettings;
+  const value = content[key];
+  const settings = { ...partTwoFallback, ...(value && typeof value === "object" ? value : {}) } as PartTwoSettings;
 
-  // Bunny libraries with token authentication enabled reject the unsigned
-  // embed URL with HTTP 403. Keep only the public video id in the database and
-  // sign the player URL on the server for each page request.
   if (settings.videoProvider === "bunny") {
     const match = settings.videoUrl.match(/(?:iframe|player)\.mediadelivery\.net\/embed\/\d+\/([^/?#]+)/i);
     if (match?.[1]) {
       try {
         settings.videoUrl = createBunnySignedEmbedUrl(decodeURIComponent(match[1])).url;
       } catch {
-        // If Bunny signing is not configured, preserve the saved URL so the
-        // admin can still diagnose the missing token-key configuration.
+        // Keep the configured URL when the Bunny token key is unavailable.
       }
     }
   }
-
   return settings;
+}
+
+export const getPublicPartTwoSettings = createServerFn({ method: "GET" }).handler(async () => {
+  return readPartTwoSettings("partTwo");
 });
+
+export const getPublicPartTwoVariantSettings = createServerFn({ method: "GET" })
+  .inputValidator((key: string) => key)
+  .handler(async ({ data }) => readPartTwoSettings(data));
 
 export const getPublicPlayerSettings = createServerFn({ method: "GET" }).handler(async () => {
   const fallback: PlayerSettings = {

@@ -4,7 +4,7 @@ import { Check, ChevronRight, Heart, LockKeyhole, MonitorSmartphone, Play } from
 import { EpisodePlayer } from "../components/episode-player";
 import { PricingPlans } from "../components/pricing-plans";
 import { SubscriptionModal } from "../components/subscription-modal";
-import { getPublicPartTwoSettings, getPublicPlans } from "../lib/public/server-fns";
+import { getPublicPartTwoSettings, getPublicPlans, type PartTwoSettings, type PublicPlan } from "../lib/public/server-fns";
 
 export const Route = createFileRoute("/parte-2")({
   loader: async () => {
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/parte-2")({
       { property: "og:type", content: "website" },
     ],
   }),
-  component: PartTwoPage,
+  component: PartTwoRoute,
 });
 
 // Troque por uma URL pública de MP4/HLS quando o vídeo definitivo estiver pronto.
@@ -77,8 +77,7 @@ const faqItems = [
   },
 ];
 
-function PartTwoPage() {
-  const { plans: configuredPlans, partTwo } = Route.useLoaderData();
+export function PartTwoPage({ plans: configuredPlans, partTwo }: { plans: PublicPlan[]; partTwo: PartTwoSettings }) {
   const [videoUrl, setVideoUrl] = useState(partTwo.videoUrl);
   const [posterUrl, setPosterUrl] = useState(partTwo.posterUrl);
   const [episodeTitle, setEpisodeTitle] = useState(partTwo.headline);
@@ -419,5 +418,10 @@ function PartTwoPage() {
       />
     </main>
   );
+}
+
+function PartTwoRoute() {
+  const data = Route.useLoaderData();
+  return <PartTwoPage plans={data.plans} partTwo={data.partTwo} />;
 }
 

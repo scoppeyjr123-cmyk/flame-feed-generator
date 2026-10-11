@@ -17,6 +17,8 @@ import { Route as CriarContaRouteImport } from './routes/criar-conta'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as Parte2RouteImport } from './routes/parte-2'
+import { Route as Parte21RouteImport } from './routes/parte-2-1'
+import { Route as Parte22RouteImport } from './routes/parte-2-2'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAssinaturasRouteImport } from './routes/admin.assinaturas'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
@@ -77,6 +79,16 @@ const ObrigadoRoute = ObrigadoRouteImport.update({
 const Parte2Route = Parte2RouteImport.update({
   id: '/parte-2',
   path: '/parte-2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Parte21Route = Parte21RouteImport.update({
+  id: '/parte-2-1',
+  path: '/parte-2-1',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Parte22Route = Parte22RouteImport.update({
+  id: '/parte-2-2',
+  path: '/parte-2-2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -194,6 +206,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/obrigado': typeof ObrigadoRoute
   '/parte-2': typeof Parte2Route
+  '/parte-2-1': typeof Parte21Route
+  '/parte-2-2': typeof Parte22Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/checkout': typeof AdminCheckoutRoute
@@ -223,6 +237,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/obrigado': typeof ObrigadoRoute
   '/parte-2': typeof Parte2Route
+  '/parte-2-1': typeof Parte21Route
+  '/parte-2-2': typeof Parte22Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/checkout': typeof AdminCheckoutRoute
@@ -255,6 +271,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/obrigado': typeof ObrigadoRoute
   '/parte-2': typeof Parte2Route
+  '/parte-2-1': typeof Parte21Route
+  '/parte-2-2': typeof Parte22Route
   '/admin/assinaturas': typeof AdminAssinaturasRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/checkout': typeof AdminCheckoutRoute
@@ -288,6 +306,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/obrigado'
     | '/parte-2'
+    | '/parte-2-1'
+    | '/parte-2-2'
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/checkout'
@@ -317,6 +337,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/obrigado'
     | '/parte-2'
+    | '/parte-2-1'
+    | '/parte-2-2'
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/checkout'
@@ -348,6 +370,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/obrigado'
     | '/parte-2'
+    | '/parte-2-1'
+    | '/parte-2-2'
     | '/admin/assinaturas'
     | '/admin/auditoria'
     | '/admin/checkout'
@@ -380,6 +404,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ObrigadoRoute: typeof ObrigadoRoute
   Parte2Route: typeof Parte2Route
+  Parte21Route: typeof Parte21Route
+  Parte22Route: typeof Parte22Route
 }
 
 declare module '@tanstack/react-router' {
@@ -438,6 +464,20 @@ declare module '@tanstack/react-router' {
       path: '/parte-2'
       fullPath: '/parte-2'
       preLoaderRoute: typeof Parte2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parte-2-1': {
+      id: '/parte-2-1'
+      path: '/parte-2-1'
+      fullPath: '/parte-2-1'
+      preLoaderRoute: typeof Parte21RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parte-2-2': {
+      id: '/parte-2-2'
+      path: '/parte-2-2'
+      fullPath: '/parte-2-2'
+      preLoaderRoute: typeof Parte22RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -667,6 +707,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ObrigadoRoute: ObrigadoRoute,
   Parte2Route: Parte2Route,
+  Parte21Route: Parte21Route,
+  Parte22Route: Parte22Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,0 +1,9 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { PartTwoPage } from "./parte-2";
+import { getPublicPartTwoVariantSettings, getPublicPlans } from "../lib/public/server-fns";
+
+export const Route = createFileRoute("/parte-2-2")({
+  loader: async () => { const [plans, partTwo] = await Promise.all([getPublicPlans(), getPublicPartTwoVariantSettings({ data: "partTwoCopy2" })]); return { plans: plans.plans, partTwo }; },
+  head: () => ({ meta: [{ title: "Parte 2 — versão 2 | Feed Loves" }] }),
+  component: () => { const data = Route.useLoaderData(); return <PartTwoPage plans={data.plans} partTwo={data.partTwo} />; },
+});
