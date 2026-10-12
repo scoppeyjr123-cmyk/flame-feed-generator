@@ -15,10 +15,22 @@ function ProfilePage() {
   const { session, subscription, history = [], watchHistory = [] } = Route.useLoaderData();
   const [name, setName] = useState(session.user?.name ?? "");
   const [message, setMessage] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
   async function logout() {
-    await createClient().auth.signOut();
-    await router.navigate({ to: "/login" });
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setMessage("");
+    const { error } = await createClient().auth.signOut({ scope: "global" });
+    if (error) {
+      setLoggingOut(false);
+      setMessage("Não foi possível sair agora. Tente novamente.");
+      return;
+    }
+    // A full navigation clears the authenticated route loader and any cached
+    // customer session, preventing the profile from remaining visible.
+    await router.invalidate();
+    window.location.replace("/login");
   }
   async function saveProfile() {
     const user = (await createClient().auth.getUser()).data.user;
@@ -96,7 +108,9 @@ function ProfilePage() {
           <Link to="/app/planos">Ver planos</Link>
           <button onClick={saveProfile}>Salvar perfil</button>
           <button onClick={changePassword}>Alterar senha</button>
-          <button onClick={logout}>Sair da conta</button>
+          <button type="button" onClick={() => void logout()} disabled={loggingOut}>
+            {loggingOut ? "Saindo…" : "Sair da conta"}
+          </button>
         </div>
         {message ? <p role="status">{message}</p> : null}
       </div>
