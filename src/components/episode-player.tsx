@@ -36,6 +36,7 @@ type EpisodePlayerProps = {
   onEnded?: () => void;
   initialSeconds?: number;
   autoPlay?: boolean;
+  maxPlaybackSeconds?: number;
   settings?: {
     accentColor?: string;
     backgroundColor?: string;
@@ -94,6 +95,7 @@ export function EpisodePlayer({
   initialSeconds = 0,
   autoPlay = false,
   settings,
+  maxPlaybackSeconds,
 }: EpisodePlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -133,7 +135,7 @@ export function EpisodePlayer({
       player.on("pause", () => onPlaybackStateChange?.(false));
       player.on("timeupdate", (data) => {
         const seconds = readSeconds(data);
-        if (seconds !== null) onPlaybackSeconds?.(seconds);
+        if (seconds !== null) onPlaybackSeconds?.(maxPlaybackSeconds == null ? seconds : Math.min(seconds, maxPlaybackSeconds));
       });
       player.on("ended", () => {
         onPlaybackStateChange?.(false);
@@ -180,7 +182,7 @@ export function EpisodePlayer({
       player.on("play", () => onPlaybackStateChange?.(true));
       player.on("pause", () => onPlaybackStateChange?.(false));
       player.on("timeupdate", (data) => {
-        if (typeof data?.seconds === "number") onPlaybackSeconds?.(data.seconds);
+        if (typeof data?.seconds === "number") onPlaybackSeconds?.(maxPlaybackSeconds == null ? data.seconds : Math.min(data.seconds, maxPlaybackSeconds));
       });
       player.on("ended", () => {
         onPlaybackStateChange?.(false);
@@ -246,7 +248,11 @@ export function EpisodePlayer({
             src={videoUrl}
             aria-label={title}
             style={{ width: "100%", height: "100%", display: "block", objectFit: "contain", background: "#000" }}
-            onTimeUpdate={(event) => onPlaybackSeconds?.(event.currentTarget.currentTime)}
+            onTimeUpdate={(event) => {
+              const seconds = event.currentTarget.currentTime;
+              onPlaybackSeconds?.(maxPlaybackSeconds == null ? seconds : Math.min(seconds, maxPlaybackSeconds));
+              if (maxPlaybackSeconds != null && seconds >= maxPlaybackSeconds) event.currentTarget.pause();
+            }}
             onLoadedMetadata={(event) => {
               if (initialSeconds > 0 && !restoredRef.current) {
                 restoredRef.current = true;

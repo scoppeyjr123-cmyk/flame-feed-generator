@@ -225,6 +225,16 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
       );
     }
 
+    let freeRemainingSeconds: number | null = null;
+    if (data.access_type === "free") {
+      const { data: usage } = await supabase.rpc("get_free_watch_usage");
+      const used = Number(usage ?? 0);
+      freeRemainingSeconds = Math.max(0, 1200 - (Number.isFinite(used) ? used : 0));
+      if (freeRemainingSeconds <= 0) {
+        return { episode: null, error: "Seu acesso gratuito de 20 minutos foi utilizado. Assine um plano para continuar assistindo." };
+      }
+    }
+
     if (!allowed) {
       return {
         episode: null,
@@ -241,13 +251,21 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
       }
       const signed = createBunnySignedEmbedUrl(data.bunny_video_id);
       return {
-        episode: { ...data, video_url: signed.url, playback_expires_at: signed.expires },
+        episode: { ...data, video_url: signed.url, playback_expires_at: signed.expires, free_remaining_seconds: freeRemainingSeconds },
         error: null,
       };
     }
 
-    return { episode: data, error: null };
+    return { episode: { ...data, free_remaining_seconds: freeRemainingSeconds }, error: null };
   });
+
+export const getFreeWatchUsage = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await getCustomerSession();
+  if (!session.authenticated) return { usedSeconds: 0, remainingSeconds: 0 };
+  const { data } = await createClient().rpc("get_free_watch_usage");
+  const usedSeconds = Math.max(0, Number(data ?? 0));
+  return { usedSeconds, remainingSeconds: Math.max(0, 1200 - usedSeconds) };
+});
 
 export const getCustomerEpisodeProgress = createServerFn({ method: "GET" })
   .validator((episodeId: string) => episodeId)

@@ -25,6 +25,10 @@ function CreateAccount() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    if (typeof window !== "undefined" && window.localStorage.getItem("feedloves-free-account-created") === "1") {
+      setError("Este dispositivo já criou uma conta gratuita. Entre na conta existente ou assine um plano para continuar.");
+      return;
+    }
     if (password !== confirmation) {
       setError("As senhas não conferem.");
       return;
@@ -45,9 +49,11 @@ function CreateAccount() {
       return;
     }
     if (data.session) {
+      window.localStorage.setItem("feedloves-free-account-created", "1");
       await navigate({ to: "/app" });
       return;
     }
+    window.localStorage.setItem("feedloves-free-account-created", "1");
     setCreated(true);
     setLoading(false);
   }

@@ -688,6 +688,10 @@ export type Database = {
           sort_order: number;
         }[];
       };
+      get_free_watch_usage: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
     };
     Enums: {
       app_role: "admin" | "customer";

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { EpisodePlayer } from "../components/episode-player";
 import {
@@ -36,9 +36,13 @@ function WatchPage() {
   const { episode, error, progress, nextEpisode, playerSettings } = Route.useLoaderData();
   const navigate = useNavigate();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [freeLimitReached, setFreeLimitReached] = useState(false);
+  const freeRemaining = episode?.free_remaining_seconds ?? null;
 
   function saveProgress(seconds: number) {
     if (!episode || !Number.isFinite(seconds)) return;
+    const cappedSeconds = freeRemaining == null ? seconds : Math.min(seconds, (progress?.position_seconds ?? 0) + freeRemaining);
+    if (freeRemaining != null && seconds >= (progress?.position_seconds ?? 0) + freeRemaining) setFreeLimitReached(true);
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       const supabase = createClient();
@@ -48,7 +52,7 @@ function WatchPage() {
         {
           user_id: data.user.id,
           episode_id: episode.id,
-          position_seconds: Math.max(0, Math.floor(seconds)),
+          position_seconds: Math.max(0, Math.floor(cappedSeconds)),
           duration_seconds: episode.duration_seconds ?? 0,
           completed:
             episode.duration_seconds !== null &&
@@ -74,7 +78,7 @@ function WatchPage() {
 
   return (
     <div className="watch-page">
-      <style>{`.watch-page{max-width:900px;margin:0 auto}.watch-back{display:inline-block;margin-bottom:18px;color:#d5b5cb;font-size:12px}.watch-back:hover{color:var(--primary)}.watch-player{overflow:hidden;border:1px solid #4c2850;border-radius:16px;background:#080508}.watch-player .part2-player-frame{width:100%;height:auto;aspect-ratio:16/9;border:0;border-radius:0;background:#000}.watch-heading{padding:20px 0}.watch-heading h1{font:600 30px "Playfair Display",Georgia,serif}.watch-heading p{margin-top:8px;color:#a992a4;font-size:13px}.watch-badge{display:inline-block;margin-top:12px;border:1px solid #633454;border-radius:999px;padding:5px 9px;color:#f56dbb;font-size:10px;font-weight:800;text-transform:uppercase}`}</style>
+      <style>{`.watch-page{max-width:900px;margin:0 auto}.watch-back{display:inline-block;margin-bottom:18px;color:#d5b5cb;font-size:12px}.watch-back:hover{color:var(--primary)}.watch-player{overflow:hidden;border:1px solid #4c2850;border-radius:16px;background:#080508}.watch-player .part2-player-frame{width:100%;height:auto;aspect-ratio:16/9;border:0;border-radius:0;background:#000}.watch-heading{padding:20px 0}.watch-heading h1{font:600 30px "Playfair Display",Georgia,serif}.watch-heading p{margin-top:8px;color:#a992a4;font-size:13px}.watch-badge{display:inline-block;margin-top:12px;border:1px solid #633454;border-radius:999px;padding:5px 9px;color:#f56dbb;font-size:10px;font-weight:800;text-transform:uppercase}.watch-limit-notice{margin:14px 0;border:1px solid #8d3b70;border-radius:12px;background:#2a1025;padding:13px;color:#ffd4ec;font-size:13px;line-height:1.5}.watch-limit-notice a{color:#ff73c4;font-weight:800}`}</style>
       <Link className="watch-back" to="/app/novela/$slug" params={{ slug: episode.series.slug }}>
         ← Voltar para {episode.series.title}
       </Link>
@@ -86,6 +90,7 @@ function WatchPage() {
           autoPlay
           settings={playerSettings}
           initialSeconds={progress?.completed ? 0 : (progress?.position_seconds ?? 0)}
+          {...(freeRemaining == null ? {} : { maxPlaybackSeconds: (progress?.position_seconds ?? 0) + freeRemaining })}
           onPlaybackSeconds={saveProgress}
           onEnded={() => {
             saveProgress(episode.duration_seconds ?? 0);
@@ -100,6 +105,7 @@ function WatchPage() {
           }}
         />
       </section>
+      {freeLimitReached ? <div className="watch-limit-notice" role="status">Você utilizou seus 20 minutos gratuitos. Assine um plano para continuar assistindo. <a href="/#planos">Ver planos</a></div> : null}
       <section className="watch-heading">
         <h1>
           E{episode.episode_number} · {episode.title}
