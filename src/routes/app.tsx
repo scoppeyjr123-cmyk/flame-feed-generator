@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { requireCustomer } from "../lib/customer/guard";
 import { getCustomerAccount } from "../lib/public/server-fns";
+import { WhatsAppSupportButton } from "../components/whatsapp-support-button";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -76,6 +77,7 @@ function AppShell() {
         {!hasSubscription ? <div className="feed-free-banner"><div><strong>Você está usando o Feed Loves Grátis ♡</strong><span>Assine para liberar todo o catálogo e assistir sem limitações.</span></div><Link to="/app/planos" preload="intent">LIBERAR TODO O CATÁLOGO</Link></div> : null}
         <Outlet />
       </div>
+      <WhatsAppSupportButton />
       <nav className="feed-app-mobile-nav" aria-label="Navegação mobile">
         <Link to="/app/buscar">
           ⌂<br />
