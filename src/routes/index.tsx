@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import originalMarkup from "../feed-loves-original.html?raw";
+import { getPublishedCatalog } from "../lib/public/server-fns";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,10 +21,12 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  loader: () => getPublishedCatalog(),
   component: Index,
 });
 
 function Index() {
+  const { series } = Route.useLoaderData();
   useEffect(() => {
     const answers: Record<string, string> = {
       "O que é o Feed Loves?":
@@ -51,6 +54,56 @@ function Index() {
     const faqButtons = buttons.filter((button) => answers[button.textContent?.trim() ?? ""]);
 
     const catalog = document.querySelector("#catalogo");
+    if (catalog && series.length) {
+      catalog.innerHTML = "";
+      const groups = new Map<string, typeof series>();
+      series.forEach((item) => {
+        const group = item.category || item.genre || "Feed Loves";
+        groups.set(group, [...(groups.get(group) ?? []), item]);
+      });
+      groups.forEach((items, category) => {
+        const heading = document.createElement("div");
+        heading.className = "home-dynamic-heading";
+        const eyebrow = document.createElement("p");
+        eyebrow.className = "eyebrow";
+        eyebrow.textContent = "CATÁLOGO EM DESTAQUE";
+        const headingTitle = document.createElement("h2");
+        headingTitle.className = "display-title";
+        headingTitle.textContent = category;
+        heading.append(eyebrow, headingTitle);
+        catalog.append(heading);
+        const grid = document.createElement("div");
+        grid.className = "home-dynamic-grid";
+        items.forEach((item) => {
+          const article = document.createElement("article");
+          article.className = "home-dynamic-card";
+          const link = document.createElement("a");
+          link.href = `/app/novela/${encodeURIComponent(item.slug)}`;
+          link.setAttribute("aria-label", `Assistir ${item.title}`);
+          const cover = document.createElement("div");
+          cover.className = "home-dynamic-cover";
+          const image = document.createElement("img");
+          image.src = item.cover_url || item.thumbnail_url || "/assets/poster1.jpg";
+          image.alt = `Capa de ${item.title}`;
+          image.loading = "lazy";
+          const badge = document.createElement("span");
+          badge.textContent = item.featured ? "DESTAQUE" : category;
+          cover.append(image, badge);
+          const title = document.createElement("h3");
+          title.textContent = item.title;
+          const meta = document.createElement("p");
+          meta.textContent = `${item.episodes.length} episódio${item.episodes.length === 1 ? "" : "s"}`;
+          link.append(cover, title, meta);
+          article.append(link);
+          grid.append(article);
+        });
+        catalog.append(grid);
+      });
+      const dynamicStyle = document.createElement("style");
+      dynamicStyle.textContent = `.home-dynamic-heading{margin-top:42px;text-align:center}.home-dynamic-heading:first-child{margin-top:0}.home-dynamic-heading h2{margin-top:10px}.home-dynamic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 16px;margin-top:26px}.home-dynamic-card{min-width:0}.home-dynamic-card a{display:block;color:inherit;text-decoration:none}.home-dynamic-cover{position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid var(--border);border-radius:9px;background:var(--muted)}.home-dynamic-cover img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .3s}.home-dynamic-card:hover img{transform:scale(1.04)}.home-dynamic-cover span{position:absolute;top:8px;left:8px;padding:5px 7px;border-radius:4px;background:var(--primary);color:var(--primary-foreground);font-size:8px;font-weight:800}.home-dynamic-card h3{margin:9px 0 0;font-size:12px;font-weight:700}.home-dynamic-card p{margin:4px 0 0;color:var(--primary);font-size:9px;font-weight:800;letter-spacing:.08em}@media(min-width:640px){.home-dynamic-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(min-width:1024px){.home-dynamic-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}`;
+      document.head.append(dynamicStyle);
+      cleanups.push(() => dynamicStyle.remove());
+    }
     const catalogCards = Array.from(catalog?.querySelectorAll("article") ?? []);
     const catalogStyle = document.createElement("style");
     catalogStyle.textContent = `
