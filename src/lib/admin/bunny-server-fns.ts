@@ -26,7 +26,7 @@ async function assertAdmin() {
 }
 
 export const createEpisodeBunnyAsset = createServerFn({ method: "POST" })
-  .inputValidator((input: { episodeId: string; title: string }) => input)
+  .validator((input: { episodeId: string; title: string }) => input)
   .handler(async ({ data }) => {
     const { supabase, user } = await assertAdmin();
     const { data: episode, error: episodeError } = await supabase
@@ -71,7 +71,7 @@ export const createEpisodeBunnyAsset = createServerFn({ method: "POST" })
   });
 
 export const createPartTwoBunnyAsset = createServerFn({ method: "POST" })
-  .inputValidator((input: { title: string }) => input)
+  .validator((input: { title: string }) => input)
   .handler(async ({ data }) => {
     const { user } = await assertAdmin();
     const video = await createBunnyVideo(data.title);
@@ -84,7 +84,7 @@ export const createPartTwoBunnyAsset = createServerFn({ method: "POST" })
   });
 
 export const markEpisodeBunnyUploadComplete = createServerFn({ method: "POST" })
-  .inputValidator((input: { episodeId: string }) => input)
+  .validator((input: { episodeId: string }) => input)
   .handler(async ({ data }) => {
     const { supabase, user } = await assertAdmin();
     const { data: episode, error: episodeError } = await supabase
@@ -116,7 +116,7 @@ export const markEpisodeBunnyUploadComplete = createServerFn({ method: "POST" })
   });
 
 export const refreshEpisodeBunnyStatus = createServerFn({ method: "POST" })
-  .inputValidator((input: { episodeId: string }) => input)
+  .validator((input: { episodeId: string }) => input)
   .handler(async ({ data }) => {
     const { supabase } = await assertAdmin();
     const { data: episode, error: episodeError } = await supabase

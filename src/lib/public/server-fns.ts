@@ -73,7 +73,7 @@ export const getPublicPartTwoSettings = createServerFn({ method: "GET" }).handle
 });
 
 export const getPublicPartTwoVariantSettings = createServerFn({ method: "GET" })
-  .inputValidator((key: string) => key)
+  .validator((key: string) => key)
   .handler(async ({ data }) => readPartTwoSettings(data));
 
 export const getPublicPlayerSettings = createServerFn({ method: "GET" }).handler(async () => {

@@ -41,6 +41,14 @@ export async function handleWiapyWebhook(request: Request) {
   ]);
   if (!profile?.id || !checkout?.plan_id) {
     console.warn("Wiapy webhook accepted without local mapping", { email, checkoutId });
+    const eventKey = providerEventKey(payload, email, checkoutId);
+    await supabase.from("pending_payment_events").upsert({
+      event_key: eventKey,
+      email,
+      checkout_id: checkoutId,
+      payment_status: paymentStatus,
+      payload,
+    }, { onConflict: "event_key" });
     return Response.json({ ok: true, processed: false, reason: "Customer or checkout not mapped" });
   }
 
@@ -67,4 +75,14 @@ export async function handleWiapyWebhook(request: Request) {
     : await supabase.from("subscriptions").insert(record).select("id").single();
   if (result.error) return new Response("Subscription update failed", { status: 500 });
   return Response.json({ ok: true, subscriptionId: result.data.id, status });
+}
+
+function providerEventKey(payload: WiapyPayload, email: string, checkoutId: string) {
+  return [
+    email,
+    checkoutId,
+    payload.subscription?.id || "",
+    payload.payment?.id || "",
+    payload.payment?.status || "",
+  ].join(":");
 }
