@@ -1,4 +1,4 @@
-const CACHE_NAME = "feed-loves-shell-v2";
+const CACHE_NAME = "feed-loves-shell-v3";
 const APP_SHELL = ["/", "/manifest.webmanifest", "/favicon.ico", "/favicon-32.png", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
