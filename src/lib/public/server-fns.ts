@@ -144,7 +144,7 @@ export const getPublishedCatalog = createServerFn({ method: "GET" }).handler(asy
   const { data, error } = await supabase
     .from("series")
     .select(
-      "id,title,slug,short_description,description,category,genre,cover_url,banner_url,thumbnail_url,featured,sort_order,published_at,episodes(id,episode_number,title,description,thumbnail_url,duration_seconds,status,access_type,sort_order)",
+      "id,title,slug,short_description,description,category,genre,cover_url,banner_url,thumbnail_url,featured,sort_order,published_at",
     )
     .eq("status", "published")
     .order("featured", { ascending: false })
@@ -152,15 +152,7 @@ export const getPublishedCatalog = createServerFn({ method: "GET" }).handler(asy
 
   if (error) return { series: [], error: "Não foi possível carregar o catálogo." };
 
-  return {
-    series: (data ?? []).map((item) => ({
-      ...item,
-      episodes: (item.episodes ?? [])
-        .filter((episode) => episode.status === "published")
-        .sort((a, b) => a.sort_order - b.sort_order || a.episode_number - b.episode_number),
-    })),
-    error: null,
-  };
+  return { series: data ?? [], error: null };
 });
 
 export const getPublishedSeriesBySlug = createServerFn({ method: "GET" })
