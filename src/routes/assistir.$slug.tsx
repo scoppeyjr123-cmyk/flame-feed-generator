@@ -1,12 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Check, Clapperboard, LockKeyhole, Play, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Clapperboard,
+  LockKeyhole,
+  Play,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 export const Route = createFileRoute("/assistir/$slug")({
   head: () => ({
     meta: [
       { title: "Continue assistindo | Feed Loves" },
-      { name: "description", content: "Continue sua história favorita no Feed Loves. Assine para desbloquear os próximos episódios." },
+      {
+        name: "description",
+        content:
+          "Continue sua história favorita no Feed Loves. Assine para desbloquear os próximos episódios.",
+      },
     ],
   }),
   component: WatchPage,
@@ -14,8 +26,18 @@ export const Route = createFileRoute("/assistir/$slug")({
 
 const plans = [
   { name: "Essencial", price: "R$ 9,90", detail: "Acesso ao catálogo", featured: false },
-  { name: "Completo", price: "R$ 19,90", detail: "Catálogo completo e novos episódios", featured: true },
-  { name: "Premium", price: "R$ 99,90", detail: "Acesso estendido conforme as condições do plano", featured: false },
+  {
+    name: "Completo",
+    price: "R$ 19,90",
+    detail: "Catálogo completo e novos episódios",
+    featured: true,
+  },
+  {
+    name: "Premium",
+    price: "R$ 99,90",
+    detail: "Acesso estendido conforme as condições do plano",
+    featured: false,
+  },
 ];
 
 function WatchPage() {
@@ -72,69 +94,160 @@ function WatchPage() {
       `}</style>
       <div className="watch-topline" />
       <header className="watch-nav">
-        <Link to="/" className="watch-back"><ArrowLeft size={17} /> Voltar ao catálogo</Link>
-        <div className="watch-brand">Feed <span>Loves</span></div>
-        <button className="watch-btn" onClick={() => setShowPlans(true)}>Assinar agora</button>
+        <Link to="/" className="watch-back">
+          <ArrowLeft size={17} /> Voltar ao catálogo
+        </Link>
+        <div className="watch-brand">
+          Feed <span>Loves</span>
+        </div>
+        <button className="watch-btn" onClick={() => setShowPlans(true)}>
+          Assinar agora
+        </button>
       </header>
 
       <div className="watch-container">
-        <div className="watch-breadcrumb">Feed Loves　/　Doramas　/　<b>Continue assistindo</b></div>
+        <div className="watch-breadcrumb">
+          Feed Loves / Doramas / <b>Continue assistindo</b>
+        </div>
         <div className="watch-layout">
           <section>
             <div className="watch-player">
               <div className="watch-player-content">
-                <div className="watch-play"><Play size={27} fill="currentColor" /></div>
+                <div className="watch-play">
+                  <Play size={27} fill="currentColor" />
+                </div>
                 <div className="watch-kicker">Sua próxima cena começa aqui</div>
                 <h1>{prettyTitle}</h1>
-                <p>Você chegou à parte mais emocionante da história. Desbloqueie o episódio para descobrir o que acontece agora.</p>
-                <button className="watch-btn" onClick={() => setShowPlans(true)}><LockKeyhole size={16} /> Desbloquear parte 2</button>
+                <p>
+                  Você chegou à parte mais emocionante da história. Desbloqueie o episódio para
+                  descobrir o que acontece agora.
+                </p>
+                <button className="watch-btn" onClick={() => setShowPlans(true)}>
+                  <LockKeyhole size={16} /> Desbloquear parte 2
+                </button>
               </div>
             </div>
-            <div className="watch-meta"><span>Parte 2 · Próximo episódio</span><span className="watch-pill">🔒 Exclusivo para assinantes</span></div>
+            <div className="watch-meta">
+              <span>Parte 2 · Próximo episódio</span>
+              <span className="watch-pill">🔒 Exclusivo para assinantes</span>
+            </div>
           </section>
 
           <aside className="watch-card">
             <div className="watch-kicker">Não pare agora</div>
-            <h2>A história continua… <span style={{color:"#ff45ad"}}>♥</span></h2>
-            <p>Descubra os próximos capítulos e mergulhe em um catálogo feito para quem ama doramas, romances e séries turcas.</p>
+            <h2>
+              A história continua… <span style={{ color: "#ff45ad" }}>♥</span>
+            </h2>
+            <p>
+              Descubra os próximos capítulos e mergulhe em um catálogo feito para quem ama doramas,
+              romances e séries turcas.
+            </p>
             <div className="watch-divider" />
-            <div className="watch-benefit"><Check size={17} /> Histórias e episódios para maratonar</div>
-            <div className="watch-benefit"><Check size={17} /> Acesso pelo celular ou computador</div>
-            <div className="watch-benefit"><Check size={17} /> Novas histórias para descobrir</div>
-            <div className="watch-benefit"><ShieldCheck size={17} /> Planos e condições apresentados antes de assinar</div>
-            <button className="watch-btn" style={{width:"100%",marginTop:12}} onClick={() => setShowPlans(true)}>Ver planos de assinatura <span>→</span></button>
+            <div className="watch-benefit">
+              <Check size={17} /> Histórias e episódios para maratonar
+            </div>
+            <div className="watch-benefit">
+              <Check size={17} /> Acesso pelo celular ou computador
+            </div>
+            <div className="watch-benefit">
+              <Check size={17} /> Novas histórias para descobrir
+            </div>
+            <div className="watch-benefit">
+              <ShieldCheck size={17} /> Planos e condições apresentados antes de assinar
+            </div>
+            <button
+              className="watch-btn"
+              style={{ width: "100%", marginTop: 12 }}
+              onClick={() => setShowPlans(true)}
+            >
+              Ver planos de assinatura <span>→</span>
+            </button>
           </aside>
         </div>
 
         <section className="watch-section">
-          <h2 className="watch-section-title">Não perca nenhum <span>capítulo</span></h2>
+          <h2 className="watch-section-title">
+            Não perca nenhum <span>capítulo</span>
+          </h2>
           <p className="watch-section-sub">Escolha como continuar sua próxima maratona.</p>
           <div className="watch-episodes">
-            <article className="watch-episode"><div className="watch-episode-top"><span>EPISÓDIO 01</span><Check size={15}/></div><strong>O começo de tudo</strong><p>Você já chegou até aqui. Relembre como essa história começou.</p></article>
-            <article className="watch-episode locked"><div className="watch-episode-top"><span>EPISÓDIO 02</span><LockKeyhole size={15}/></div><strong>A história continua</strong><p>Assine para desbloquear a próxima parte e descobrir o que vem a seguir.</p></article>
-            <article className="watch-episode locked"><div className="watch-episode-top"><span>PRÓXIMOS EPISÓDIOS</span><LockKeyhole size={15}/></div><strong>Mais emoções esperam por você</strong><p>Veja os episódios disponíveis conforme seu plano de acesso.</p></article>
+            <article className="watch-episode">
+              <div className="watch-episode-top">
+                <span>EPISÓDIO 01</span>
+                <Check size={15} />
+              </div>
+              <strong>O começo de tudo</strong>
+              <p>Você já chegou até aqui. Relembre como essa história começou.</p>
+            </article>
+            <article className="watch-episode locked">
+              <div className="watch-episode-top">
+                <span>EPISÓDIO 02</span>
+                <LockKeyhole size={15} />
+              </div>
+              <strong>A história continua</strong>
+              <p>Assine para desbloquear a próxima parte e descobrir o que vem a seguir.</p>
+            </article>
+            <article className="watch-episode locked">
+              <div className="watch-episode-top">
+                <span>PRÓXIMOS EPISÓDIOS</span>
+                <LockKeyhole size={15} />
+              </div>
+              <strong>Mais emoções esperam por você</strong>
+              <p>Veja os episódios disponíveis conforme seu plano de acesso.</p>
+            </article>
           </div>
         </section>
 
-        {showPlans && <section className="watch-section" id="planos" aria-live="polite">
-          <h2 className="watch-section-title">Escolha seu plano e <span>continue assistindo</span></h2>
-          <p className="watch-section-sub">Confira as opções e as condições antes de concluir sua assinatura.</p>
-          <div className="watch-pricing">
-            {plans.map((plan) => <article className={`watch-plan ${plan.featured ? "featured" : ""}`} key={plan.name}>
-              <h3>{plan.featured && <Sparkles size={14} style={{display:"inline",verticalAlign:"middle",color:"#ff45ad"}}/>} {plan.name}</h3>
-              <div className="watch-price">{plan.price}</div>
-              <p>{plan.detail}</p>
-              <a className="watch-btn" href="/#planos">Ver assinatura <span>→</span></a>
-            </article>)}
-          </div>
-          <p className="watch-note">Os preços e benefícios acima são referências visuais. Confirme os valores, periodicidade, benefícios e a URL real de checkout antes de publicar esta página. O botão leva à seção de planos da página principal.</p>
-        </section>}
+        {showPlans && (
+          <section className="watch-section" id="planos" aria-live="polite">
+            <h2 className="watch-section-title">
+              Escolha seu plano e <span>continue assistindo</span>
+            </h2>
+            <p className="watch-section-sub">
+              Confira as opções e as condições antes de concluir sua assinatura.
+            </p>
+            <div className="watch-pricing">
+              {plans.map((plan) => (
+                <article
+                  className={`watch-plan ${plan.featured ? "featured" : ""}`}
+                  key={plan.name}
+                >
+                  <h3>
+                    {plan.featured && (
+                      <Sparkles
+                        size={14}
+                        style={{ display: "inline", verticalAlign: "middle", color: "#ff45ad" }}
+                      />
+                    )}{" "}
+                    {plan.name}
+                  </h3>
+                  <div className="watch-price">{plan.price}</div>
+                  <p>{plan.detail}</p>
+                  <a className="watch-btn" href="/#planos">
+                    Ver assinatura <span>→</span>
+                  </a>
+                </article>
+              ))}
+            </div>
+            <p className="watch-note">
+              Os preços e benefícios acima são referências visuais. Confirme os valores,
+              periodicidade, benefícios e a URL real de checkout antes de publicar esta página. O
+              botão leva à seção de planos da página principal.
+            </p>
+          </section>
+        )}
 
-        <section className="watch-section" style={{textAlign:"center"}}>
+        <section className="watch-section" style={{ textAlign: "center" }}>
           <div className="watch-kicker">Feito para quem ama</div>
-          <h2 className="watch-section-title">Doramas, romances e séries <span>inesquecíveis</span></h2>
-          <p className="watch-section-sub">Sua próxima história favorita está esperando por você.</p>
-          <button className="watch-btn" onClick={() => setShowPlans(true)}><Clapperboard size={16}/> Quero continuar assistindo</button>
+          <h2 className="watch-section-title">
+            Doramas, romances e séries <span>inesquecíveis</span>
+          </h2>
+          <p className="watch-section-sub">
+            Sua próxima história favorita está esperando por você.
+          </p>
+          <button className="watch-btn" onClick={() => setShowPlans(true)}>
+            <Clapperboard size={16} /> Quero continuar assistindo
+          </button>
         </section>
       </div>
       <footer className="watch-footer">Feed Loves · Histórias para se apaixonar</footer>

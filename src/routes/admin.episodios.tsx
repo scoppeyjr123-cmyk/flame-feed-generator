@@ -97,7 +97,12 @@ function AdminEpisodes() {
       episode_number: episode.episode_number,
       title: episode.title,
       description: episode.description ?? "",
-      video_mode: episode.video_source === "telegram" ? "telegram" : episode.video_url && !episode.bunny_video_id ? "url" : "bunny",
+      video_mode:
+        episode.video_source === "telegram"
+          ? "telegram"
+          : episode.video_url && !episode.bunny_video_id
+            ? "url"
+            : "bunny",
       video_url: episode.video_url ?? "",
       video_provider: episode.video_provider ?? "",
       telegram_chat_id: episode.telegram_chat_id ?? "",
@@ -134,9 +139,16 @@ function AdminEpisodes() {
       return setMessage("Informe a URL do vídeo para usar este modo.");
     }
     if (form.video_mode === "url" && /(?:^|\.)t\.me\//i.test(form.video_url.trim())) {
-      return setMessage("Link do Telegram não é uma URL de vídeo reproduzível. Use 'Importar vídeo do Telegram' e informe os dados do arquivo, ou use uma URL direta de vídeo.");
+      return setMessage(
+        "Link do Telegram não é uma URL de vídeo reproduzível. Use 'Importar vídeo do Telegram' e informe os dados do arquivo, ou use uma URL direta de vídeo.",
+      );
     }
-    if (form.video_mode === "telegram" && (!form.telegram_chat_id.trim() || !form.telegram_message_id.trim() || !form.telegram_file_id.trim())) {
+    if (
+      form.video_mode === "telegram" &&
+      (!form.telegram_chat_id.trim() ||
+        !form.telegram_message_id.trim() ||
+        !form.telegram_file_id.trim())
+    ) {
       return setMessage("Informe chat_id, message_id e file_id do Telegram para importar o vídeo.");
     }
 
@@ -151,7 +163,8 @@ function AdminEpisodes() {
         video_provider: form.video_mode === "url" ? form.video_provider || "url" : form.video_mode,
         video_source: form.video_mode,
         telegram_chat_id: form.video_mode === "telegram" ? form.telegram_chat_id.trim() : null,
-        telegram_message_id: form.video_mode === "telegram" ? Number(form.telegram_message_id) : null,
+        telegram_message_id:
+          form.video_mode === "telegram" ? Number(form.telegram_message_id) : null,
         telegram_file_id: form.video_mode === "telegram" ? form.telegram_file_id.trim() : null,
         telegram_import_status: form.video_mode === "telegram" ? "pending" : "not_configured",
         telegram_import_error: null,
@@ -180,7 +193,9 @@ function AdminEpisodes() {
       if (videoFile && form.video_mode === "bunny" && episodeId) {
         const existing = episodes.find((episode) => episode.id === episodeId);
         if (existing?.bunny_video_id) {
-          throw new Error("Este episódio já possui um vídeo no Bunny. A substituição será adicionada em uma etapa separada.");
+          throw new Error(
+            "Este episódio já possui um vídeo no Bunny. A substituição será adicionada em uma etapa separada.",
+          );
         }
         await uploadEpisodeVideo(episodeId, form.title, videoFile);
       }
@@ -221,35 +236,45 @@ function AdminEpisodes() {
   }
 
   async function duplicateEpisode(episode: (typeof episodes)[number]) {
-    if (!window.confirm("Duplicar este episódio?\n\nSerá criada uma cópia como rascunho e o vídeo não será duplicado.")) return;
+    if (
+      !window.confirm(
+        "Duplicar este episódio?\n\nSerá criada uma cópia como rascunho e o vídeo não será duplicado.",
+      )
+    )
+      return;
     setMessage("");
     const siblings = episodes.filter((item) => item.series_id === episode.series_id);
     const nextNumber = Math.max(0, ...siblings.map((item) => item.episode_number)) + 1;
     const titleWithoutEpisodePrefix = episode.title.replace(/^EP\s*\d+\s*:\s*/i, "");
     const duplicatedTitle = `EP${String(nextNumber).padStart(2, "0")}: ${titleWithoutEpisodePrefix}`;
-    const { data, error } = await createClient().from("episodes").insert({
-      series_id: episode.series_id,
-      episode_number: nextNumber,
-      title: duplicatedTitle,
-      description: episode.description,
-      thumbnail_url: episode.thumbnail_url,
-      scheduled_at: null,
-      status: "draft",
-      access_type: episode.access_type,
-      plan_id: episode.access_type === "specific_plan" ? episode.plan_id : null,
-      sort_order: nextNumber,
-      bunny_video_id: null,
-      bunny_library_id: null,
-      video_processing_status: "none",
-      video_encode_progress: null,
-      video_storage_bytes: null,
-      video_error: null,
-      video_ready_at: null,
-      video_url: null,
-      video_provider: null,
-      duration_seconds: null,
-    }).select("*").single();
-    if (error || !data) return setMessage(error?.message || "Não foi possível duplicar o episódio.");
+    const { data, error } = await createClient()
+      .from("episodes")
+      .insert({
+        series_id: episode.series_id,
+        episode_number: nextNumber,
+        title: duplicatedTitle,
+        description: episode.description,
+        thumbnail_url: episode.thumbnail_url,
+        scheduled_at: null,
+        status: "draft",
+        access_type: episode.access_type,
+        plan_id: episode.access_type === "specific_plan" ? episode.plan_id : null,
+        sort_order: nextNumber,
+        bunny_video_id: null,
+        bunny_library_id: null,
+        video_processing_status: "none",
+        video_encode_progress: null,
+        video_storage_bytes: null,
+        video_error: null,
+        video_ready_at: null,
+        video_url: null,
+        video_provider: null,
+        duration_seconds: null,
+      })
+      .select("*")
+      .single();
+    if (error || !data)
+      return setMessage(error?.message || "Não foi possível duplicar o episódio.");
     setMessage("Episódio duplicado com sucesso. A cópia foi criada como rascunho.");
     startEdit(data);
     await router.invalidate();
@@ -343,7 +368,14 @@ function AdminEpisodes() {
 
             <div className="admin-field full">
               <label htmlFor="episode-video-mode">Forma de reprodução</label>
-              <select id="episode-video-mode" value={form.video_mode} onChange={(event) => { setVideoFile(null); setForm({ ...form, video_mode: event.target.value as EpisodeForm["video_mode"] }); }}>
+              <select
+                id="episode-video-mode"
+                value={form.video_mode}
+                onChange={(event) => {
+                  setVideoFile(null);
+                  setForm({ ...form, video_mode: event.target.value as EpisodeForm["video_mode"] });
+                }}
+              >
                 <option value="bunny">Enviar arquivo para o Bunny Stream</option>
                 <option value="url">Reproduzir através de URL</option>
                 <option value="telegram">Importar vídeo do Telegram</option>
@@ -352,26 +384,81 @@ function AdminEpisodes() {
             {form.video_mode === "bunny" ? (
               <div className="admin-field full">
                 <label htmlFor="episode-video-file">Arquivo do episódio</label>
-                <input id="episode-video-file" type="file" accept="video/*,.mkv,.mov,.avi,.webm" onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)} />
-                <small>O vídeo vai direto do navegador para o Bunny Stream. A chave privada não é exposta.</small>
-                {videoFile ? <small><Upload size={13} style={{ display: "inline", marginRight: 4 }} />{videoFile.name} · {(videoFile.size / 1024 / 1024).toFixed(1)} MB</small> : null}
-                {isSaving && videoFile ? <div><progress value={uploadProgress} max={100} style={{ width: "100%" }} /><small>{uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : "Upload concluído. Processando..."}</small></div> : null}
+                <input
+                  id="episode-video-file"
+                  type="file"
+                  accept="video/*,.mkv,.mov,.avi,.webm"
+                  onChange={(event) => setVideoFile(event.target.files?.[0] ?? null)}
+                />
+                <small>
+                  O vídeo vai direto do navegador para o Bunny Stream. A chave privada não é
+                  exposta.
+                </small>
+                {videoFile ? (
+                  <small>
+                    <Upload size={13} style={{ display: "inline", marginRight: 4 }} />
+                    {videoFile.name} · {(videoFile.size / 1024 / 1024).toFixed(1)} MB
+                  </small>
+                ) : null}
+                {isSaving && videoFile ? (
+                  <div>
+                    <progress value={uploadProgress} max={100} style={{ width: "100%" }} />
+                    <small>
+                      {uploadProgress < 100
+                        ? `Enviando... ${uploadProgress}%`
+                        : "Upload concluído. Processando..."}
+                    </small>
+                  </div>
+                ) : null}
               </div>
             ) : form.video_mode === "url" ? (
               <div className="admin-field full">
                 <label htmlFor="episode-video-url">URL do vídeo</label>
-                <input id="episode-video-url" type="url" required value={form.video_url} placeholder="https://..." onChange={(event) => setForm({ ...form, video_url: event.target.value, video_provider: "url" })} />
-                <small>Use quando o episódio já estiver hospedado em outro serviço compatível.</small>
+                <input
+                  id="episode-video-url"
+                  type="url"
+                  required
+                  value={form.video_url}
+                  placeholder="https://..."
+                  onChange={(event) =>
+                    setForm({ ...form, video_url: event.target.value, video_provider: "url" })
+                  }
+                />
+                <small>
+                  Use quando o episódio já estiver hospedado em outro serviço compatível.
+                </small>
               </div>
             ) : (
               <div className="admin-field full">
                 <label>Origem do vídeo no Telegram</label>
                 <div className="admin-form-grid">
-                  <input required placeholder="chat_id do canal/grupo" value={form.telegram_chat_id} onChange={(event) => setForm({ ...form, telegram_chat_id: event.target.value })} />
-                  <input required type="number" placeholder="message_id" value={form.telegram_message_id} onChange={(event) => setForm({ ...form, telegram_message_id: event.target.value })} />
-                  <input required className="full" placeholder="file_id recebido pelo bot" value={form.telegram_file_id} onChange={(event) => setForm({ ...form, telegram_file_id: event.target.value })} />
+                  <input
+                    required
+                    placeholder="chat_id do canal/grupo"
+                    value={form.telegram_chat_id}
+                    onChange={(event) => setForm({ ...form, telegram_chat_id: event.target.value })}
+                  />
+                  <input
+                    required
+                    type="number"
+                    placeholder="message_id"
+                    value={form.telegram_message_id}
+                    onChange={(event) =>
+                      setForm({ ...form, telegram_message_id: event.target.value })
+                    }
+                  />
+                  <input
+                    required
+                    className="full"
+                    placeholder="file_id recebido pelo bot"
+                    value={form.telegram_file_id}
+                    onChange={(event) => setForm({ ...form, telegram_file_id: event.target.value })}
+                  />
                 </div>
-                <small>O bot precisa estar no canal/grupo e o file_id será usado pelo importador privado. O token do bot nunca vai para o navegador.</small>
+                <small>
+                  O bot precisa estar no canal/grupo e o file_id será usado pelo importador privado.
+                  O token do bot nunca vai para o navegador.
+                </small>
               </div>
             )}
 
@@ -529,7 +616,11 @@ function AdminEpisodes() {
                       >
                         <Pencil size={13} /> Editar
                       </button>
-                      <button type="button" className="admin-ghost-button" onClick={() => void duplicateEpisode(episode)}>
+                      <button
+                        type="button"
+                        className="admin-ghost-button"
+                        onClick={() => void duplicateEpisode(episode)}
+                      >
                         <Copy size={13} /> Duplicar
                       </button>
                       {episode.bunny_video_id ? (

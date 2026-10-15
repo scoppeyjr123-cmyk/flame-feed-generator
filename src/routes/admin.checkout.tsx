@@ -79,7 +79,12 @@ function AdminCheckout() {
                 <div className="admin-form-grid">
                   <div className="admin-field">
                     <label htmlFor={`provider-checkout-${plan.id}`}>ID do checkout na Wiapy</label>
-                    <input id={`provider-checkout-${plan.id}`} name="provider_checkout_id" defaultValue={config?.provider_checkout_id ?? ""} placeholder="ID recebido no webhook" />
+                    <input
+                      id={`provider-checkout-${plan.id}`}
+                      name="provider_checkout_id"
+                      defaultValue={config?.provider_checkout_id ?? ""}
+                      placeholder="ID recebido no webhook"
+                    />
                   </div>
                   <div className="admin-field">
                     <label htmlFor={`provider-${plan.id}`}>Provider</label>

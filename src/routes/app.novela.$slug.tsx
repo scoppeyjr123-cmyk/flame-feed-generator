@@ -118,12 +118,27 @@ function NovelPage() {
                   src={episode.thumbnail_url || series.cover_url || "/assets/poster1.jpg"}
                   alt=""
                 />
-                {episode.access_type === "free" || (account.subscription && (account.subscription.status === "active" || account.subscription.status === "lifetime") && (episode.access_type === "subscriber" || episode.plan_id === account.subscription.plan_id)) ? (
-                  <Link className="novel-episode-thumb-play" to="/app/watch/$episodeId" params={{ episodeId: episode.id }} aria-label={`Assistir E${episode.episode_number}`}>
+                {episode.access_type === "free" ||
+                (account.subscription &&
+                  (account.subscription.status === "active" ||
+                    account.subscription.status === "lifetime") &&
+                  (episode.access_type === "subscriber" ||
+                    episode.plan_id === account.subscription.plan_id)) ? (
+                  <Link
+                    className="novel-episode-thumb-play"
+                    to="/app/watch/$episodeId"
+                    params={{ episodeId: episode.id }}
+                    aria-label={`Assistir E${episode.episode_number}`}
+                  >
                     <span aria-hidden="true">▶</span>
                   </Link>
                 ) : (
-                  <button className="novel-episode-thumb-play" type="button" onClick={() => openUpgrade(episode.plan_name)} aria-label={`Ver planos para E${episode.episode_number}`}>
+                  <button
+                    className="novel-episode-thumb-play"
+                    type="button"
+                    onClick={() => openUpgrade(episode.plan_name)}
+                    aria-label={`Ver planos para E${episode.episode_number}`}
+                  >
                     <span aria-hidden="true">▶</span>
                   </button>
                 )}
@@ -134,10 +149,25 @@ function NovelPage() {
                 </h3>
                 <p>{episode.description || "Assista agora no Feed Loves."}</p>
               </div>
-              {episode.access_type === "free" || (account.subscription && (account.subscription.status === "active" || account.subscription.status === "lifetime") && (episode.access_type === "subscriber" || episode.plan_id === account.subscription.plan_id)) ? (
-                <Link className="novel-episode-action" to="/app/watch/$episodeId" params={{ episodeId: episode.id }}>▶ Assistir</Link>
+              {episode.access_type === "free" ||
+              (account.subscription &&
+                (account.subscription.status === "active" ||
+                  account.subscription.status === "lifetime") &&
+                (episode.access_type === "subscriber" ||
+                  episode.plan_id === account.subscription.plan_id)) ? (
+                <Link
+                  className="novel-episode-action"
+                  to="/app/watch/$episodeId"
+                  params={{ episodeId: episode.id }}
+                >
+                  ▶ Assistir
+                </Link>
               ) : (
-                <button className="novel-episode-action" type="button" onClick={() => openUpgrade(episode.plan_name)}>
+                <button
+                  className="novel-episode-action"
+                  type="button"
+                  onClick={() => openUpgrade(episode.plan_name)}
+                >
                   ▶ Premium
                 </button>
               )}
@@ -147,7 +177,11 @@ function NovelPage() {
           <p style={{ color: "#a992a4", marginTop: 12 }}>Nenhum episódio publicado ainda.</p>
         )}
       </section>
-      <UpgradeModal open={upgradePlan !== null} planName={upgradePlan} onClose={() => setUpgradePlan(null)} />
+      <UpgradeModal
+        open={upgradePlan !== null}
+        planName={upgradePlan}
+        onClose={() => setUpgradePlan(null)}
+      />
     </div>
   );
 }

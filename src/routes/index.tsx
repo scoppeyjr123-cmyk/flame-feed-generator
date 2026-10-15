@@ -243,11 +243,14 @@ function Index() {
         cleanups.push(() => button.removeEventListener("click", handler));
       });
 
-    const subscriberButton = buttons.find((button) => button.textContent?.trim() === "Já sou assinante");
+    const subscriberButton = buttons.find(
+      (button) => button.textContent?.trim() === "Já sou assinante",
+    );
     const loginButton = buttons.find((button) => button.textContent?.trim() === "Entrar");
     if (subscriberButton) {
       subscriberButton.textContent = "JÁ SOU ASSINANTE";
-      subscriberButton.className = "home-subscriber-button inline-flex items-center justify-center whitespace-nowrap rounded-md bg-purple-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-purple-500";
+      subscriberButton.className =
+        "home-subscriber-button inline-flex items-center justify-center whitespace-nowrap rounded-md bg-purple-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-purple-500";
       subscriberButton.style.setProperty("color", "#ffffff", "important");
       subscriberButton.style.setProperty("background-color", "#9333ea", "important");
       subscriberButton.style.setProperty("border-color", "transparent", "important");
@@ -258,7 +261,8 @@ function Index() {
     const actions = signButton?.parentElement ?? (subscriberButton ?? loginButton)?.parentElement;
     if (actions && !actions.querySelector(".home-create-account")) {
       const link = document.createElement("a");
-      link.className = "home-create-account inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-pink-soft";
+      link.className =
+        "home-create-account inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-pink-soft";
       link.href = "/criar-conta";
       link.textContent = "CRIAR CONTA GRÁTIS";
       actions.insertBefore(link, signButton ?? subscriberButton ?? loginButton ?? null);

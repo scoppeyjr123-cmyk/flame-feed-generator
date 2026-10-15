@@ -48,15 +48,27 @@ const partTwoFallback: PartTwoSettings = {
 };
 
 async function readPartTwoSettings(key: string): Promise<PartTwoSettings> {
-  const { data } = await createClient().from("site_settings").select("content_settings").eq("id", true).maybeSingle();
-  const content = data?.content_settings && typeof data.content_settings === "object" && !Array.isArray(data.content_settings)
-    ? (data.content_settings as Record<string, unknown>)
-    : {};
+  const { data } = await createClient()
+    .from("site_settings")
+    .select("content_settings")
+    .eq("id", true)
+    .maybeSingle();
+  const content =
+    data?.content_settings &&
+    typeof data.content_settings === "object" &&
+    !Array.isArray(data.content_settings)
+      ? (data.content_settings as Record<string, unknown>)
+      : {};
   const value = content[key];
-  const settings = { ...partTwoFallback, ...(value && typeof value === "object" ? value : {}) } as PartTwoSettings;
+  const settings = {
+    ...partTwoFallback,
+    ...(value && typeof value === "object" ? value : {}),
+  } as PartTwoSettings;
 
   if (settings.videoProvider === "bunny") {
-    const match = settings.videoUrl.match(/(?:iframe|player)\.mediadelivery\.net\/embed\/\d+\/([^/?#]+)/i);
+    const match = settings.videoUrl.match(
+      /(?:iframe|player)\.mediadelivery\.net\/embed\/\d+\/([^/?#]+)/i,
+    );
     if (match?.[1]) {
       try {
         settings.videoUrl = createBunnySignedEmbedUrl(decodeURIComponent(match[1])).url;
@@ -84,10 +96,17 @@ export const getPublicPlayerSettings = createServerFn({ method: "GET" }).handler
     logoUrl: "",
     showBrand: true,
   };
-  const { data } = await createClient().from("site_settings").select("media_settings").eq("id", true).maybeSingle();
-  const player = data?.media_settings && typeof data.media_settings === "object" && !Array.isArray(data.media_settings)
-    ? (data.media_settings as Record<string, unknown>)["player"]
-    : null;
+  const { data } = await createClient()
+    .from("site_settings")
+    .select("media_settings")
+    .eq("id", true)
+    .maybeSingle();
+  const player =
+    data?.media_settings &&
+    typeof data.media_settings === "object" &&
+    !Array.isArray(data.media_settings)
+      ? (data.media_settings as Record<string, unknown>)["player"]
+      : null;
   return { ...fallback, ...(player && typeof player === "object" ? player : {}) } as PlayerSettings;
 });
 
@@ -117,9 +136,66 @@ export const getPublicPlans = createServerFn({ method: "GET" }).handler(async ()
     if (!plans?.length) {
       return {
         plans: [
-          { id: "fallback-weekly", slug: "weekly", name: "Semanal", description: "7 dias de acesso ilimitado", price: 9.9, currency: "BRL", billing_interval: "week", benefits: ["Acesso completo ao catálogo", "Doramas, séries turcas e novelinhas", "Dublado e legendado", "Sem anúncios", "Dispositivos compatíveis", "Liberação imediata"], featured: false, sort_order: 1, checkout_url: "https://pay.wiapy.com/D1rAjQcO8bo_" },
-          { id: "fallback-annual", slug: "annual", name: "Anual", description: "12 meses de acesso ilimitado", price: 99.9, currency: "BRL", billing_interval: "year", benefits: ["Acesso completo ao catálogo", "Doramas, séries turcas e novelinhas", "Dublado e legendado", "Sem anúncios", "Dispositivos compatíveis", "Liberação imediata"], featured: true, sort_order: 2, checkout_url: "https://pay.wiapy.com/JQcBx7Tif3vh" },
-          { id: "fallback-monthly", slug: "monthly", name: "Mensal", description: "30 dias de acesso ilimitado", price: 19.9, currency: "BRL", billing_interval: "month", benefits: ["Acesso completo ao catálogo", "Doramas, séries turcas e novelinhas", "Dublado e legendado", "Sem anúncios", "Dispositivos compatíveis", "Liberação imediata"], featured: false, sort_order: 3, checkout_url: "https://pay.wiapy.com/KaF1EsAXWGPC" },
+          {
+            id: "fallback-weekly",
+            slug: "weekly",
+            name: "Semanal",
+            description: "7 dias de acesso ilimitado",
+            price: 9.9,
+            currency: "BRL",
+            billing_interval: "week",
+            benefits: [
+              "Acesso completo ao catálogo",
+              "Doramas, séries turcas e novelinhas",
+              "Dublado e legendado",
+              "Sem anúncios",
+              "Dispositivos compatíveis",
+              "Liberação imediata",
+            ],
+            featured: false,
+            sort_order: 1,
+            checkout_url: "https://pay.wiapy.com/D1rAjQcO8bo_",
+          },
+          {
+            id: "fallback-annual",
+            slug: "annual",
+            name: "Anual",
+            description: "12 meses de acesso ilimitado",
+            price: 99.9,
+            currency: "BRL",
+            billing_interval: "year",
+            benefits: [
+              "Acesso completo ao catálogo",
+              "Doramas, séries turcas e novelinhas",
+              "Dublado e legendado",
+              "Sem anúncios",
+              "Dispositivos compatíveis",
+              "Liberação imediata",
+            ],
+            featured: true,
+            sort_order: 2,
+            checkout_url: "https://pay.wiapy.com/JQcBx7Tif3vh",
+          },
+          {
+            id: "fallback-monthly",
+            slug: "monthly",
+            name: "Mensal",
+            description: "30 dias de acesso ilimitado",
+            price: 19.9,
+            currency: "BRL",
+            billing_interval: "month",
+            benefits: [
+              "Acesso completo ao catálogo",
+              "Doramas, séries turcas e novelinhas",
+              "Dublado e legendado",
+              "Sem anúncios",
+              "Dispositivos compatíveis",
+              "Liberação imediata",
+            ],
+            featured: false,
+            sort_order: 3,
+            checkout_url: "https://pay.wiapy.com/KaF1EsAXWGPC",
+          },
         ] as PublicPlan[],
         error: null,
       };
@@ -169,9 +245,12 @@ export const getPublishedSeriesBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (error || !data) return { series: null, error: "Novela não encontrada." };
-    const { data: episodes, error: episodesError } = await supabase.rpc("get_published_episode_catalog", {
-      target_series_id: data.id,
-    });
+    const { data: episodes, error: episodesError } = await supabase.rpc(
+      "get_published_episode_catalog",
+      {
+        target_series_id: data.id,
+      },
+    );
     if (episodesError) return { series: null, error: "Não foi possível carregar os episódios." };
     return {
       series: { ...data, episodes: episodes ?? [] },
@@ -212,8 +291,8 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
 
       allowed = Boolean(
         subscription &&
-          (data.access_type === "subscriber" ||
-            (data.access_type === "specific_plan" && data.plan_id === subscription.plan_id)),
+        (data.access_type === "subscriber" ||
+          (data.access_type === "specific_plan" && data.plan_id === subscription.plan_id)),
       );
     }
 
@@ -223,7 +302,11 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
       const used = Number(usage ?? 0);
       freeRemainingSeconds = Math.max(0, 1200 - (Number.isFinite(used) ? used : 0));
       if (freeRemainingSeconds <= 0) {
-        return { episode: null, error: "Seu acesso gratuito de 20 minutos foi utilizado. Assine um plano para continuar assistindo." };
+        return {
+          episode: null,
+          error:
+            "Seu acesso gratuito de 20 minutos foi utilizado. Assine um plano para continuar assistindo.",
+        };
       }
     }
 
@@ -243,7 +326,12 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
       }
       const signed = createBunnySignedEmbedUrl(data.bunny_video_id);
       return {
-        episode: { ...data, video_url: signed.url, playback_expires_at: signed.expires, free_remaining_seconds: freeRemainingSeconds },
+        episode: {
+          ...data,
+          video_url: signed.url,
+          playback_expires_at: signed.expires,
+          free_remaining_seconds: freeRemainingSeconds,
+        },
         error: null,
       };
     }

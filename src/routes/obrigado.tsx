@@ -12,7 +12,8 @@ export const Route = createFileRoute("/obrigado")({
 });
 
 function ThankYouPage() {
-  const supportUrl = "https://wa.me/5511919332419?text=Preciso%20de%20ajuda%20com%20o%20acesso%20ao%20app";
+  const supportUrl =
+    "https://wa.me/5511919332419?text=Preciso%20de%20ajuda%20com%20o%20acesso%20ao%20app";
 
   return (
     <main className="thank-you-page">
@@ -21,21 +22,64 @@ function ThankYouPage() {
         <Link className="thank-you-brand" to="/" aria-label="Feed Loves — página inicial">
           <img src="/assets/brand-v4.jpg" alt="" /> Feed <span>Loves</span>
         </Link>
-        <div className="thank-you-icon" aria-hidden="true"><Check size={31} strokeWidth={3} /></div>
+        <div className="thank-you-icon" aria-hidden="true">
+          <Check size={31} strokeWidth={3} />
+        </div>
         <h1 id="thank-you-title">Parabéns pela sua assinatura! ♡</h1>
-        <p className="thank-you-lead">Seu plano foi contratado com sucesso. Siga os passos abaixo para acessar o Web App Feed Loves.</p>
+        <p className="thank-you-lead">
+          Seu plano foi contratado com sucesso. Siga os passos abaixo para acessar o Web App Feed
+          Loves.
+        </p>
         <div className="thank-you-steps">
-          <div className="thank-you-step"><span className="thank-you-step-icon">1</span><div><strong>Use o mesmo e-mail da compra</strong><p>Para vincular automaticamente sua assinatura, utilize no cadastro o mesmo e-mail informado no checkout.</p></div></div>
-          <div className="thank-you-step"><span className="thank-you-step-icon">2</span><div><strong>Crie sua conta ou entre</strong><p>Se ainda não possui conta, crie uma agora. Se já possui, basta fazer login.</p></div></div>
-          <div className="thank-you-step"><span className="thank-you-step-icon">3</span><div><strong>Acesse o catálogo completo</strong><p>Após a confirmação do pagamento, o acesso Premium será liberado automaticamente.</p></div></div>
+          <div className="thank-you-step">
+            <span className="thank-you-step-icon">1</span>
+            <div>
+              <strong>Use o mesmo e-mail da compra</strong>
+              <p>
+                Para vincular automaticamente sua assinatura, utilize no cadastro o mesmo e-mail
+                informado no checkout.
+              </p>
+            </div>
+          </div>
+          <div className="thank-you-step">
+            <span className="thank-you-step-icon">2</span>
+            <div>
+              <strong>Crie sua conta ou entre</strong>
+              <p>Se ainda não possui conta, crie uma agora. Se já possui, basta fazer login.</p>
+            </div>
+          </div>
+          <div className="thank-you-step">
+            <span className="thank-you-step-icon">3</span>
+            <div>
+              <strong>Acesse o catálogo completo</strong>
+              <p>
+                Após a confirmação do pagamento, o acesso Premium será liberado automaticamente.
+              </p>
+            </div>
+          </div>
         </div>
         <div className="thank-you-actions">
-          <Link className="thank-you-button" to="/criar-conta">CRIAR MINHA CONTA <ChevronRight size={15} /></Link>
-          <Link className="thank-you-button secondary" to="/login">JÁ TENHO UMA CONTA · ENTRAR</Link>
-          <a className="thank-you-button whatsapp" href={supportUrl} target="_blank" rel="noreferrer"><MessageCircle size={17} /> FALAR COM O SUPORTE</a>
+          <Link className="thank-you-button" to="/criar-conta">
+            CRIAR MINHA CONTA <ChevronRight size={15} />
+          </Link>
+          <Link className="thank-you-button secondary" to="/login">
+            JÁ TENHO UMA CONTA · ENTRAR
+          </Link>
+          <a
+            className="thank-you-button whatsapp"
+            href={supportUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <MessageCircle size={17} /> FALAR COM O SUPORTE
+          </a>
         </div>
-        <p className="thank-you-note"><Mail size={13} /> Confira também o e-mail usado na compra.</p>
-        <p className="thank-you-note"><ShieldCheck size={13} /> O acesso é vinculado automaticamente pelo seu e-mail.</p>
+        <p className="thank-you-note">
+          <Mail size={13} /> Confira também o e-mail usado na compra.
+        </p>
+        <p className="thank-you-note">
+          <ShieldCheck size={13} /> O acesso é vinculado automaticamente pelo seu e-mail.
+        </p>
       </section>
     </main>
   );

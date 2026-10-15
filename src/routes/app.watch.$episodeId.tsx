@@ -18,7 +18,12 @@ export const Route = createFileRoute("/app/watch/$episodeId")({
       getPublicPlayerSettings(),
     ]);
     if (!episodeResult.episode) {
-      return { ...episodeResult, progress: progressResult.progress, nextEpisode: null, playerSettings };
+      return {
+        ...episodeResult,
+        progress: progressResult.progress,
+        nextEpisode: null,
+        playerSettings,
+      };
     }
     const seriesResult = await getPublishedSeriesBySlug({
       data: episodeResult.episode.series.slug,
@@ -41,8 +46,12 @@ function WatchPage() {
 
   function saveProgress(seconds: number) {
     if (!episode || !Number.isFinite(seconds)) return;
-    const cappedSeconds = freeRemaining == null ? seconds : Math.min(seconds, (progress?.position_seconds ?? 0) + freeRemaining);
-    if (freeRemaining != null && seconds >= (progress?.position_seconds ?? 0) + freeRemaining) setFreeLimitReached(true);
+    const cappedSeconds =
+      freeRemaining == null
+        ? seconds
+        : Math.min(seconds, (progress?.position_seconds ?? 0) + freeRemaining);
+    if (freeRemaining != null && seconds >= (progress?.position_seconds ?? 0) + freeRemaining)
+      setFreeLimitReached(true);
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       const supabase = createClient();
@@ -90,7 +99,9 @@ function WatchPage() {
           autoPlay
           settings={playerSettings}
           initialSeconds={progress?.completed ? 0 : (progress?.position_seconds ?? 0)}
-          {...(freeRemaining == null ? {} : { maxPlaybackSeconds: (progress?.position_seconds ?? 0) + freeRemaining })}
+          {...(freeRemaining == null
+            ? {}
+            : { maxPlaybackSeconds: (progress?.position_seconds ?? 0) + freeRemaining })}
           onPlaybackSeconds={saveProgress}
           onEnded={() => {
             saveProgress(episode.duration_seconds ?? 0);
@@ -105,7 +116,12 @@ function WatchPage() {
           }}
         />
       </section>
-      {freeLimitReached ? <div className="watch-limit-notice" role="status">Você utilizou seus 20 minutos gratuitos. Assine um plano para continuar assistindo. <a href="/#planos">Ver planos</a></div> : null}
+      {freeLimitReached ? (
+        <div className="watch-limit-notice" role="status">
+          Você utilizou seus 20 minutos gratuitos. Assine um plano para continuar assistindo.{" "}
+          <a href="/#planos">Ver planos</a>
+        </div>
+      ) : null}
       <section className="watch-heading">
         <h1>
           E{episode.episode_number} · {episode.title}

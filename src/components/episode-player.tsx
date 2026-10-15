@@ -102,7 +102,9 @@ export function EpisodePlayer({
   const restoredRef = useRef(false);
 
   useEffect(() => {
-    const isBunny = Boolean(videoUrl && /(?:iframe|player)\.mediadelivery\.net\/embed\//.test(videoUrl));
+    const isBunny = Boolean(
+      videoUrl && /(?:iframe|player)\.mediadelivery\.net\/embed\//.test(videoUrl),
+    );
     if (!isBunny || !iframeRef.current) return;
 
     let cancelled = false;
@@ -135,7 +137,10 @@ export function EpisodePlayer({
       player.on("pause", () => onPlaybackStateChange?.(false));
       player.on("timeupdate", (data) => {
         const seconds = readSeconds(data);
-        if (seconds !== null) onPlaybackSeconds?.(maxPlaybackSeconds == null ? seconds : Math.min(seconds, maxPlaybackSeconds));
+        if (seconds !== null)
+          onPlaybackSeconds?.(
+            maxPlaybackSeconds == null ? seconds : Math.min(seconds, maxPlaybackSeconds),
+          );
       });
       player.on("ended", () => {
         onPlaybackStateChange?.(false);
@@ -182,7 +187,10 @@ export function EpisodePlayer({
       player.on("play", () => onPlaybackStateChange?.(true));
       player.on("pause", () => onPlaybackStateChange?.(false));
       player.on("timeupdate", (data) => {
-        if (typeof data?.seconds === "number") onPlaybackSeconds?.(maxPlaybackSeconds == null ? data.seconds : Math.min(data.seconds, maxPlaybackSeconds));
+        if (typeof data?.seconds === "number")
+          onPlaybackSeconds?.(
+            maxPlaybackSeconds == null ? data.seconds : Math.min(data.seconds, maxPlaybackSeconds),
+          );
       });
       player.on("ended", () => {
         onPlaybackStateChange?.(false);
@@ -218,14 +226,22 @@ export function EpisodePlayer({
     const isTelegramMessageUrl = /(?:^|\.)t\.me\//i.test(videoUrl);
     if (isTelegramMessageUrl) {
       return (
-        <div className="part2-player-frame part2-player-placeholder" aria-label="Fonte do vídeo não reproduzível">
+        <div
+          className="part2-player-frame part2-player-placeholder"
+          aria-label="Fonte do vídeo não reproduzível"
+        >
           {posterUrl ? <img src={posterUrl} alt="" className="part2-player-poster" /> : null}
           <div className="part2-player-overlay" />
           <div className="part2-player-placeholder-content">
-            <span className="part2-play-icon"><Play size={27} fill="currentColor" /></span>
+            <span className="part2-play-icon">
+              <Play size={27} fill="currentColor" />
+            </span>
             <p className="part2-player-label">VÍDEO DO TELEGRAM</p>
             <h2>{title}</h2>
-            <p className="part2-player-help">Este link abre uma mensagem do Telegram, não um arquivo de vídeo. O vídeo precisa ser importado pelo Admin para o Bunny Stream.</p>
+            <p className="part2-player-help">
+              Este link abre uma mensagem do Telegram, não um arquivo de vídeo. O vídeo precisa ser
+              importado pelo Admin para o Bunny Stream.
+            </p>
           </div>
         </div>
       );
@@ -234,7 +250,21 @@ export function EpisodePlayer({
     const embeddableVideoUrl = toEmbeddableVideoUrl(videoUrl);
 
     return (
-      <div className="part2-player-frame" style={{ width: "100%", height: "100%", minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: settings?.backgroundColor || "#000", borderColor: settings?.accentColor, borderRadius: settings?.borderRadius }}>
+      <div
+        className="part2-player-frame"
+        style={{
+          width: "100%",
+          height: "100%",
+          minHeight: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          background: settings?.backgroundColor || "#000",
+          borderColor: settings?.accentColor,
+          borderRadius: settings?.borderRadius,
+        }}
+      >
         {isDirectVideo ? (
           <video
             className="part2-player-video"
@@ -247,11 +277,20 @@ export function EpisodePlayer({
             poster={posterUrl || undefined}
             src={videoUrl}
             aria-label={title}
-            style={{ width: "100%", height: "100%", display: "block", objectFit: "contain", background: "#000" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "block",
+              objectFit: "contain",
+              background: "#000",
+            }}
             onTimeUpdate={(event) => {
               const seconds = event.currentTarget.currentTime;
-              onPlaybackSeconds?.(maxPlaybackSeconds == null ? seconds : Math.min(seconds, maxPlaybackSeconds));
-              if (maxPlaybackSeconds != null && seconds >= maxPlaybackSeconds) event.currentTarget.pause();
+              onPlaybackSeconds?.(
+                maxPlaybackSeconds == null ? seconds : Math.min(seconds, maxPlaybackSeconds),
+              );
+              if (maxPlaybackSeconds != null && seconds >= maxPlaybackSeconds)
+                event.currentTarget.pause();
             }}
             onLoadedMetadata={(event) => {
               if (initialSeconds > 0 && !restoredRef.current) {
@@ -286,10 +325,32 @@ export function EpisodePlayer({
             allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
-            style={{ width: "100%", height: "100%", display: "block", border: 0, background: "#000" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "block",
+              border: 0,
+              background: "#000",
+            }}
           />
         )}
-        {settings?.showBrand && settings.logoUrl ? <img src={settings.logoUrl} alt="" aria-hidden="true" style={{ position: "absolute", top: 14, left: 14, zIndex: 2, maxWidth: 110, maxHeight: 30, objectFit: "contain", pointerEvents: "none" }} /> : null}
+        {settings?.showBrand && settings.logoUrl ? (
+          <img
+            src={settings.logoUrl}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 14,
+              left: 14,
+              zIndex: 2,
+              maxWidth: 110,
+              maxHeight: 30,
+              objectFit: "contain",
+              pointerEvents: "none",
+            }}
+          />
+        ) : null}
       </div>
     );
   }
@@ -314,4 +375,3 @@ export function EpisodePlayer({
     </div>
   );
 }
-

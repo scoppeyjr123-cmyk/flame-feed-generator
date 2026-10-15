@@ -4,7 +4,12 @@ import { Check, ChevronRight, Heart, LockKeyhole, MonitorSmartphone, Play } from
 import { EpisodePlayer } from "../components/episode-player";
 import { PricingPlans } from "../components/pricing-plans";
 import { SubscriptionModal } from "../components/subscription-modal";
-import { getPublicPartTwoSettings, getPublicPlans, type PartTwoSettings, type PublicPlan } from "../lib/public/server-fns";
+import {
+  getPublicPartTwoSettings,
+  getPublicPlans,
+  type PartTwoSettings,
+  type PublicPlan,
+} from "../lib/public/server-fns";
 
 export const Route = createFileRoute("/parte-2")({
   loader: async () => {
@@ -77,7 +82,13 @@ const faqItems = [
   },
 ];
 
-export function PartTwoPage({ plans: configuredPlans, partTwo }: { plans: PublicPlan[]; partTwo: PartTwoSettings }) {
+export function PartTwoPage({
+  plans: configuredPlans,
+  partTwo,
+}: {
+  plans: PublicPlan[];
+  partTwo: PartTwoSettings;
+}) {
   const [videoUrl, setVideoUrl] = useState(partTwo.videoUrl);
   const [posterUrl, setPosterUrl] = useState(partTwo.posterUrl);
   const [episodeTitle, setEpisodeTitle] = useState(partTwo.headline);
@@ -269,8 +280,12 @@ export function PartTwoPage({ plans: configuredPlans, partTwo }: { plans: Public
             </span>
           </Link>
           <div className="part2-header-actions">
-            <Link className="part2-create-account" to="/criar-conta">CRIAR CONTA GRÁTIS</Link>
-            <a className="part2-member" href="/login">JÁ SOU ASSINANTE</a>
+            <Link className="part2-create-account" to="/criar-conta">
+              CRIAR CONTA GRÁTIS
+            </Link>
+            <a className="part2-member" href="/login">
+              JÁ SOU ASSINANTE
+            </a>
           </div>
         </div>
       </header>
@@ -424,4 +439,3 @@ function PartTwoRoute() {
   const data = Route.useLoaderData();
   return <PartTwoPage plans={data.plans} partTwo={data.partTwo} />;
 }
-

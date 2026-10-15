@@ -58,9 +58,7 @@ export function createBunnySignedEmbedUrl(videoId: string, ttlSeconds = 2 * 60 *
   if (!tokenKey) throw new Error("BUNNY_STREAM_TOKEN_KEY is missing");
 
   const expires = Math.floor(Date.now() / 1000) + Math.max(60, ttlSeconds);
-  const token = createHash("sha256")
-    .update(`${tokenKey}${videoId}${expires}`)
-    .digest("hex");
+  const token = createHash("sha256").update(`${tokenKey}${videoId}${expires}`).digest("hex");
 
   return {
     url: `https://iframe.mediadelivery.net/embed/${libraryId}/${encodeURIComponent(videoId)}?token=${token}&expires=${expires}`,
