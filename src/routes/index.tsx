@@ -87,9 +87,12 @@ function Index() {
           image.alt = `Capa de ${item.title}`;
           image.loading = "lazy";
           image.decoding = "async";
+          const playIndicator = document.createElement("span");
+          playIndicator.className = "home-dynamic-play";
+          playIndicator.setAttribute("aria-hidden", "true");
           const badge = document.createElement("span");
           badge.textContent = item.featured ? "DESTAQUE" : category;
-          cover.append(image, badge);
+          cover.append(image, playIndicator, badge);
           const title = document.createElement("h3");
           title.textContent = item.title;
           link.append(cover, title);
@@ -99,7 +102,7 @@ function Index() {
         catalog.append(grid);
       });
       const dynamicStyle = document.createElement("style");
-      dynamicStyle.textContent = `.home-dynamic-heading{margin-top:42px;text-align:center;content-visibility:auto;contain-intrinsic-size:260px}.home-dynamic-heading:first-child{margin-top:0}.home-dynamic-heading h2{margin-top:10px}.home-dynamic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px;margin-top:26px}.home-dynamic-card{min-width:0}.home-dynamic-card a{display:block;color:inherit;text-decoration:none}.home-dynamic-cover{position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid var(--border);border-radius:9px;background:var(--muted)}.home-dynamic-cover img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .3s;content-visibility:auto}.home-dynamic-card:hover img{transform:scale(1.04)}.home-dynamic-cover span{position:absolute;top:8px;left:8px;padding:5px 7px;border-radius:4px;background:var(--primary);color:var(--primary-foreground);font-size:8px;font-weight:800}.home-dynamic-card h3{margin:9px 0 0;font-size:12px;font-weight:700}@media(min-width:640px){.home-dynamic-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px 14px}}@media(min-width:1024px){.home-dynamic-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:24px 12px}}@media(min-width:1400px){.home-dynamic-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:22px 12px}}`;
+      dynamicStyle.textContent = `.home-dynamic-heading{margin-top:42px;text-align:center;content-visibility:auto;contain-intrinsic-size:260px}.home-dynamic-heading:first-child{margin-top:0}.home-dynamic-heading h2{margin-top:10px}.home-dynamic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px;margin-top:26px}.home-dynamic-card{min-width:0}.home-dynamic-card a{display:block;color:inherit;text-decoration:none}.home-dynamic-cover{position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid var(--border);border-radius:9px;background:var(--muted)}.home-dynamic-cover img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .3s;content-visibility:auto}.home-dynamic-card:hover img,.home-dynamic-card a:focus-visible img{transform:scale(1.04)}.home-dynamic-play{position:absolute;inset:0;z-index:1;display:grid;place-items:center;background:#08040866;opacity:0;transition:opacity .2s ease;pointer-events:none}.home-dynamic-play::before{content:'▶';display:grid;place-items:center;width:54px;height:54px;padding-left:3px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);font-size:20px;box-shadow:0 0 28px #f33ca899;transform:scale(.9);transition:transform .2s ease}.home-dynamic-card:hover .home-dynamic-play,.home-dynamic-card a:focus-visible .home-dynamic-play{opacity:1}.home-dynamic-card:hover .home-dynamic-play::before,.home-dynamic-card a:focus-visible .home-dynamic-play::before{transform:scale(1)}.home-dynamic-cover>span:not(.home-dynamic-play){position:absolute;top:8px;left:8px;z-index:2;padding:5px 7px;border-radius:4px;background:var(--primary);color:var(--primary-foreground);font-size:8px;font-weight:800}.home-dynamic-card h3{margin:9px 0 0;font-size:12px;font-weight:700}@media(hover:none){.home-dynamic-play{opacity:1}.home-dynamic-play::before{transform:scale(1)}}@media(min-width:640px){.home-dynamic-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px 14px}}@media(min-width:1024px){.home-dynamic-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:24px 12px}}@media(min-width:1400px){.home-dynamic-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:22px 12px}}`;
       document.head.append(dynamicStyle);
       cleanups.push(() => dynamicStyle.remove());
     }
