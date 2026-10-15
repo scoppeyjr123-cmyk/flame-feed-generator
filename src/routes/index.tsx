@@ -61,7 +61,10 @@ function Index() {
         const group = item.category || item.genre || "Feed Loves";
         groups.set(group, [...(groups.get(group) ?? []), item]);
       });
-      groups.forEach((items, category) => {
+      const orderedGroups = Array.from(groups.entries()).sort(
+        ([, firstItems], [, secondItems]) => secondItems.length - firstItems.length,
+      );
+      orderedGroups.forEach(([category, items]) => {
         const section = document.createElement("section");
         section.className = "home-dynamic-section";
         const heading = document.createElement("div");
