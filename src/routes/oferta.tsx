@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   ArrowRight,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clapperboard,
   CreditCard,
   Heart,
   LockKeyhole,
   MonitorPlay,
+  Pause,
   Play,
   ShieldCheck,
   Smartphone,
@@ -97,6 +101,35 @@ const benefits = [
   },
 ];
 
+const catalogHighlights = [
+  { icon: Heart, title: "Doramas" },
+  { icon: Sparkles, title: "Dramas-K" },
+  { icon: Clapperboard, title: "Séries turcas" },
+  { icon: Play, title: "Novelinhas" },
+  { icon: MonitorPlay, title: "Dublado" },
+  { icon: Smartphone, title: "Legendado" },
+  { icon: Star, title: "Romance" },
+  { icon: ShieldCheck, title: "Suspense" },
+];
+
+const experienceHighlights = [
+  {
+    icon: Clapperboard,
+    title: "Escolha sua próxima história",
+    description: "Navegue pelas categorias e encontre um título para começar.",
+  },
+  {
+    icon: Play,
+    title: "Assista no seu ritmo",
+    description: "Continue de onde parou e acompanhe seus episódios no app.",
+  },
+  {
+    icon: Heart,
+    title: "Guarde seus favoritos",
+    description: "Crie sua lista para voltar às histórias que mais gostou.",
+  },
+];
+
 const faq = [
   {
     question: "Como recebo o acesso?",
@@ -164,9 +197,12 @@ function checkoutClick(event: React.MouseEvent<HTMLAnchorElement>, plan: PublicP
 
 function ConversionPage() {
   const { plans, series, video } = Route.useLoaderData();
+  const [catalogPaused, setCatalogPaused] = useState(false);
+  const [showcaseIndex, setShowcaseIndex] = useState(0);
   const availablePlans = plans.filter((plan) => plan.checkout_url);
   const featuredPlan = availablePlans.find((plan) => plan.featured) ?? availablePlans[0];
   const covers = series.filter((item) => item.cover_url || item.thumbnail_url).slice(0, 14);
+  const showcaseCover = covers[showcaseIndex] ?? covers[0];
 
   return (
     <main className="conversion-page">
@@ -250,17 +286,17 @@ function ConversionPage() {
             TUDO EM UM SÓ <span>LUGAR</span>
           </h2>
           <p className="conversion-section-copy">
-            Abra o app, escolha a história e continue assistindo quando quiser.
+            Doramas, séries turcas e novelinhas para descobrir no mesmo app.
           </p>
-          <div className="conversion-type-pills" aria-label="Tipos de conteúdo">
-            <span>Doramas</span>
-            <span>Séries turcas</span>
-            <span>Novelinhas</span>
-            <span>Romance</span>
-            <span>Drama</span>
-            <span>Dublado</span>
-            <span>Legendado</span>
+          <div className="conversion-content-grid" aria-label="Explore tipos de conteúdo">
+            {catalogHighlights.map(({ icon: Icon, title }) => (
+              <div className="conversion-content-tile" key={title}>
+                <Icon size={18} aria-hidden="true" />
+                <span>{title}</span>
+              </div>
+            ))}
           </div>
+          <p className="conversion-together-footnote">UM CATÁLOGO PARA DIFERENTES HISTÓRIAS</p>
         </div>
       </section>
 
@@ -270,25 +306,89 @@ function ConversionPage() {
           <h2 id="conversion-catalog-title" className="conversion-heading">
             EXPLORE O <span>CATÁLOGO</span>
           </h2>
+          {covers.length > 1 && (
+            <button
+              type="button"
+              className="conversion-carousel-toggle"
+              aria-pressed={catalogPaused}
+              onClick={() => setCatalogPaused((paused) => !paused)}
+            >
+              {catalogPaused ? (
+                <Play size={14} aria-hidden="true" />
+              ) : (
+                <Pause size={14} aria-hidden="true" />
+              )}
+              {catalogPaused ? "Continuar capas" : "Pausar capas"}
+            </button>
+          )}
         </div>
         {covers.length > 0 ? (
-          <div className="conversion-cover-rail" aria-label="Capas de títulos do catálogo">
-            {covers.map((item) => (
-              <a href="#planos" key={item.id} title={`Ver planos para assistir ${item.title}`}>
-                <img
-                  src={item.cover_url || item.thumbnail_url || ""}
-                  alt={`Capa de ${item.title}`}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </a>
-            ))}
+          <div
+            className={`conversion-cover-rail${catalogPaused ? " is-paused" : ""}`}
+            aria-label="Capas de títulos do catálogo"
+          >
+            <div className={`conversion-cover-track${covers.length < 2 ? " is-static" : ""}`}>
+              {[0, 1].map((copy) => (
+                <div
+                  className="conversion-cover-group"
+                  key={copy}
+                  aria-hidden={copy === 1 || undefined}
+                >
+                  {covers.map((item) =>
+                    copy === 0 ? (
+                      <a
+                        href="#planos"
+                        key={item.id}
+                        title={`Ver planos para assistir ${item.title}`}
+                      >
+                        <img
+                          src={item.cover_url || item.thumbnail_url || ""}
+                          alt={`Capa de ${item.title}`}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </a>
+                    ) : (
+                      <span className="conversion-cover-copy" key={item.id}>
+                        <img
+                          src={item.cover_url || item.thumbnail_url || ""}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </span>
+                    ),
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <p className="conversion-section-copy conversion-no-covers">
             Histórias novas estão chegando ao catálogo.
           </p>
         )}
+      </section>
+
+      <section className="conversion-experience" aria-labelledby="conversion-experience-title">
+        <div className="conversion-shell">
+          <p className="conversion-kicker">FEITO PARA A SUA MARATONA</p>
+          <h2 className="conversion-heading" id="conversion-experience-title">
+            UMA EXPERIÊNCIA PARA <span>SE APAIXONAR</span>
+          </h2>
+          <p className="conversion-section-copy">
+            Encontre, acompanhe e salve as histórias que você ama.
+          </p>
+          <div className="conversion-experience-grid">
+            {experienceHighlights.map(({ icon: Icon, title, description }) => (
+              <article key={title}>
+                <Icon size={25} aria-hidden="true" />
+                <h3>{title}</h3>
+                <p>{description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="conversion-benefits conversion-shell" id="beneficios">
@@ -410,51 +510,125 @@ function ConversionPage() {
           <h2 className="conversion-heading">
             POR QUE ESCOLHER <span>FEED LOVES</span>
           </h2>
-          <div
-            className="conversion-compare-table"
-            role="table"
-            aria-label="O que está incluído no Feed Loves"
-          >
-            <div className="conversion-compare-row conversion-compare-head" role="row">
-              <span role="columnheader">RECURSO</span>
-              <span role="columnheader">FEED LOVES</span>
-            </div>
-            <div className="conversion-compare-row" role="row">
-              <span role="cell">Doramas, séries turcas e novelinhas</span>
-              <strong role="cell">
-                <Check size={18} aria-label="Incluído" />
-              </strong>
-            </div>
-            <div className="conversion-compare-row" role="row">
-              <span role="cell">Continue de onde parou</span>
-              <strong role="cell">
-                <Check size={18} aria-label="Incluído" />
-              </strong>
-            </div>
-            <div className="conversion-compare-row" role="row">
-              <span role="cell">Minha lista de favoritos</span>
-              <strong role="cell">
-                <Check size={18} aria-label="Incluído" />
-              </strong>
-            </div>
-            <div className="conversion-compare-row" role="row">
-              <span role="cell">Sem anúncios nos episódios</span>
-              <strong role="cell">
-                <Check size={18} aria-label="Incluído" />
-              </strong>
-            </div>
-            <div className="conversion-compare-row" role="row">
-              <span role="cell">Suporte por WhatsApp</span>
-              <strong role="cell">
-                <Check size={18} aria-label="Incluído" />
-              </strong>
-            </div>
+          <p className="conversion-section-copy">Veja o que muda ao escolher uma assinatura.</p>
+          <div className="conversion-compare-scroll">
+            <table className="conversion-compare-table">
+              <caption className="sr-only">
+                Comparação entre conta grátis e assinatura Feed Loves
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">RECURSO</th>
+                  <th scope="col">CONTA GRÁTIS</th>
+                  <th scope="col">ASSINATURA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Explorar o catálogo</th>
+                  <td>Sim</td>
+                  <td>Sim</td>
+                </tr>
+                <tr>
+                  <th scope="row">Tempo de reprodução</th>
+                  <td>20 minutos no total</td>
+                  <td>Sem limite de minutos no período contratado</td>
+                </tr>
+                <tr>
+                  <th scope="row">Acesso ao catálogo completo</th>
+                  <td>Após assinar</td>
+                  <td>
+                    <Check size={18} aria-label="Incluído" />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Continue de onde parou</th>
+                  <td>
+                    <Check size={18} aria-label="Incluído" />
+                  </td>
+                  <td>
+                    <Check size={18} aria-label="Incluído" />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Minha lista</th>
+                  <td>
+                    <Check size={18} aria-label="Incluído" />
+                  </td>
+                  <td>
+                    <Check size={18} aria-label="Incluído" />
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Suporte por WhatsApp</th>
+                  <td>
+                    <Check size={18} aria-label="Incluído" />
+                  </td>
+                  <td>
+                    <Check size={18} aria-label="Incluído" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <a href="#planos" className="conversion-button">
             QUERO ASSINAR AGORA <ArrowRight size={16} aria-hidden="true" />
           </a>
         </div>
       </section>
+
+      {showcaseCover && (
+        <section className="conversion-showcase" aria-labelledby="conversion-showcase-title">
+          <div className="conversion-shell">
+            <p className="conversion-kicker">ESCOLHA SUA PRÓXIMA HISTÓRIA</p>
+            <h2 className="conversion-heading" id="conversion-showcase-title">
+              VEJA O QUE ESTÁ NO <span>CATÁLOGO</span>
+            </h2>
+            <p className="conversion-section-copy">Capas de títulos publicados no Feed Loves.</p>
+            <div className="conversion-showcase-stage">
+              <button
+                type="button"
+                aria-label="Capa anterior"
+                onClick={() =>
+                  setShowcaseIndex((index) => (index - 1 + covers.length) % covers.length)
+                }
+              >
+                <ChevronLeft size={22} aria-hidden="true" />
+              </button>
+              <figure>
+                <img
+                  src={showcaseCover.cover_url || showcaseCover.thumbnail_url || ""}
+                  alt={`Capa de ${showcaseCover.title}`}
+                  loading="lazy"
+                />
+                <figcaption>{showcaseCover.title}</figcaption>
+              </figure>
+              <button
+                type="button"
+                aria-label="Próxima capa"
+                onClick={() => setShowcaseIndex((index) => (index + 1) % covers.length)}
+              >
+                <ChevronRight size={22} aria-hidden="true" />
+              </button>
+            </div>
+            <div className="conversion-showcase-dots" aria-label="Escolher capa">
+              {covers.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={showcaseIndex === index ? "is-active" : ""}
+                  aria-label={`Mostrar capa de ${item.title}`}
+                  aria-current={showcaseIndex === index ? "true" : undefined}
+                  onClick={() => setShowcaseIndex(index)}
+                />
+              ))}
+            </div>
+            <a href="#planos" className="conversion-button">
+              QUERO ASSINAR AGORA <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+      )}
 
       <section className="conversion-faq conversion-shell" aria-labelledby="conversion-faq-title">
         <p className="conversion-kicker">TIRANDO SUAS DÚVIDAS</p>
