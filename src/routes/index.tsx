@@ -62,16 +62,32 @@ function Index() {
         groups.set(group, [...(groups.get(group) ?? []), item]);
       });
       groups.forEach((items, category) => {
+        const section = document.createElement("section");
+        section.className = "home-dynamic-section";
         const heading = document.createElement("div");
         heading.className = "home-dynamic-heading";
+        const headingCopy = document.createElement("div");
         const eyebrow = document.createElement("p");
         eyebrow.className = "eyebrow";
         eyebrow.textContent = "CATÁLOGO EM DESTAQUE";
         const headingTitle = document.createElement("h2");
         headingTitle.className = "display-title";
         headingTitle.textContent = category;
-        heading.append(eyebrow, headingTitle);
-        catalog.append(heading);
+        headingCopy.append(eyebrow, headingTitle);
+        const controls = document.createElement("div");
+        controls.className = "home-carousel-controls";
+        const previousButton = document.createElement("button");
+        previousButton.type = "button";
+        previousButton.className = "home-carousel-button";
+        previousButton.setAttribute("aria-label", `Ver títulos anteriores de ${category}`);
+        previousButton.textContent = "‹";
+        const nextButton = document.createElement("button");
+        nextButton.type = "button";
+        nextButton.className = "home-carousel-button";
+        nextButton.setAttribute("aria-label", `Ver mais títulos de ${category}`);
+        nextButton.textContent = "›";
+        controls.append(previousButton, nextButton);
+        heading.append(headingCopy, controls);
         const grid = document.createElement("div");
         grid.className = "home-dynamic-grid";
         items.forEach((item) => {
@@ -99,10 +115,23 @@ function Index() {
           article.append(link);
           grid.append(article);
         });
-        catalog.append(grid);
+        const scrollCarousel = (direction: number) => {
+          grid.scrollBy({
+            left: direction * Math.max(grid.clientWidth * 0.82, 260),
+            behavior: "smooth",
+          });
+        };
+        const scrollPrevious = () => scrollCarousel(-1);
+        const scrollNext = () => scrollCarousel(1);
+        previousButton.addEventListener("click", scrollPrevious);
+        nextButton.addEventListener("click", scrollNext);
+        cleanups.push(() => previousButton.removeEventListener("click", scrollPrevious));
+        cleanups.push(() => nextButton.removeEventListener("click", scrollNext));
+        section.append(heading, grid);
+        catalog.append(section);
       });
       const dynamicStyle = document.createElement("style");
-      dynamicStyle.textContent = `.home-dynamic-heading{margin-top:42px;text-align:center;content-visibility:auto;contain-intrinsic-size:260px}.home-dynamic-heading:first-child{margin-top:0}.home-dynamic-heading h2{margin-top:10px}.home-dynamic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px;margin-top:26px}.home-dynamic-card{min-width:0}.home-dynamic-card a{display:block;color:inherit;text-decoration:none}.home-dynamic-cover{position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid var(--border);border-radius:9px;background:var(--muted)}.home-dynamic-cover img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .3s;content-visibility:auto}.home-dynamic-card:hover img,.home-dynamic-card a:focus-visible img{transform:scale(1.04)}.home-dynamic-play{position:absolute;inset:0;z-index:1;display:grid;place-items:center;background:#08040866;opacity:0;transition:opacity .2s ease;pointer-events:none}.home-dynamic-play::before{content:'▶';display:grid;place-items:center;width:54px;height:54px;padding-left:3px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);font-size:20px;box-shadow:0 0 28px #f33ca899;transform:scale(.9);transition:transform .2s ease}.home-dynamic-card:hover .home-dynamic-play,.home-dynamic-card a:focus-visible .home-dynamic-play{opacity:1}.home-dynamic-card:hover .home-dynamic-play::before,.home-dynamic-card a:focus-visible .home-dynamic-play::before{transform:scale(1)}.home-dynamic-cover>span:not(.home-dynamic-play){position:absolute;top:8px;left:8px;z-index:2;padding:5px 7px;border-radius:4px;background:var(--primary);color:var(--primary-foreground);font-size:8px;font-weight:800}.home-dynamic-card h3{margin:9px 0 0;font-size:12px;font-weight:700}@media(hover:none){.home-dynamic-play{opacity:1}.home-dynamic-play::before{transform:scale(1)}}@media(min-width:640px){.home-dynamic-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px 14px}}@media(min-width:1024px){.home-dynamic-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:24px 12px}}@media(min-width:1400px){.home-dynamic-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:22px 12px}}`;
+      dynamicStyle.textContent = `.home-dynamic-section{margin-top:44px;content-visibility:auto;contain-intrinsic-size:390px}.home-dynamic-section:first-child{margin-top:0}.home-dynamic-heading{display:flex;align-items:end;justify-content:space-between;gap:18px}.home-dynamic-heading h2{margin-top:8px;text-align:left}.home-carousel-controls{display:flex;gap:7px}.home-carousel-button{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--border);border-radius:50%;background:color-mix(in srgb,var(--card) 92%,transparent);color:var(--foreground);font-size:27px;line-height:1;cursor:pointer;transition:border-color .2s,background .2s,transform .2s}.home-carousel-button:hover,.home-carousel-button:focus-visible{border-color:var(--primary);background:var(--primary);color:var(--primary-foreground);transform:scale(1.04)}.home-dynamic-grid{display:flex;gap:14px;overflow-x:auto;margin-top:20px;padding:1px 2px 12px;scroll-behavior:smooth;scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;scrollbar-width:none}.home-dynamic-grid::-webkit-scrollbar{display:none}.home-dynamic-card{flex:0 0 clamp(145px,18vw,205px);min-width:0;scroll-snap-align:start}.home-dynamic-card a{display:block;color:inherit;text-decoration:none}.home-dynamic-cover{position:relative;aspect-ratio:3/4;overflow:hidden;border:1px solid var(--border);border-radius:9px;background:var(--muted)}.home-dynamic-cover img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .3s;content-visibility:auto}.home-dynamic-card:hover img,.home-dynamic-card a:focus-visible img{transform:scale(1.04)}.home-dynamic-play{position:absolute;inset:0;z-index:1;display:grid;place-items:center;background:#08040866;opacity:0;transition:opacity .2s ease;pointer-events:none}.home-dynamic-play::before{content:'▶';display:grid;place-items:center;width:54px;height:54px;padding-left:3px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);font-size:20px;box-shadow:0 0 28px #f33ca899;transform:scale(.9);transition:transform .2s ease}.home-dynamic-card:hover .home-dynamic-play,.home-dynamic-card a:focus-visible .home-dynamic-play{opacity:1}.home-dynamic-card:hover .home-dynamic-play::before,.home-dynamic-card a:focus-visible .home-dynamic-play::before{transform:scale(1)}.home-dynamic-cover>span:not(.home-dynamic-play){position:absolute;top:8px;left:8px;z-index:2;padding:5px 7px;border-radius:4px;background:var(--primary);color:var(--primary-foreground);font-size:8px;font-weight:800}.home-dynamic-card h3{margin:9px 0 0;font-size:12px;font-weight:700}@media(hover:none){.home-dynamic-play{opacity:1}.home-dynamic-play::before{transform:scale(1)}}@media(max-width:639px){.home-dynamic-section{margin-top:34px}.home-dynamic-card{flex-basis:44%}.home-dynamic-heading h2{font-size:25px}.home-carousel-button{width:34px;height:34px}.home-dynamic-grid{gap:11px}}`;
       document.head.append(dynamicStyle);
       cleanups.push(() => dynamicStyle.remove());
     }
