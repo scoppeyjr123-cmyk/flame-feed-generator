@@ -97,8 +97,8 @@ function Index() {
           const article = document.createElement("article");
           article.className = "home-dynamic-card";
           const link = document.createElement("a");
-          link.href = `/app/novela/${encodeURIComponent(item.slug)}`;
-          link.setAttribute("aria-label", `Assistir ${item.title}`);
+          link.href = "#planos";
+          link.setAttribute("aria-label", `Ver planos para assistir ${item.title}`);
           const cover = document.createElement("div");
           cover.className = "home-dynamic-cover";
           const image = document.createElement("img");
