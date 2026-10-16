@@ -1045,11 +1045,7 @@
   .conversion-page * {
     transition-duration: 0s !important;
   }
-  .conversion-cover-rail {
-    overflow-x: auto;
-    mask-image: none;
-  }
-  .conversion-cover-track {
-    animation: none;
+  .conversion-page .conversion-cover-track {
+    animation: conversion-cover-scroll 38s linear infinite !important;
   }
 }

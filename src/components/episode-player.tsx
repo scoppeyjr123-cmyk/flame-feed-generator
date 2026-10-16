@@ -319,8 +319,12 @@ export function EpisodePlayer({
               }
               if (autoPlay) {
                 playerUrl.searchParams.set("autoplay", "1");
-                playerUrl.searchParams.set("muted", "1");
                 playerUrl.searchParams.set("playsinline", "1");
+                if (/youtube(?:-nocookie)?\.com$/i.test(playerUrl.hostname)) {
+                  playerUrl.searchParams.set("mute", "1");
+                } else {
+                  playerUrl.searchParams.set("muted", "1");
+                }
               }
               return playerUrl.toString();
             })()}
