@@ -4,8 +4,6 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Clapperboard,
   CreditCard,
   Heart,
@@ -240,7 +238,6 @@ export function ConversionPage({
   video: PartTwoSettings;
   isPartTwo?: boolean;
 }) {
-  const [showcaseIndex, setShowcaseIndex] = useState(0);
   const [campaignVideo, setCampaignVideo] = useState({
     url: video.videoUrl,
     poster: video.posterUrl,
@@ -268,7 +265,6 @@ export function ConversionPage({
   const covers = series.filter((item) => item.cover_url || item.thumbnail_url).slice(0, 30);
   const catalogMilestone =
     series.length > 10 ? Math.floor((series.length - 1) / 10) * 10 : series.length - 1;
-  const showcaseCover = covers[showcaseIndex] ?? covers[0];
   const customOfferHeadline = !isPartTwo
     ? video.offerHeadline
         ?.split(/\r?\n/)
@@ -643,59 +639,6 @@ export function ConversionPage({
           </a>
         </div>
       </section>
-
-      {showcaseCover && (
-        <section className="conversion-showcase" aria-labelledby="conversion-showcase-title">
-          <div className="conversion-shell">
-            <p className="conversion-kicker">ESCOLHA SUA PRÓXIMA HISTÓRIA</p>
-            <h2 className="conversion-heading" id="conversion-showcase-title">
-              VEJA O QUE ESTÁ NO <span>CATÁLOGO</span>
-            </h2>
-            <p className="conversion-section-copy">Capas de títulos publicados no Feed Loves.</p>
-            <div className="conversion-showcase-stage">
-              <button
-                type="button"
-                aria-label="Capa anterior"
-                onClick={() =>
-                  setShowcaseIndex((index) => (index - 1 + covers.length) % covers.length)
-                }
-              >
-                <ChevronLeft size={22} aria-hidden="true" />
-              </button>
-              <figure>
-                <img
-                  src={showcaseCover.cover_url || showcaseCover.thumbnail_url || ""}
-                  alt={`Capa de ${showcaseCover.title}`}
-                  loading="lazy"
-                />
-                <figcaption>{showcaseCover.title}</figcaption>
-              </figure>
-              <button
-                type="button"
-                aria-label="Próxima capa"
-                onClick={() => setShowcaseIndex((index) => (index + 1) % covers.length)}
-              >
-                <ChevronRight size={22} aria-hidden="true" />
-              </button>
-            </div>
-            <div className="conversion-showcase-dots" aria-label="Escolher capa">
-              {covers.map((item, index) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={showcaseIndex === index ? "is-active" : ""}
-                  aria-label={`Mostrar capa de ${item.title}`}
-                  aria-current={showcaseIndex === index ? "true" : undefined}
-                  onClick={() => setShowcaseIndex(index)}
-                />
-              ))}
-            </div>
-            <a href="#planos" className="conversion-button">
-              QUERO ASSINAR AGORA <ArrowRight size={16} aria-hidden="true" />
-            </a>
-          </div>
-        </section>
-      )}
 
       <section className="conversion-faq conversion-shell" aria-labelledby="conversion-faq-title">
         <p className="conversion-kicker">TIRANDO SUAS DÚVIDAS</p>
