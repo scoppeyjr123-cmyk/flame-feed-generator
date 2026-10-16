@@ -269,6 +269,20 @@ export function ConversionPage({
   const catalogMilestone =
     series.length > 10 ? Math.floor((series.length - 1) / 10) * 10 : series.length - 1;
   const showcaseCover = covers[showcaseIndex] ?? covers[0];
+  const customOfferHeadline = !isPartTwo
+    ? video.offerHeadline
+        ?.split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(0, 3)
+    : null;
+  const heroLines = customOfferHeadline?.length
+    ? customOfferHeadline
+    : [
+        series.length >= 2 ? "ASSISTA MAIS DE" : "DESCUBRA NOVOS",
+        series.length >= 2 ? `${catalogMilestone} DRAMAS` : "DRAMAS",
+        "SEM LIMITES",
+      ];
 
   return (
     <main className={`conversion-page${isPartTwo ? " conversion-page-part-two" : ""}`}>
@@ -302,9 +316,9 @@ export function ConversionPage({
           {isPartTwo ? video.eyebrow : "CONTEÚDO ATUALIZADO · CATÁLOGO FEED LOVES"}
         </p>
         <h1 id="conversion-title">
-          {series.length >= 2 ? "ASSISTA MAIS DE" : "DESCUBRA NOVOS"}
-          <span>{series.length >= 2 ? `${catalogMilestone} DRAMAS` : "DRAMAS"}</span>
-          <em>SEM LIMITES</em>
+          {heroLines[0]}
+          {heroLines[1] ? <span>{heroLines[1]}</span> : null}
+          {heroLines[2] ? <em>{heroLines[2]}</em> : null}
         </h1>
         <p className="conversion-hero-copy">
           {isPartTwo
@@ -318,6 +332,7 @@ export function ConversionPage({
               videoUrl={campaignVideo.url}
               posterUrl={campaignVideo.poster}
               title={isPartTwo ? campaignVideo.title : "Conheça o Feed Loves"}
+              autoPlay
               {...(isPartTwo ? { onEnded: () => setIsSubscriptionModalOpen(true) } : {})}
             />
           ) : (
@@ -376,7 +391,7 @@ export function ConversionPage({
             EXPLORE O <span>CATÁLOGO</span>
           </h2>
           <p className="conversion-section-copy">
-            {series.length} títulos publicados para você descobrir.
+            {video.catalogSubtitle || `${series.length} títulos publicados para você descobrir.`}
           </p>
         </div>
         {covers.length > 0 ? (

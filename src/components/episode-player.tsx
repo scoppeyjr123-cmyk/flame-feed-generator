@@ -317,7 +317,11 @@ export function EpisodePlayer({
                 playerUrl.searchParams.set("api", "1");
                 playerUrl.searchParams.set("player_id", "feedloves-episode");
               }
-              if (autoPlay) playerUrl.searchParams.set("autoplay", "1");
+              if (autoPlay) {
+                playerUrl.searchParams.set("autoplay", "1");
+                playerUrl.searchParams.set("muted", "1");
+                playerUrl.searchParams.set("playsinline", "1");
+              }
               return playerUrl.toString();
             })()}
             title={title}

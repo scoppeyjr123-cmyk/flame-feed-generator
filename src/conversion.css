@@ -330,14 +330,11 @@
 .conversion-cover-track {
   display: flex;
   width: max-content;
-  animation: conversion-cover-scroll 55s linear infinite;
+  animation: conversion-cover-scroll 38s linear infinite;
+  will-change: transform;
 }
 .conversion-cover-track.is-static {
   animation: none;
-}
-.conversion-cover-rail:focus-within .conversion-cover-track,
-.conversion-cover-rail.is-paused .conversion-cover-track {
-  animation-play-state: paused;
 }
 .conversion-cover-group {
   display: flex;

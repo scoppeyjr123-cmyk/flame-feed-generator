@@ -29,6 +29,8 @@ export type PlayerSettings = {
 
 export type PartTwoSettings = {
   headline: string;
+  offerHeadline?: string;
+  catalogSubtitle?: string;
   subheadline: string;
   videoUrl: string;
   posterUrl: string;
@@ -39,6 +41,8 @@ export type PartTwoSettings = {
 
 const partTwoFallback: PartTwoSettings = {
   headline: "Parte 2 — a história continua",
+  offerHeadline: "ASSISTA MAIS DE\n7.000 DRAMAS\nSEM LIMITES",
+  catalogSubtitle: "7.000 títulos publicados para você descobrir.",
   subheadline: "Você chegou até aqui. Agora descubra o que acontece depois.",
   videoUrl: "https://player.vimeo.com/video/1231112345",
   posterUrl: "",

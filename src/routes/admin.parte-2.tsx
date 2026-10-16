@@ -17,6 +17,8 @@ export const Route = createFileRoute("/admin/parte-2")({
 });
 const fallback = {
   headline: "Parte 2 — a história continua",
+  offerHeadline: "ASSISTA MAIS DE\n7.000 DRAMAS\nSEM LIMITES",
+  catalogSubtitle: "7.000 títulos publicados para você descobrir.",
   subheadline: "Você chegou até aqui. Agora descubra o que acontece depois.",
   videoUrl: "https://player.vimeo.com/video/1231112345",
   posterUrl: "",
@@ -175,16 +177,42 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
               </div>
             </>
           ) : (
-            <div className="admin-field full">
-              <label>Fonte do vídeo</label>
-              <select
-                value={String(form.videoProvider)}
-                onChange={(e) => setForm({ ...form, videoProvider: e.target.value })}
-              >
-                <option value="url">URL externa</option>
-                <option value="bunny">Bunny Stream</option>
-              </select>
-            </div>
+            <>
+              <div className="admin-field full">
+                <label htmlFor="offer-headline">Headline da página Oferta</label>
+                <textarea
+                  id="offer-headline"
+                  rows={3}
+                  maxLength={180}
+                  value={String(form.offerHeadline || "")}
+                  placeholder={"ASSISTA MAIS DE\n7.000 DRAMAS\nSEM LIMITES"}
+                  onChange={(e) => setForm({ ...form, offerHeadline: e.target.value })}
+                />
+                <small>
+                  Use até três linhas. Deixe em branco para mostrar a contagem automática de títulos
+                  publicados.
+                </small>
+              </div>
+              <div className="admin-field full">
+                <label htmlFor="offer-catalog-subtitle">Texto abaixo de Explore o Catálogo</label>
+                <input
+                  id="offer-catalog-subtitle"
+                  maxLength={140}
+                  value={String(form.catalogSubtitle || "")}
+                  onChange={(e) => setForm({ ...form, catalogSubtitle: e.target.value })}
+                />
+              </div>
+              <div className="admin-field full">
+                <label>Fonte do vídeo</label>
+                <select
+                  value={String(form.videoProvider)}
+                  onChange={(e) => setForm({ ...form, videoProvider: e.target.value })}
+                >
+                  <option value="url">URL externa</option>
+                  <option value="bunny">Bunny Stream</option>
+                </select>
+              </div>
+            </>
           )}
           <div className="admin-field full">
             <label>URL do vídeo</label>
@@ -277,12 +305,7 @@ function AdminPartTwo() {
         label="Parte 2 — versão 2"
         path="/parte-2-2"
       />
-      <PartTwoEditor
-        content={content}
-        contentKey="offer"
-        label="Vídeo da página Oferta"
-        path="/oferta"
-      />
+      <PartTwoEditor content={content} contentKey="offer" label="Página Oferta" path="/oferta" />
     </AdminShell>
   );
 }
