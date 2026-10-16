@@ -48,7 +48,12 @@ function AppHome() {
       {error ? <p role="alert">Não foi possível carregar o catálogo agora.</p> : null}
       {featured ? (
         <section className="app-hero">
-          <img src={featured.banner_url || featured.cover_url || "/assets/poster1.jpg"} alt="" />
+          <img
+            src={featured.banner_url || featured.cover_url || "/assets/poster1.jpg"}
+            alt=""
+            loading="eager"
+            fetchPriority="high"
+          />
           <div className="app-hero-copy">
             <p className="app-kicker">Em destaque no Feed Loves</p>
             <h1>{featured.title}</h1>
@@ -126,6 +131,8 @@ function AppHome() {
                     <img
                       src={episode.thumbnail_url || seriesItem.cover_url || "/assets/poster1.jpg"}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div>
                       <strong>{seriesItem.title}</strong>
@@ -192,6 +199,8 @@ function AppHome() {
                             <img
                               src={item.cover_url || item.thumbnail_url || "/assets/poster1.jpg"}
                               alt={`Capa de ${item.title}`}
+                              loading="lazy"
+                              decoding="async"
                             />
                             <span className="app-card-play" aria-hidden="true">
                               ▶
