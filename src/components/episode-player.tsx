@@ -105,6 +105,8 @@ export function EpisodePlayer({
   const bunnyPlayerRef = useRef<PlayerJsInstance | null>(null);
   const vimeoPlayerRef = useRef<VimeoPlayerInstance | null>(null);
   const restoredRef = useRef(false);
+  const maxPlaybackSecondsRef = useRef(maxPlaybackSeconds);
+  maxPlaybackSecondsRef.current = maxPlaybackSeconds;
   const [soundEnabled, setSoundEnabled] = useState(false);
 
   useEffect(() => {
@@ -148,10 +150,10 @@ export function EpisodePlayer({
       player.on("pause", () => onPlaybackStateChange?.(false));
       player.on("timeupdate", (data) => {
         const seconds = readSeconds(data);
-        if (seconds !== null)
-          onPlaybackSeconds?.(
-            maxPlaybackSeconds == null ? seconds : Math.min(seconds, maxPlaybackSeconds),
-          );
+        if (seconds !== null) {
+          const limit = maxPlaybackSecondsRef.current;
+          onPlaybackSeconds?.(limit == null ? seconds : Math.min(seconds, limit));
+        }
       });
       player.on("ended", () => {
         onPlaybackStateChange?.(false);
@@ -200,10 +202,10 @@ export function EpisodePlayer({
       player.on("play", () => onPlaybackStateChange?.(true));
       player.on("pause", () => onPlaybackStateChange?.(false));
       player.on("timeupdate", (data) => {
-        if (typeof data?.seconds === "number")
-          onPlaybackSeconds?.(
-            maxPlaybackSeconds == null ? data.seconds : Math.min(data.seconds, maxPlaybackSeconds),
-          );
+        if (typeof data?.seconds === "number") {
+          const limit = maxPlaybackSecondsRef.current;
+          onPlaybackSeconds?.(limit == null ? data.seconds : Math.min(data.seconds, limit));
+        }
       });
       player.on("ended", () => {
         onPlaybackStateChange?.(false);

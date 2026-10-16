@@ -301,7 +301,7 @@ function Index() {
       actions.insertBefore(link, signButton ?? subscriberButton ?? loginButton ?? null);
     }
     return () => cleanups.forEach((cleanup) => cleanup());
-  }, []);
+  }, [series]);
 
   return <div dangerouslySetInnerHTML={{ __html: originalMarkup }} />;
 }
