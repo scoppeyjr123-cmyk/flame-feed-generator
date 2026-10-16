@@ -32,11 +32,12 @@ type EditorProps = {
 };
 
 function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
+  const isOffer = contentKey === "offer";
   const value =
-    content[contentKey] &&
-    typeof content[contentKey] === "object" &&
-    !Array.isArray(content[contentKey])
-      ? (content[contentKey] as Record<string, unknown>)
+    (content[contentKey] ?? (isOffer ? content["partTwo"] : null)) &&
+    typeof (content[contentKey] ?? (isOffer ? content["partTwo"] : null)) === "object" &&
+    !Array.isArray(content[contentKey] ?? (isOffer ? content["partTwo"] : null))
+      ? ((content[contentKey] ?? content["partTwo"]) as Record<string, unknown>)
       : {};
   const [form, setForm] = useState({
     ...fallback,
@@ -68,7 +69,9 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
       let videoUrl = String(form.videoUrl || "").trim();
       if (file) {
         if (form.videoProvider === "bunny") {
-          const bunny = await createPartTwoBunnyAsset({ data: { title: String(form.headline) } });
+          const bunny = await createPartTwoBunnyAsset({
+            data: { title: isOffer ? "Feed Loves — oferta" : String(form.headline) },
+          });
           await uploadFileToBunnyTus(file, bunny.upload, setUploadProgress);
           videoUrl = bunny.embedUrl;
         } else {
@@ -81,8 +84,20 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
             .data.publicUrl;
         }
       }
+      const { data: latest, error: readError } = await supabase
+        .from("site_settings")
+        .select("content_settings")
+        .eq("id", true)
+        .maybeSingle();
+      if (readError) throw new Error(readError.message);
+      const latestContent =
+        latest?.content_settings &&
+        typeof latest.content_settings === "object" &&
+        !Array.isArray(latest.content_settings)
+          ? (latest.content_settings as Record<string, unknown>)
+          : {};
       const updatedContent = {
-        ...content,
+        ...latestContent,
         [contentKey]: { ...form, videoUrl, videoProvider: form.videoProvider },
       };
       const { error } = await supabase
@@ -117,45 +132,60 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
       ) : null}
       <form onSubmit={(event) => void save(event)}>
         <div className="admin-form-grid">
-          <div className="admin-field full">
-            <label>Etiqueta superior</label>
-            <input
-              value={String(form.eyebrow)}
-              onChange={(e) => setForm({ ...form, eyebrow: e.target.value })}
-            />
-          </div>
-          <div className="admin-field full">
-            <label>Headline</label>
-            <input
-              required
-              value={String(form.headline)}
-              onChange={(e) => setForm({ ...form, headline: e.target.value })}
-            />
-          </div>
-          <div className="admin-field full">
-            <label>Subheadline</label>
-            <textarea
-              value={String(form.subheadline)}
-              onChange={(e) => setForm({ ...form, subheadline: e.target.value })}
-            />
-          </div>
-          <div className="admin-field">
-            <label>Fonte do vídeo</label>
-            <select
-              value={String(form.videoProvider)}
-              onChange={(e) => setForm({ ...form, videoProvider: e.target.value })}
-            >
-              <option value="url">URL externa</option>
-              <option value="bunny">Bunny Stream</option>
-            </select>
-          </div>
-          <div className="admin-field">
-            <label>Texto do CTA</label>
-            <input
-              value={String(form.ctaText)}
-              onChange={(e) => setForm({ ...form, ctaText: e.target.value })}
-            />
-          </div>
+          {!isOffer ? (
+            <>
+              <div className="admin-field full">
+                <label>Etiqueta superior</label>
+                <input
+                  value={String(form.eyebrow)}
+                  onChange={(e) => setForm({ ...form, eyebrow: e.target.value })}
+                />
+              </div>
+              <div className="admin-field full">
+                <label>Headline</label>
+                <input
+                  required
+                  value={String(form.headline)}
+                  onChange={(e) => setForm({ ...form, headline: e.target.value })}
+                />
+              </div>
+              <div className="admin-field full">
+                <label>Subheadline</label>
+                <textarea
+                  value={String(form.subheadline)}
+                  onChange={(e) => setForm({ ...form, subheadline: e.target.value })}
+                />
+              </div>
+              <div className="admin-field">
+                <label>Fonte do vídeo</label>
+                <select
+                  value={String(form.videoProvider)}
+                  onChange={(e) => setForm({ ...form, videoProvider: e.target.value })}
+                >
+                  <option value="url">URL externa</option>
+                  <option value="bunny">Bunny Stream</option>
+                </select>
+              </div>
+              <div className="admin-field">
+                <label>Texto do CTA</label>
+                <input
+                  value={String(form.ctaText)}
+                  onChange={(e) => setForm({ ...form, ctaText: e.target.value })}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="admin-field full">
+              <label>Fonte do vídeo</label>
+              <select
+                value={String(form.videoProvider)}
+                onChange={(e) => setForm({ ...form, videoProvider: e.target.value })}
+              >
+                <option value="url">URL externa</option>
+                <option value="bunny">Bunny Stream</option>
+              </select>
+            </div>
+          )}
           <div className="admin-field full">
             <label>URL do vídeo</label>
             <input
@@ -221,10 +251,13 @@ function AdminPartTwo() {
       ? (settings.content_settings as Record<string, unknown>)
       : {};
   return (
-    <AdminShell title="Parte 2" description="Edite as três páginas de continuação e seus vídeos.">
+    <AdminShell
+      title="Parte 2"
+      description="Edite as três páginas de continuação e o vídeo da oferta."
+    >
       <AdminPageHeader
         title="Personalização das páginas Parte 2"
-        description="Cada versão possui textos e vídeo independentes. Use Bunny Stream ou URL externa."
+        description="Cada versão possui vídeo independente. Use Bunny Stream ou URL externa."
       />
       <PartTwoEditor
         content={content}
@@ -243,6 +276,12 @@ function AdminPartTwo() {
         contentKey="partTwoCopy2"
         label="Parte 2 — versão 2"
         path="/parte-2-2"
+      />
+      <PartTwoEditor
+        content={content}
+        contentKey="offer"
+        label="Vídeo da página Oferta"
+        path="/oferta"
       />
     </AdminShell>
   );

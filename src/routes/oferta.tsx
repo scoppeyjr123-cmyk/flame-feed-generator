@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -11,7 +11,6 @@ import {
   Heart,
   LockKeyhole,
   MonitorPlay,
-  Pause,
   Play,
   ShieldCheck,
   Smartphone,
@@ -19,10 +18,12 @@ import {
   Star,
 } from "lucide-react";
 import { EpisodePlayer } from "../components/episode-player";
+import { SubscriptionModal } from "../components/subscription-modal";
 import {
-  getPublicPartTwoSettings,
+  getPublicOfferSettings,
   getPublicPlans,
   getPublishedCatalog,
+  type PartTwoSettings,
   type PublicPlan,
 } from "../lib/public/server-fns";
 import conversionCss from "../conversion.css?url";
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/oferta")({
     const [planResult, catalogResult, video] = await Promise.all([
       getPublicPlans(),
       getPublishedCatalog(),
-      getPublicPartTwoSettings(),
+      getPublicOfferSettings(),
     ]);
 
     return {
@@ -65,8 +66,12 @@ export const Route = createFileRoute("/oferta")({
       },
     ],
   }),
-  component: ConversionPage,
+  component: OfferRoute,
 });
+
+function OfferRoute() {
+  return <ConversionPage {...Route.useLoaderData()} />;
+}
 
 const benefits = [
   {
@@ -102,14 +107,16 @@ const benefits = [
 ];
 
 const catalogHighlights = [
-  { icon: Heart, title: "Doramas" },
-  { icon: Sparkles, title: "Dramas-K" },
-  { icon: Clapperboard, title: "Séries turcas" },
-  { icon: Play, title: "Novelinhas" },
-  { icon: MonitorPlay, title: "Dublado" },
-  { icon: Smartphone, title: "Legendado" },
-  { icon: Star, title: "Romance" },
-  { icon: ShieldCheck, title: "Suspense" },
+  "Doramas",
+  "Dramas-K",
+  "Séries turcas",
+  "Novelinhas",
+  "Dublados",
+  "Legendados",
+  "Romances",
+  "Suspense",
+  "Minha lista",
+  "Continue assistindo",
 ];
 
 const experienceHighlights = [
@@ -127,6 +134,33 @@ const experienceHighlights = [
     icon: Heart,
     title: "Guarde seus favoritos",
     description: "Crie sua lista para voltar às histórias que mais gostou.",
+  },
+  {
+    icon: Smartphone,
+    title: "Assista onde preferir",
+    description: "Acesse pelo navegador no celular, tablet ou computador compatível.",
+  },
+];
+
+const testimonials = [
+  {
+    name: "Ana Beatriz",
+    quote:
+      "Eu pagava 4 streamings diferentes e ainda assim não achava meus doramas. Aqui tem tudo, dublado, e nunca trava!",
+  },
+  {
+    name: "Carolina Mendes",
+    quote:
+      "O catálogo é gigante. Já vi mais de 30 doramas e sempre tem novidade. Vale cada centavo.",
+  },
+  {
+    name: "Júlia Ferreira",
+    quote:
+      "Saí do Telegram e nunca mais voltei. Qualidade HD, sem propaganda, suporte responde rápido.",
+  },
+  {
+    name: "Luzia Fernandes",
+    quote: "Muito boa a plataforma, valeu cada centavo. já recomendei pras amigas.",
   },
 ];
 
@@ -195,17 +229,49 @@ function checkoutClick(event: React.MouseEvent<HTMLAnchorElement>, plan: PublicP
   }
 }
 
-function ConversionPage() {
-  const { plans, series, video } = Route.useLoaderData();
-  const [catalogPaused, setCatalogPaused] = useState(false);
+export function ConversionPage({
+  plans,
+  series,
+  video,
+  isPartTwo = false,
+}: {
+  plans: PublicPlan[];
+  series: Awaited<ReturnType<typeof getPublishedCatalog>>["series"];
+  video: PartTwoSettings;
+  isPartTwo?: boolean;
+}) {
   const [showcaseIndex, setShowcaseIndex] = useState(0);
+  const [campaignVideo, setCampaignVideo] = useState({
+    url: video.videoUrl,
+    poster: video.posterUrl,
+    title: video.headline,
+  });
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  useEffect(() => {
+    if (!isPartTwo) return;
+    const params = new URLSearchParams(window.location.search);
+    setCampaignVideo({
+      url: params.get("video") || video.videoUrl,
+      poster: params.get("capa") || video.posterUrl,
+      title: params.get("titulo") || video.headline,
+    });
+    const tracker = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
+    if (typeof tracker === "function") {
+      tracker("track", "ViewContent", {
+        content_name: "Feed Loves — Parte 2",
+        content_category: "episode",
+      });
+    }
+  }, [isPartTwo, video]);
   const availablePlans = plans.filter((plan) => plan.checkout_url);
   const featuredPlan = availablePlans.find((plan) => plan.featured) ?? availablePlans[0];
-  const covers = series.filter((item) => item.cover_url || item.thumbnail_url).slice(0, 14);
+  const covers = series.filter((item) => item.cover_url || item.thumbnail_url).slice(0, 30);
+  const catalogMilestone =
+    series.length > 10 ? Math.floor((series.length - 1) / 10) * 10 : series.length - 1;
   const showcaseCover = covers[showcaseIndex] ?? covers[0];
 
   return (
-    <main className="conversion-page">
+    <main className={`conversion-page${isPartTwo ? " conversion-page-part-two" : ""}`}>
       <div className="conversion-offer-strip">
         <Sparkles size={14} aria-hidden="true" />
         <span>ESCOLHA SEU PLANO E COMECE SUA PRÓXIMA MARATONA</span>
@@ -232,24 +298,27 @@ function ConversionPage() {
 
       <section className="conversion-hero conversion-shell" aria-labelledby="conversion-title">
         <p className="conversion-pill">
-          <Sparkles size={14} aria-hidden="true" /> SEU PRÓXIMO VÍCIO ESTÁ AQUI
+          <Sparkles size={14} aria-hidden="true" />{" "}
+          {isPartTwo ? video.eyebrow : "CONTEÚDO ATUALIZADO · CATÁLOGO FEED LOVES"}
         </p>
         <h1 id="conversion-title">
-          ASSISTA DORAMAS
-          <span>SÉRIES TURCAS</span>
+          {series.length >= 2 ? "ASSISTA MAIS DE" : "DESCUBRA NOVOS"}
+          <span>{series.length >= 2 ? `${catalogMilestone} DRAMAS` : "DRAMAS"}</span>
           <em>SEM LIMITES</em>
         </h1>
         <p className="conversion-hero-copy">
-          Romances, reviravoltas e histórias para maratonar. Conteúdos dublados e legendados,
-          reunidos em um só lugar para você assistir quando quiser.
+          {isPartTwo
+            ? `${campaignVideo.title}. ${video.subheadline}`
+            : "Doramas coreanos, séries turcas e novelinhas — dublados e legendados para assistir quando quiser. Tudo em um só lugar."}
         </p>
 
-        <div className="conversion-video-frame">
-          {video.videoUrl ? (
+        <div className={`conversion-video-frame${isPartTwo ? " conversion-video-portrait" : ""}`}>
+          {campaignVideo.url ? (
             <EpisodePlayer
-              videoUrl={video.videoUrl}
-              posterUrl={video.posterUrl}
-              title="Conheça o Feed Loves"
+              videoUrl={campaignVideo.url}
+              posterUrl={campaignVideo.poster}
+              title={isPartTwo ? campaignVideo.title : "Conheça o Feed Loves"}
+              {...(isPartTwo ? { onEnded: () => setIsSubscriptionModalOpen(true) } : {})}
             />
           ) : (
             <div className="conversion-video-empty">
@@ -260,7 +329,8 @@ function ConversionPage() {
         </div>
         <div className="conversion-hero-links">
           <a className="conversion-button" href="#planos">
-            <Play size={16} fill="currentColor" aria-hidden="true" /> QUERO ASSISTIR AGORA
+            <Play size={16} fill="currentColor" aria-hidden="true" />{" "}
+            {isPartTwo ? video.ctaText : "QUERO ASSISTIR AGORA"}
           </a>
           <a className="conversion-text-link" href="#beneficios">
             VER BENEFÍCIOS <ChevronDown size={15} aria-hidden="true" />
@@ -286,17 +356,16 @@ function ConversionPage() {
             TUDO EM UM SÓ <span>LUGAR</span>
           </h2>
           <p className="conversion-section-copy">
-            Doramas, séries turcas e novelinhas para descobrir no mesmo app.
+            Uma assinatura, várias categorias para maratonar.
           </p>
           <div className="conversion-content-grid" aria-label="Explore tipos de conteúdo">
-            {catalogHighlights.map(({ icon: Icon, title }) => (
+            {catalogHighlights.map((title) => (
               <div className="conversion-content-tile" key={title}>
-                <Icon size={18} aria-hidden="true" />
                 <span>{title}</span>
               </div>
             ))}
           </div>
-          <p className="conversion-together-footnote">UM CATÁLOGO PARA DIFERENTES HISTÓRIAS</p>
+          <p className="conversion-together-footnote">E MUITAS HISTÓRIAS PARA DESCOBRIR...</p>
         </div>
       </section>
 
@@ -306,27 +375,12 @@ function ConversionPage() {
           <h2 id="conversion-catalog-title" className="conversion-heading">
             EXPLORE O <span>CATÁLOGO</span>
           </h2>
-          {covers.length > 1 && (
-            <button
-              type="button"
-              className="conversion-carousel-toggle"
-              aria-pressed={catalogPaused}
-              onClick={() => setCatalogPaused((paused) => !paused)}
-            >
-              {catalogPaused ? (
-                <Play size={14} aria-hidden="true" />
-              ) : (
-                <Pause size={14} aria-hidden="true" />
-              )}
-              {catalogPaused ? "Continuar capas" : "Pausar capas"}
-            </button>
-          )}
+          <p className="conversion-section-copy">
+            {series.length} títulos publicados para você descobrir.
+          </p>
         </div>
         {covers.length > 0 ? (
-          <div
-            className={`conversion-cover-rail${catalogPaused ? " is-paused" : ""}`}
-            aria-label="Capas de títulos do catálogo"
-          >
+          <div className="conversion-cover-rail" aria-label="Capas do catálogo em movimento">
             <div className={`conversion-cover-track${covers.length < 2 ? " is-static" : ""}`}>
               {[0, 1].map((copy) => (
                 <div
@@ -370,6 +424,24 @@ function ConversionPage() {
         )}
       </section>
 
+      <section className="conversion-benefits conversion-shell" id="beneficios">
+        <p className="conversion-kicker">POR QUE ASSINAR</p>
+        <h2 className="conversion-heading">
+          TUDO O QUE VOCÊ AMA <span>EM UM LUGAR SÓ</span>
+        </h2>
+        <div className="conversion-benefits-grid">
+          {benefits.map(({ icon: Icon, title, description }) => (
+            <article key={title}>
+              <div className="conversion-icon">
+                <Icon size={19} aria-hidden="true" />
+              </div>
+              <h3>{title}</h3>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="conversion-experience" aria-labelledby="conversion-experience-title">
         <div className="conversion-shell">
           <p className="conversion-kicker">FEITO PARA A SUA MARATONA</p>
@@ -391,46 +463,26 @@ function ConversionPage() {
         </div>
       </section>
 
-      <section className="conversion-benefits conversion-shell" id="beneficios">
-        <p className="conversion-kicker">POR QUE ASSINAR</p>
-        <h2 className="conversion-heading">
-          TUDO O QUE VOCÊ AMA <span>EM UM LUGAR SÓ</span>
-        </h2>
-        <div className="conversion-benefits-grid">
-          {benefits.map(({ icon: Icon, title, description }) => (
-            <article key={title}>
-              <div className="conversion-icon">
-                <Icon size={19} aria-hidden="true" />
-              </div>
-              <h3>{title}</h3>
-              <p>{description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="conversion-how">
+      <section className="conversion-testimonials" aria-labelledby="conversion-testimonials-title">
         <div className="conversion-shell">
-          <p className="conversion-kicker">COMECE EM POUCOS PASSOS</p>
-          <h2 className="conversion-heading">
-            SUA MARATONA <span>COMEÇA AQUI</span>
+          <p className="conversion-kicker">A VOZ DE QUEM ASSISTE</p>
+          <h2 className="conversion-heading" id="conversion-testimonials-title">
+            O QUE ESTÃO <span>DIZENDO</span>
           </h2>
-          <div className="conversion-steps">
-            <article>
-              <span>01</span>
-              <h3>Escolha um plano</h3>
-              <p>Veja os períodos de acesso e escolha o ideal para você.</p>
-            </article>
-            <article>
-              <span>02</span>
-              <h3>Finalize a compra</h3>
-              <p>Confira as condições no checkout e conclua o pagamento.</p>
-            </article>
-            <article>
-              <span>03</span>
-              <h3>Acesse o app</h3>
-              <p>Crie sua conta com o e-mail da compra ou entre na conta que já usa.</p>
-            </article>
+          <p className="conversion-section-copy">Relatos compartilhados para esta página.</p>
+          <div className="conversion-testimonials-grid">
+            {testimonials.map(({ name, quote }) => (
+              <figure className="conversion-testimonial-card" key={name}>
+                <Heart size={18} fill="currentColor" aria-hidden="true" />
+                <blockquote>“{quote}”</blockquote>
+                <figcaption>
+                  <span className="conversion-testimonial-avatar" aria-hidden="true">
+                    {name.charAt(0)}
+                  </span>
+                  <strong>{name}</strong>
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
@@ -695,6 +747,16 @@ function ConversionPage() {
           <p className="conversion-copyright">© 2026 Feed Loves. Todos os direitos reservados.</p>
         </div>
       </footer>
+      {isPartTwo ? (
+        <SubscriptionModal
+          open={isSubscriptionModalOpen}
+          onClose={() => setIsSubscriptionModalOpen(false)}
+          onContinue={() => {
+            setIsSubscriptionModalOpen(false);
+            document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+      ) : null}
     </main>
   );
 }
