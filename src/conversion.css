@@ -210,6 +210,40 @@
 .conversion-video-portrait video {
   aspect-ratio: 9 / 16;
 }
+.episode-sound-button {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: clamp(14px, 3.5%, 28px);
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 24px;
+  transform: translateX(-50%);
+  border: 1px solid #ff9cda;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff55b8, #e91e91);
+  box-shadow: 0 5px 26px #f33ca866, inset 0 1px #ffffff55;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  white-space: nowrap;
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+.episode-sound-button:hover {
+  transform: translateX(-50%) scale(1.04);
+  box-shadow: 0 7px 30px #f33ca899, inset 0 1px #ffffff66;
+  filter: brightness(1.08);
+}
+.episode-sound-button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
 .conversion-video-empty {
   display: flex;
   height: 100%;
@@ -892,6 +926,12 @@
   .conversion-video-frame {
     margin-top: 31px;
     border-radius: 14px;
+  }
+  .episode-sound-button {
+    min-height: 42px;
+    gap: 7px;
+    padding: 0 18px;
+    font-size: 12px;
   }
   .conversion-hero-links {
     flex-direction: column;

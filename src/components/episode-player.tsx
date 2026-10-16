@@ -1,8 +1,9 @@
-import { Play } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { Play, Volume2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 type VimeoPlayerInstance = {
   setCurrentTime: (seconds: number) => Promise<number>;
+  setVolume: (volume: number) => Promise<number>;
   on: (
     event: "play" | "pause" | "timeupdate" | "ended",
     handler: (data?: { seconds?: number }) => void,
@@ -21,6 +22,8 @@ type PlayerJsInstance = {
   on: (event: string, handler: (data?: unknown) => void) => void;
   off?: (event: string, handler: (data?: unknown) => void) => void;
   setCurrentTime?: (seconds: number) => void;
+  unmute?: () => void;
+  setVolume?: (volume: number) => void;
 };
 
 type PlayerJsGlobal = {
@@ -99,7 +102,14 @@ export function EpisodePlayer({
 }: EpisodePlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const bunnyPlayerRef = useRef<PlayerJsInstance | null>(null);
+  const vimeoPlayerRef = useRef<VimeoPlayerInstance | null>(null);
   const restoredRef = useRef(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+
+  useEffect(() => {
+    setSoundEnabled(false);
+  }, [videoUrl]);
 
   useEffect(() => {
     const isBunny = Boolean(
@@ -126,6 +136,7 @@ export function EpisodePlayer({
       const playerjs = (window as Window & { playerjs?: PlayerJsGlobal }).playerjs;
       if (!playerjs) return;
       player = new playerjs.Player(frame);
+      bunnyPlayerRef.current = player;
 
       player.on("ready", () => {
         if (initialSeconds > 0 && !restoredRef.current && player?.setCurrentTime) {
@@ -163,6 +174,7 @@ export function EpisodePlayer({
 
     return () => {
       cancelled = true;
+      bunnyPlayerRef.current = null;
       existing?.removeEventListener("load", attach);
     };
   }, [videoUrl, initialSeconds, onEnded, onPlaybackSeconds, onPlaybackStateChange]);
@@ -180,6 +192,7 @@ export function EpisodePlayer({
       const Vimeo = (window as Window & { Vimeo?: VimeoGlobal }).Vimeo;
       if (!Vimeo) return;
       player = new Vimeo.Player(frame);
+      vimeoPlayerRef.current = player;
       if (initialSeconds > 0 && !restoredRef.current) {
         restoredRef.current = true;
         void player.setCurrentTime(initialSeconds);
@@ -214,6 +227,7 @@ export function EpisodePlayer({
 
     return () => {
       cancelled = true;
+      vimeoPlayerRef.current = null;
       if (player) {
         player.off("play", () => onPlaybackStateChange?.(true));
         player.off("pause", () => onPlaybackStateChange?.(false));
@@ -221,6 +235,33 @@ export function EpisodePlayer({
       existingScript?.removeEventListener("load", attachPlayer);
     };
   }, [videoUrl, initialSeconds, onEnded, onPlaybackSeconds, onPlaybackStateChange]);
+
+  const activateSound = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = false;
+      videoRef.current.volume = 1;
+    } else if (vimeoPlayerRef.current) {
+      void vimeoPlayerRef.current.setVolume(1);
+    } else if (bunnyPlayerRef.current) {
+      bunnyPlayerRef.current.unmute?.();
+      bunnyPlayerRef.current.setVolume?.(100);
+    } else if (iframeRef.current) {
+      const frame = iframeRef.current;
+      const frameUrl = new URL(frame.src);
+      if (/youtube(?:-nocookie)?\.com$/i.test(frameUrl.hostname)) {
+        frame.contentWindow?.postMessage(
+          JSON.stringify({ event: "command", func: "unMute", args: [] }),
+          frameUrl.origin,
+        );
+      } else {
+        frame.contentWindow?.postMessage(
+          JSON.stringify({ method: "setVolume", value: 1 }),
+          frameUrl.origin,
+        );
+      }
+    }
+    setSoundEnabled(true);
+  };
 
   if (videoUrl) {
     const isTelegramMessageUrl = /(?:^|\.)t\.me\//i.test(videoUrl);
@@ -260,6 +301,7 @@ export function EpisodePlayer({
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
+          position: "relative",
           background: settings?.backgroundColor || "#000",
           borderColor: settings?.accentColor,
           borderRadius: settings?.borderRadius,
@@ -322,6 +364,8 @@ export function EpisodePlayer({
                 playerUrl.searchParams.set("playsinline", "1");
                 if (/youtube(?:-nocookie)?\.com$/i.test(playerUrl.hostname)) {
                   playerUrl.searchParams.set("mute", "1");
+                  playerUrl.searchParams.set("enablejsapi", "1");
+                  playerUrl.searchParams.set("origin", window.location.origin);
                 } else {
                   playerUrl.searchParams.set("muted", "1");
                 }
@@ -342,6 +386,18 @@ export function EpisodePlayer({
             }}
           />
         )}
+        {autoPlay ? (
+          <button
+            type="button"
+            className="episode-sound-button"
+            onClick={activateSound}
+            aria-label={soundEnabled ? "Som ativado" : "Ativar som do vídeo"}
+            aria-pressed={soundEnabled}
+          >
+            <Volume2 size={18} aria-hidden="true" />
+            {soundEnabled ? "SOM ATIVADO" : "ATIVAR SOM"}
+          </button>
+        ) : null}
         {settings?.showBrand && settings.logoUrl ? (
           <img
             src={settings.logoUrl}
