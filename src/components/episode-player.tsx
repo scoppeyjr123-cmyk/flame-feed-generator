@@ -113,7 +113,7 @@ export function EpisodePlayer({
 
   useEffect(() => {
     const isBunny = Boolean(
-      videoUrl && /(?:iframe|player)\.mediadelivery\.net\/embed\//.test(videoUrl),
+      videoUrl && /(?:iframe|player)\.mediadelivery\.net\/(?:embed|play|video)\//i.test(videoUrl),
     );
     if (!isBunny || !iframeRef.current) return;
 
@@ -255,7 +255,7 @@ export function EpisodePlayer({
         );
       } else {
         frame.contentWindow?.postMessage(
-          JSON.stringify({ method: "setVolume", value: 1 }),
+          JSON.stringify({ method: "setVolume", value: 100 }),
           frameUrl.origin,
         );
       }
