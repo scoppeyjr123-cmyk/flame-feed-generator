@@ -288,27 +288,47 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
 
     if (error || !data) return { episode: null, error: "Episódio não encontrado." };
 
-    let allowed = data.access_type === "free";
-    if (!allowed) {
-      const { data: subscription } = await supabase
-        .from("subscriptions")
-        .select("plan_id,status")
-        .eq("user_id", session.user.id)
-        .in("status", ["active", "lifetime"])
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    const { data: subscriptionRows, error: subscriptionError } = await supabase
+      .from("subscriptions")
+      .select("plan_id,status,expires_at")
+      .eq("user_id", session.user.id)
+      .in("status", ["active", "lifetime"])
+      .order("created_at", { ascending: false });
 
-      allowed = Boolean(
-        subscription &&
-        (data.access_type === "subscriber" ||
-          (data.access_type === "specific_plan" && data.plan_id === subscription.plan_id)),
-      );
+    if (subscriptionError) {
+      return {
+        episode: null,
+        error:
+          "Não foi possível confirmar sua assinatura agora. Atualize a página e tente novamente.",
+      };
     }
 
+    const now = Date.now();
+    const validSubscriptions = (subscriptionRows ?? []).filter(
+      (subscription) =>
+        subscription.status === "lifetime" ||
+        subscription.expires_at === null ||
+        new Date(subscription.expires_at).getTime() > now,
+    );
+    const hasSubscription = validSubscriptions.length > 0;
+    const matchingSubscription = validSubscriptions.some(
+      (subscription) => subscription.plan_id === data.plan_id,
+    );
+    const allowed =
+      data.access_type === "free" ||
+      (data.access_type === "subscriber" && hasSubscription) ||
+      (data.access_type === "specific_plan" && matchingSubscription);
+
     let freeRemainingSeconds: number | null = null;
-    if (data.access_type === "free") {
-      const { data: usage } = await supabase.rpc("get_free_watch_usage");
+    if (data.access_type === "free" && !hasSubscription) {
+      const { data: usage, error: usageError } = await supabase.rpc("get_free_watch_usage");
+      if (usageError) {
+        return {
+          episode: null,
+          error:
+            "Não foi possível confirmar seu acesso gratuito agora. Atualize a página e tente novamente.",
+        };
+      }
       const used = Number(usage ?? 0);
       freeRemainingSeconds = Math.max(0, 1200 - (Number.isFinite(used) ? used : 0));
       if (freeRemainingSeconds <= 0) {
@@ -412,33 +432,41 @@ export const getCustomerAccount = createServerFn({ method: "GET" }).handler(asyn
   const session = await getCustomerSession();
   if (!session.authenticated) return { session, subscription: null };
   const supabase = createClient();
-  const [{ data }, { data: history }, { data: watchHistory }] = await Promise.all([
-    supabase
-      .from("subscriptions")
-      .select("plan_id,status,starts_at,expires_at,renews_at,plans(name,billing_interval)")
-      .eq("user_id", session.user.id)
-      .in("status", ["active", "lifetime"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from("subscription_history")
-      .select("action,created_at")
-      .eq("user_id", session.user.id)
-      .order("created_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("watch_progress")
-      .select(
-        "position_seconds,duration_seconds,completed,updated_at,episodes(id,episode_number,title,series(title,slug))",
-      )
-      .eq("user_id", session.user.id)
-      .order("updated_at", { ascending: false })
-      .limit(12),
-  ]);
+  const [{ data: subscriptionRows }, { data: history }, { data: watchHistory }] = await Promise.all(
+    [
+      supabase
+        .from("subscriptions")
+        .select("plan_id,status,starts_at,expires_at,renews_at,plans(name,billing_interval)")
+        .eq("user_id", session.user.id)
+        .in("status", ["active", "lifetime"])
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("subscription_history")
+        .select("action,created_at")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("watch_progress")
+        .select(
+          "position_seconds,duration_seconds,completed,updated_at,episodes(id,episode_number,title,series(title,slug))",
+        )
+        .eq("user_id", session.user.id)
+        .order("updated_at", { ascending: false })
+        .limit(12),
+    ],
+  );
+  const now = Date.now();
+  const subscription =
+    (subscriptionRows ?? []).find(
+      (row) =>
+        row.status === "lifetime" ||
+        row.expires_at === null ||
+        new Date(row.expires_at).getTime() > now,
+    ) ?? null;
   return {
     session,
-    subscription: data ?? null,
+    subscription,
     history: history ?? [],
     watchHistory: watchHistory ?? [],
   };
