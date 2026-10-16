@@ -360,14 +360,16 @@ export function EpisodePlayer({
                 playerUrl.searchParams.set("player_id", "feedloves-episode");
               }
               if (autoPlay) {
-                playerUrl.searchParams.set("autoplay", "1");
-                playerUrl.searchParams.set("playsinline", "1");
                 if (/youtube(?:-nocookie)?\.com$/i.test(playerUrl.hostname)) {
+                  playerUrl.searchParams.set("autoplay", "1");
+                  playerUrl.searchParams.set("playsinline", "1");
                   playerUrl.searchParams.set("mute", "1");
                   playerUrl.searchParams.set("enablejsapi", "1");
                   playerUrl.searchParams.set("origin", window.location.origin);
                 } else {
-                  playerUrl.searchParams.set("muted", "1");
+                  playerUrl.searchParams.set("autoplay", "true");
+                  playerUrl.searchParams.set("muted", "true");
+                  playerUrl.searchParams.set("playsinline", "true");
                 }
               }
               return playerUrl.toString();
