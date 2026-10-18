@@ -5,6 +5,7 @@ import { getPublishedSeriesBySlug } from "../lib/public/server-fns";
 import { getCustomerAccount } from "../lib/public/server-fns";
 import { createClient } from "../lib/supabase/client";
 import { UpgradeModal } from "../components/upgrade-modal";
+import { getCatalogCode } from "../lib/catalog-code";
 
 export const Route = createFileRoute("/app/novela/$slug")({
   loader: async ({ params }) => {
@@ -96,6 +97,7 @@ function NovelPage() {
         <div className="novel-copy">
           <p className="novel-kicker">{series.category || "Feed Loves"}</p>
           <h1>{series.title}</h1>
+          <p className="novel-code">Código: {getCatalogCode(series.id)}</p>
           <p>{series.description || series.short_description || "Uma história para acompanhar."}</p>
           <div className="novel-meta">
             <span>{series.genre || "Romance"}</span>

@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import originalMarkup from "../feed-loves-original.html?raw";
 import { getPublishedCatalog } from "../lib/public/server-fns";
+import { getCatalogCode } from "../lib/catalog-code";
+import { WhatsAppSupportButton } from "../components/whatsapp-support-button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -111,7 +113,7 @@ function Index() {
           playIndicator.setAttribute("aria-hidden", "true");
           cover.append(image, playIndicator);
           const title = document.createElement("h3");
-          title.textContent = item.title;
+          title.textContent = `${item.title} · ${getCatalogCode(item.id)}`;
           link.append(cover, title);
           article.append(link);
           grid.append(article);
@@ -303,5 +305,10 @@ function Index() {
     return () => cleanups.forEach((cleanup) => cleanup());
   }, [series]);
 
-  return <div dangerouslySetInnerHTML={{ __html: originalMarkup }} />;
+  return (
+    <>
+      <div dangerouslySetInnerHTML={{ __html: originalMarkup }} />
+      <WhatsAppSupportButton />
+    </>
+  );
 }

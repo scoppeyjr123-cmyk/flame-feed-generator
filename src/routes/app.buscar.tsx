@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { getPublishedCatalog } from "../lib/public/server-fns";
+import { getCatalogCode } from "../lib/catalog-code";
 
 export const Route = createFileRoute("/app/buscar")({
   loader: () => getPublishedCatalog(),
@@ -15,7 +16,7 @@ function SearchPage() {
     const normalized = query.trim().toLocaleLowerCase();
     if (!normalized) return series;
     return series.filter((item) =>
-      [item.title, item.category, item.genre, item.short_description]
+      [getCatalogCode(item.id), item.title, item.category, item.genre, item.short_description]
         .filter(Boolean)
         .some((value) => value!.toLocaleLowerCase().includes(normalized)),
     );
@@ -46,7 +47,9 @@ function SearchPage() {
                 alt={`Capa de ${item.title}`}
               />
               <h2>{item.title}</h2>
-              <p>{item.category || item.genre || "Feed Loves"}</p>
+              <p>
+                {getCatalogCode(item.id)} · {item.category || item.genre || "Feed Loves"}
+              </p>
             </Link>
           ))}
         </div>

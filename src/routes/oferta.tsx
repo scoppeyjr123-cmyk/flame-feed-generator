@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { EpisodePlayer } from "../components/episode-player";
 import { SubscriptionModal } from "../components/subscription-modal";
+import { WhatsAppSupportButton } from "../components/whatsapp-support-button";
 import {
   getPublicOfferSettings,
   getPublicPlans,
@@ -715,6 +716,7 @@ export function ConversionPage({
           }}
         />
       ) : null}
+      <WhatsAppSupportButton />
     </main>
   );
 }

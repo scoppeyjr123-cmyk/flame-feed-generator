@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 
 import { getCustomerProgress, getPublishedCatalog } from "../lib/public/server-fns";
+import { getCatalogCode } from "../lib/catalog-code";
 
 export const Route = createFileRoute("/app/")({
   loader: async () => {
@@ -207,6 +208,7 @@ function AppHome() {
                             </span>
                           </div>
                           <h3>{item.title}</h3>
+                          <p className="app-card-code">{getCatalogCode(item.id)}</p>
                           <p>{item.category || item.genre || "Feed Loves"}</p>
                           {progressBySeries.has(item.id) ? (
                             <div className="progress-track" aria-label="Progresso da novela">

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Heart, Home, List, Search, UserRound } from "lucide-react";
 
 import { requireCustomer } from "../lib/customer/guard";
 import { getCustomerAccount } from "../lib/public/server-fns";
@@ -151,19 +152,19 @@ function AppShell() {
       <WhatsAppSupportButton />
       <nav className="feed-app-mobile-nav" aria-label="Navegação mobile">
         <Link to="/app" preload="intent" aria-label="Início">
-          <span aria-hidden="true">⌂</span>
+          <Home size={22} strokeWidth={2.2} aria-hidden="true" />
           Início
         </Link>
         <Link to="/app/buscar" preload="intent" aria-label="Buscar">
-          <span aria-hidden="true">⌕</span>
+          <Search size={22} strokeWidth={2.2} aria-hidden="true" />
           Buscar
         </Link>
         <Link to="/app/minha-lista" preload="intent" aria-label="Minha Lista">
-          <span aria-hidden="true">♡</span>
+          <Heart size={22} strokeWidth={2.2} aria-hidden="true" />
           Minha Lista
         </Link>
         <Link to="/app/perfil" preload="intent" aria-label="Perfil">
-          <span aria-hidden="true">◉</span>
+          <UserRound size={22} strokeWidth={2.2} aria-hidden="true" />
           Perfil
         </Link>
       </nav>
