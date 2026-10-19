@@ -141,7 +141,7 @@ export function HomeCinematicHero({ series }: { series: HeroSeries[] }) {
         .cinematic-hero-bg.is-previous{animation:cinematic-hero-fade-out 1.25s ease both}
         .cinematic-hero:before{content:"";position:absolute;inset:0;z-index:-3;background:linear-gradient(90deg,#090408 3%,#120711f2 29%,#180915a3 56%,#12071138 78%),linear-gradient(0deg,#090408 0%,transparent 40%),radial-gradient(circle at 72% 22%,#e83b9b24,transparent 38%)}
         .cinematic-hero:after{content:"";position:absolute;inset:auto 0 0;z-index:-2;height:34%;background:linear-gradient(0deg,#0d070d 2%,transparent 100%);pointer-events:none}
-        .cinematic-hero-shell{width:min(1240px,calc(100% - 44px));min-height:inherit;margin:auto;display:grid;grid-template-columns:minmax(0,640px) 1fr;align-items:center;padding:clamp(70px,9vw,126px) 0 190px}
+        .cinematic-hero-shell{width:min(1240px,calc(100% - 44px));min-height:inherit;margin:auto;display:grid;grid-template-columns:minmax(0,640px) 1fr;align-items:center;padding:clamp(70px,9vw,126px) 0 360px}
         .cinematic-hero-copy{position:relative;z-index:2;text-shadow:0 2px 28px #000}
         .cinematic-hero-kicker{display:inline-flex;align-items:center;gap:8px;border:1px solid #ff62b35c;border-radius:999px;background:#170b16b8;padding:8px 13px;color:#ff8dcc;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;backdrop-filter:blur(12px)}
         .cinematic-hero h1{max-width:650px;margin:20px 0 0;font:700 clamp(48px,6vw,82px)/.97 "Playfair Display",Georgia,serif;letter-spacing:-.045em;text-wrap:balance}
