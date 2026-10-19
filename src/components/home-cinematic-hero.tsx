@@ -172,7 +172,7 @@ export function HomeCinematicHero({ series }: { series: HeroSeries[] }) {
           .cinematic-hero h1{margin-top:16px;font-size:clamp(39px,12vw,58px);line-height:.98}
           .cinematic-hero-subtitle{margin-top:16px;font-size:14px;line-height:1.55}
           .cinematic-hero-current{margin-top:14px}
-          .cinematic-hero-cta{width:100%;min-height:52px;margin-top:22px;padding:0 18px;font-size:11px}
+          .cinematic-hero-cta{width:calc(100% - 76px);min-height:52px;margin-top:22px;padding:0 18px;font-size:11px}
           .cinematic-hero-rail{bottom:20px}
           .cinematic-hero-rail-inner{width:calc(100% - 32px)}
           .cinematic-hero-card{flex-basis:92px}
