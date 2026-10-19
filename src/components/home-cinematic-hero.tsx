@@ -177,7 +177,7 @@ export function HomeCinematicHero({ series }: { series: HeroSeries[] }) {
           .cinematic-hero-rail-inner{width:calc(100% - 32px)}
           .cinematic-hero-card{flex-basis:92px}
         }
-        @media(prefers-reduced-motion:reduce){.cinematic-hero *{scroll-behavior:auto!important}.cinematic-hero-bg,.cinematic-hero-card,.cinematic-hero-cta{animation:none!important;transition:none!important}}
+        @media(prefers-reduced-motion:reduce){.cinematic-hero *{scroll-behavior:auto!important}.cinematic-hero-bg,.cinematic-hero-card,.cinematic-hero-cta{animation:none!important;transition:none!important}.cinematic-hero-bg.is-active{opacity:1!important}.cinematic-hero-bg.is-previous{opacity:0!important}}
       `}</style>
           {previousImage ? (
             <img
