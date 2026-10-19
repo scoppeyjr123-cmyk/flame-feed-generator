@@ -64,7 +64,9 @@ export function HomeCinematicHero({ series }: { series: HeroSeries[] }) {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion || highlights.length < 2) return;
+    // Reduced motion removes zoom/crossfade effects, but the catalog still
+    // advances so the autoplay promise remains consistent for every visitor.
+    if (highlights.length < 2) return;
     const timer = window.setInterval(() => {
       const current = activeIndexRef.current;
       const next = (current + 1) % highlights.length;
