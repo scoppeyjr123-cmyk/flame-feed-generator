@@ -234,12 +234,14 @@ export function ConversionPage({
   video,
   isPartTwo = false,
   isPortrait = false,
+  heroCtaText,
 }: {
   plans: PublicPlan[];
   series: Awaited<ReturnType<typeof getPublishedCatalog>>["series"];
   video: PartTwoSettings;
   isPartTwo?: boolean;
   isPortrait?: boolean;
+  heroCtaText?: string;
 }) {
   const [campaignVideo, setCampaignVideo] = useState({
     url: video.videoUrl,
@@ -344,7 +346,7 @@ export function ConversionPage({
         <div className="conversion-hero-links">
           <a className="conversion-button" href="#planos">
             <Play size={16} fill="currentColor" aria-hidden="true" />{" "}
-            {isPartTwo ? video.ctaText : "QUERO ASSISTIR AGORA"}
+            {heroCtaText || (isPartTwo ? video.ctaText : (video.ctaText && video.ctaText !== "CONTINUE ASSISTINDO" ? video.ctaText : "QUERO ASSISTIR AGORA"))}
           </a>
           <a className="conversion-text-link" href="#beneficios">
             VER BENEFÍCIOS <ChevronDown size={15} aria-hidden="true" />
