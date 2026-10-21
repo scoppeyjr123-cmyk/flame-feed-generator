@@ -98,8 +98,9 @@ export function HomeCinematicHero({ series }: { series: HeroSeries[] }) {
 
   if (!portalTarget) return hideLegacyHero;
 
-  const active = highlights[activeIndex];
-  const previous = previousIndex === null ? null : highlights[previousIndex];
+  const active = highlights[activeIndex] ?? highlights[0];
+  if (!active) return hideLegacyHero;
+  const previous = previousIndex === null ? null : (highlights[previousIndex] ?? null);
   const activeImage = active.banner_url || active.cover_url || active.thumbnail_url || "";
   const previousImage =
     previous?.banner_url || previous?.cover_url || previous?.thumbnail_url || "";

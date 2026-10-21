@@ -9,13 +9,13 @@ function adminClient() {
 
 function readPath(value: unknown, paths: string[]) {
   for (const path of paths) {
-    let current = value as Record<string, unknown> | null;
+    let current: unknown = value;
     for (const part of path.split(".")) {
       if (!current || typeof current !== "object") {
         current = null;
         break;
       }
-      current = current[part] as Record<string, unknown> | null;
+      current = (current as Record<string, unknown>)[part];
     }
     if (typeof current === "string" && current.trim()) return current.trim();
   }
