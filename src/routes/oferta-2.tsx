@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ConversionPage } from "./oferta";
 import {
+  getPublicOffer2Plans,
   getPublicOffer2Settings,
-  getPublicPlans,
   getPublishedCatalog,
 } from "../lib/public/server-fns";
 import conversionCss from "../conversion.css?url";
@@ -10,7 +10,7 @@ import conversionCss from "../conversion.css?url";
 export const Route = createFileRoute("/oferta-2")({
   loader: async () => {
     const [planResult, catalogResult, video] = await Promise.all([
-      getPublicPlans(),
+      getPublicOffer2Plans(),
       getPublishedCatalog(),
       getPublicOffer2Settings(),
     ]);

@@ -25,6 +25,13 @@ const fallback = {
   videoProvider: "url",
   eyebrow: "CONTINUAÇÃO EXCLUSIVA",
   ctaText: "CONTINUE ASSISTINDO",
+  checkoutWeeklyUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=XTSUYU1",
+  checkoutMonthlyUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=ZVZ9FV7",
+  checkoutAnnualUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=WH555VJ",
+  priceWeekly: "4.90",
+  priceMonthly: "9.90",
+  priceAnnual: "39.90",
+  currency: "EUR",
 };
 type EditorProps = {
   content: Record<string, unknown>;
@@ -267,6 +274,87 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
               onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
             />
           </div>
+          {contentKey === "offer2" ? (
+            <>
+              <div
+                className="admin-field full"
+                style={{
+                  marginTop: 10,
+                  paddingTop: 16,
+                  borderTop: "1px solid #3a2335",
+                }}
+              >
+                <strong style={{ fontSize: 13, color: "#fff" }}>
+                  Links de Checkout e Preços (/oferta-2)
+                </strong>
+                <small style={{ color: "#a8889d" }}>
+                  Configure os links e valores específicos da plataforma parceira (Applyfy, etc.).
+                </small>
+              </div>
+              <div className="admin-field">
+                <label>Preço Semanal</label>
+                <input
+                  value={String(form.priceWeekly ?? "4.90")}
+                  onChange={(e) => setForm({ ...form, priceWeekly: e.target.value })}
+                  placeholder="4.90"
+                />
+              </div>
+              <div className="admin-field">
+                <label>URL Checkout Semanal (Applyfy)</label>
+                <input
+                  type="url"
+                  value={String(form.checkoutWeeklyUrl ?? "")}
+                  onChange={(e) => setForm({ ...form, checkoutWeeklyUrl: e.target.value })}
+                  placeholder="https://checkout.applyfy.com.br/..."
+                />
+              </div>
+              <div className="admin-field">
+                <label>Preço Mensal</label>
+                <input
+                  value={String(form.priceMonthly ?? "9.90")}
+                  onChange={(e) => setForm({ ...form, priceMonthly: e.target.value })}
+                  placeholder="9.90"
+                />
+              </div>
+              <div className="admin-field">
+                <label>URL Checkout Mensal (Applyfy)</label>
+                <input
+                  type="url"
+                  value={String(form.checkoutMonthlyUrl ?? "")}
+                  onChange={(e) => setForm({ ...form, checkoutMonthlyUrl: e.target.value })}
+                  placeholder="https://checkout.applyfy.com.br/..."
+                />
+              </div>
+              <div className="admin-field">
+                <label>Preço Anual</label>
+                <input
+                  value={String(form.priceAnnual ?? "39.90")}
+                  onChange={(e) => setForm({ ...form, priceAnnual: e.target.value })}
+                  placeholder="39.90"
+                />
+              </div>
+              <div className="admin-field">
+                <label>URL Checkout Anual (Applyfy)</label>
+                <input
+                  type="url"
+                  value={String(form.checkoutAnnualUrl ?? "")}
+                  onChange={(e) => setForm({ ...form, checkoutAnnualUrl: e.target.value })}
+                  placeholder="https://checkout.applyfy.com.br/..."
+                />
+              </div>
+              <div className="admin-field full">
+                <label>Moeda</label>
+                <select
+                  value={String(form.currency ?? "EUR")}
+                  onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                >
+                  <option value="EUR">Euro (€ - EUR)</option>
+                  <option value="BRL">Real (R$ - BRL)</option>
+                  <option value="USD">Dólar ($ - USD)</option>
+                </select>
+              </div>
+            </>
+          ) : null}
         </div>
         <div className="admin-form-actions">
           <button type="submit" className="admin-primary-button" disabled={saving}>
