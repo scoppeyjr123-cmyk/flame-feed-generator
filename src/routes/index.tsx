@@ -6,6 +6,11 @@ import { getCatalogCode } from "../lib/catalog-code";
 import { WhatsAppSupportButton } from "../components/whatsapp-support-button";
 import { HomeCinematicHero } from "../components/home-cinematic-hero";
 
+const wivenMarkup = originalMarkup
+  .replaceAll("https://pay.wiapy.com/D1rAjQcO8bo_", "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=UDRLIC7")
+  .replaceAll("https://pay.wiapy.com/JQcBx7Tif3vh", "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=84LM9WZ")
+  .replaceAll("https://pay.wiapy.com/KaF1EsAXWGPC", "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=G2M4G7C");
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -308,7 +313,7 @@ function Index() {
 
   return (
     <>
-      <div dangerouslySetInnerHTML={{ __html: originalMarkup }} />
+      <div dangerouslySetInnerHTML={{ __html: wivenMarkup }} />
       <HomeCinematicHero series={series} />
       <WhatsAppSupportButton />
     </>
