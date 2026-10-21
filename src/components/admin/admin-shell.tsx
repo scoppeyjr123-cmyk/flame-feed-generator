@@ -31,7 +31,7 @@ const navItems = [
   { href: "/admin/planos", label: "Planos", icon: Tags },
   { href: "/admin/checkout", label: "Checkout", icon: Link2 },
   { href: "/admin/home", label: "Home", icon: Home },
-  { href: "/admin/parte-2", label: "Parte 2", icon: PlaySquare },
+  { href: "/admin/parte-2", label: "Parte 2 & Ofertas", icon: PlaySquare },
   { href: "/admin/midia", label: "Mídia", icon: ImageIcon },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
   { href: "/admin/auditoria", label: "Auditoria", icon: ClipboardList },

@@ -37,6 +37,13 @@ export type PartTwoSettings = {
   videoProvider: "url" | "bunny";
   ctaText: string;
   eyebrow: string;
+  checkoutWeeklyUrl?: string;
+  checkoutMonthlyUrl?: string;
+  checkoutAnnualUrl?: string;
+  priceWeekly?: number | string;
+  priceMonthly?: number | string;
+  priceAnnual?: number | string;
+  currency?: string;
 };
 
 const partTwoFallback: PartTwoSettings = {
@@ -49,6 +56,13 @@ const partTwoFallback: PartTwoSettings = {
   videoProvider: "url",
   ctaText: "CONTINUE ASSISTINDO",
   eyebrow: "CONTINUAÇÃO EXCLUSIVA",
+  checkoutWeeklyUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=XTSUYU1",
+  checkoutMonthlyUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=ZVZ9FV7",
+  checkoutAnnualUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=WH555VJ",
+  priceWeekly: 4.9,
+  priceMonthly: 9.9,
+  priceAnnual: 39.9,
+  currency: "EUR",
 };
 
 async function readPartTwoSettings(key: string): Promise<PartTwoSettings> {
@@ -65,7 +79,15 @@ async function readPartTwoSettings(key: string): Promise<PartTwoSettings> {
       : {};
   // Until the offer gets its own saved video, keep showing the previously shared
   // Part 2 video. Saving either page then makes its video independent.
-  const value = content[key] ?? (key === "offer" ? content["partTwo"] : null);
+  const value =
+    content[key] ??
+    (key === "offer"
+      ? content["partTwo"]
+      : key === "offer2"
+        ? (content["offer"] ?? content["partTwo"])
+        : key === "offer3"
+          ? (content["offer2"] ?? content["offer"] ?? content["partTwo"])
+          : null);
   const settings = {
     ...partTwoFallback,
     ...(value && typeof value === "object" ? value : {}),
@@ -92,6 +114,140 @@ export const getPublicPartTwoSettings = createServerFn({ method: "GET" }).handle
 
 export const getPublicOfferSettings = createServerFn({ method: "GET" }).handler(async () => {
   return readPartTwoSettings("offer");
+});
+
+export const getPublicOffer2Settings = createServerFn({ method: "GET" }).handler(async () => {
+  return readPartTwoSettings("offer2");
+});
+
+export const getPublicOffer3Settings = createServerFn({ method: "GET" }).handler(async () => {
+  return readPartTwoSettings("offer3");
+});
+
+export const getPublicOffer2Plans = createServerFn({ method: "GET" }).handler(async () => {
+  const settings = await readPartTwoSettings("offer2");
+  const currency = settings.currency || "EUR";
+  const defaultBenefits = [
+    "Acesso completo ao catálogo",
+    "Doramas, séries turcas e novelinhas",
+    "Dublado e legendado",
+    "Sem anúncios",
+    "Dispositivos compatíveis",
+    "Liberação imediata",
+  ];
+
+  const plans: PublicPlan[] = [
+    {
+      id: "offer2-weekly",
+      slug: "weekly",
+      name: "Semanal",
+      description: "7 dias de acesso ilimitado",
+      price: Number(settings.priceWeekly) || 4.9,
+      currency,
+      billing_interval: "week",
+      benefits: defaultBenefits,
+      featured: false,
+      sort_order: 1,
+      checkout_url:
+        settings.checkoutWeeklyUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=XTSUYU1",
+    },
+    {
+      id: "offer2-annual",
+      slug: "annual",
+      name: "Anual",
+      description: "12 meses de acesso ilimitado",
+      price: Number(settings.priceAnnual) || 39.9,
+      currency,
+      billing_interval: "year",
+      benefits: defaultBenefits,
+      featured: true,
+      sort_order: 2,
+      checkout_url:
+        settings.checkoutAnnualUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=WH555VJ",
+    },
+    {
+      id: "offer2-monthly",
+      slug: "monthly",
+      name: "Mensal",
+      description: "30 dias de acesso ilimitado",
+      price: Number(settings.priceMonthly) || 9.9,
+      currency,
+      billing_interval: "month",
+      benefits: defaultBenefits,
+      featured: false,
+      sort_order: 3,
+      checkout_url:
+        settings.checkoutMonthlyUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=ZVZ9FV7",
+    },
+  ];
+
+  return { plans, error: null };
+});
+
+export const getPublicOffer3Plans = createServerFn({ method: "GET" }).handler(async () => {
+  const settings = await readPartTwoSettings("offer3");
+  const currency = settings.currency || "EUR";
+  const defaultBenefits = [
+    "Acesso completo ao catálogo",
+    "Doramas, séries turcas e novelinhas",
+    "Dublado e legendado",
+    "Sem anúncios",
+    "Dispositivos compatíveis",
+    "Liberação imediata",
+  ];
+
+  const plans: PublicPlan[] = [
+    {
+      id: "offer3-weekly",
+      slug: "weekly",
+      name: "Semanal",
+      description: "7 dias de acesso ilimitado",
+      price: Number(settings.priceWeekly) || 4.9,
+      currency,
+      billing_interval: "week",
+      benefits: defaultBenefits,
+      featured: false,
+      sort_order: 1,
+      checkout_url:
+        settings.checkoutWeeklyUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=XTSUYU1",
+    },
+    {
+      id: "offer3-annual",
+      slug: "annual",
+      name: "Anual",
+      description: "12 meses de acesso ilimitado",
+      price: Number(settings.priceAnnual) || 39.9,
+      currency,
+      billing_interval: "year",
+      benefits: defaultBenefits,
+      featured: true,
+      sort_order: 2,
+      checkout_url:
+        settings.checkoutAnnualUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=WH555VJ",
+    },
+    {
+      id: "offer3-monthly",
+      slug: "monthly",
+      name: "Mensal",
+      description: "30 dias de acesso ilimitado",
+      price: Number(settings.priceMonthly) || 9.9,
+      currency,
+      billing_interval: "month",
+      benefits: defaultBenefits,
+      featured: false,
+      sort_order: 3,
+      checkout_url:
+        settings.checkoutMonthlyUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=ZVZ9FV7",
+    },
+  ];
+
+  return { plans, error: null };
 });
 
 export const getPublicPartTwoVariantSettings = createServerFn({ method: "GET" })

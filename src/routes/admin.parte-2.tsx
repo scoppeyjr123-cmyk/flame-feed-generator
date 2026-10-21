@@ -25,6 +25,13 @@ const fallback = {
   videoProvider: "url",
   eyebrow: "CONTINUAÇÃO EXCLUSIVA",
   ctaText: "CONTINUE ASSISTINDO",
+  checkoutWeeklyUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=XTSUYU1",
+  checkoutMonthlyUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=ZVZ9FV7",
+  checkoutAnnualUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=WH555VJ",
+  priceWeekly: "4.90",
+  priceMonthly: "9.90",
+  priceAnnual: "39.90",
+  currency: "EUR",
 };
 type EditorProps = {
   content: Record<string, unknown>;
@@ -34,12 +41,17 @@ type EditorProps = {
 };
 
 function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
-  const isOffer = contentKey === "offer";
+  const isOffer = contentKey === "offer" || contentKey === "offer2" || contentKey === "offer3";
+  const fallbackOffer =
+    contentKey === "offer3"
+      ? (content["offer2"] ?? content["offer"] ?? content["partTwo"])
+      : contentKey === "offer2"
+        ? (content["offer"] ?? content["partTwo"])
+        : content["partTwo"];
+  const rawValue = content[contentKey] ?? (isOffer ? fallbackOffer : null);
   const value =
-    (content[contentKey] ?? (isOffer ? content["partTwo"] : null)) &&
-    typeof (content[contentKey] ?? (isOffer ? content["partTwo"] : null)) === "object" &&
-    !Array.isArray(content[contentKey] ?? (isOffer ? content["partTwo"] : null))
-      ? ((content[contentKey] ?? content["partTwo"]) as Record<string, unknown>)
+    rawValue && typeof rawValue === "object" && !Array.isArray(rawValue)
+      ? (rawValue as Record<string, unknown>)
       : {};
   const [form, setForm] = useState({
     ...fallback,
@@ -72,12 +84,21 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
       if (file) {
         if (form.videoProvider === "bunny") {
           const bunny = await createPartTwoBunnyAsset({
-            data: { title: isOffer ? "Feed Loves — oferta" : String(form.headline) },
+            data: {
+              title: isOffer
+                ? contentKey === "offer3"
+                  ? "Feed Loves — oferta 3"
+                  : contentKey === "offer2"
+                    ? "Feed Loves — oferta 2"
+                    : "Feed Loves — oferta"
+                : String(form.headline),
+            },
           });
           await uploadFileToBunnyTus(file, bunny.upload, setUploadProgress);
           videoUrl = bunny.embedUrl;
         } else {
-          const storagePath = `${path}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+          const sanitizedPath = path.replace(/^\/+/, "");
+          const storagePath = `${sanitizedPath}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
           const upload = await supabase.storage
             .from("feedloves-media")
             .upload(storagePath, file, { upsert: false, contentType: file.type });
@@ -179,9 +200,9 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
           ) : (
             <>
               <div className="admin-field full">
-                <label htmlFor="offer-headline">Headline da página Oferta</label>
+                <label htmlFor={`${contentKey}-headline`}>Headline da {label}</label>
                 <textarea
-                  id="offer-headline"
+                  id={`${contentKey}-headline`}
                   rows={3}
                   maxLength={180}
                   value={String(form.offerHeadline || "")}
@@ -194,9 +215,9 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
                 </small>
               </div>
               <div className="admin-field full">
-                <label htmlFor="offer-catalog-subtitle">Texto abaixo de Explore o Catálogo</label>
+                <label htmlFor={`${contentKey}-catalog-subtitle`}>Texto abaixo de Explore o Catálogo</label>
                 <input
-                  id="offer-catalog-subtitle"
+                  id={`${contentKey}-catalog-subtitle`}
                   maxLength={140}
                   value={String(form.catalogSubtitle || "")}
                   onChange={(e) => setForm({ ...form, catalogSubtitle: e.target.value })}
@@ -259,6 +280,87 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
               onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
             />
           </div>
+          {contentKey === "offer2" ? (
+            <>
+              <div
+                className="admin-field full"
+                style={{
+                  marginTop: 10,
+                  paddingTop: 16,
+                  borderTop: "1px solid #3a2335",
+                }}
+              >
+                <strong style={{ fontSize: 13, color: "#fff" }}>
+                  Links de Checkout e Preços (/oferta-2)
+                </strong>
+                <small style={{ color: "#a8889d" }}>
+                  Configure os links e valores específicos da plataforma parceira (Applyfy, etc.).
+                </small>
+              </div>
+              <div className="admin-field">
+                <label>Preço Semanal</label>
+                <input
+                  value={String(form.priceWeekly ?? "4.90")}
+                  onChange={(e) => setForm({ ...form, priceWeekly: e.target.value })}
+                  placeholder="4.90"
+                />
+              </div>
+              <div className="admin-field">
+                <label>URL Checkout Semanal (Applyfy)</label>
+                <input
+                  type="url"
+                  value={String(form.checkoutWeeklyUrl ?? "")}
+                  onChange={(e) => setForm({ ...form, checkoutWeeklyUrl: e.target.value })}
+                  placeholder="https://checkout.applyfy.com.br/..."
+                />
+              </div>
+              <div className="admin-field">
+                <label>Preço Mensal</label>
+                <input
+                  value={String(form.priceMonthly ?? "9.90")}
+                  onChange={(e) => setForm({ ...form, priceMonthly: e.target.value })}
+                  placeholder="9.90"
+                />
+              </div>
+              <div className="admin-field">
+                <label>URL Checkout Mensal (Applyfy)</label>
+                <input
+                  type="url"
+                  value={String(form.checkoutMonthlyUrl ?? "")}
+                  onChange={(e) => setForm({ ...form, checkoutMonthlyUrl: e.target.value })}
+                  placeholder="https://checkout.applyfy.com.br/..."
+                />
+              </div>
+              <div className="admin-field">
+                <label>Preço Anual</label>
+                <input
+                  value={String(form.priceAnnual ?? "39.90")}
+                  onChange={(e) => setForm({ ...form, priceAnnual: e.target.value })}
+                  placeholder="39.90"
+                />
+              </div>
+              <div className="admin-field">
+                <label>URL Checkout Anual (Applyfy)</label>
+                <input
+                  type="url"
+                  value={String(form.checkoutAnnualUrl ?? "")}
+                  onChange={(e) => setForm({ ...form, checkoutAnnualUrl: e.target.value })}
+                  placeholder="https://checkout.applyfy.com.br/..."
+                />
+              </div>
+              <div className="admin-field full">
+                <label>Moeda</label>
+                <select
+                  value={String(form.currency ?? "EUR")}
+                  onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                >
+                  <option value="EUR">Euro (€ - EUR)</option>
+                  <option value="BRL">Real (R$ - BRL)</option>
+                  <option value="USD">Dólar ($ - USD)</option>
+                </select>
+              </div>
+            </>
+          ) : null}
         </div>
         <div className="admin-form-actions">
           <button type="submit" className="admin-primary-button" disabled={saving}>
@@ -280,12 +382,25 @@ function AdminPartTwo() {
       : {};
   return (
     <AdminShell
-      title="Parte 2"
-      description="Edite as três páginas de continuação e o vídeo da oferta."
+      title="Páginas & Ofertas"
+      description="Edite as páginas de continuação (Parte 2) e as páginas de oferta (/oferta, /oferta-2 e /oferta-3)."
     >
       <AdminPageHeader
-        title="Personalização das páginas Parte 2"
-        description="Cada versão possui vídeo independente. Use Bunny Stream ou URL externa."
+        title="Personalização das páginas de Oferta e Parte 2"
+        description="Cada versão possui vídeo independente e textos customizáveis. Use Bunny Stream, upload direto ou URL externa."
+      />
+      <PartTwoEditor content={content} contentKey="offer" label="Página Oferta" path="/oferta" />
+      <PartTwoEditor
+        content={content}
+        contentKey="offer2"
+        label="Página Oferta 2"
+        path="/oferta-2"
+      />
+      <PartTwoEditor
+        content={content}
+        contentKey="offer3"
+        label="Página Oferta 3 (Vídeo 9:16)"
+        path="/oferta-3"
       />
       <PartTwoEditor
         content={content}
@@ -305,7 +420,6 @@ function AdminPartTwo() {
         label="Parte 2 — versão 2"
         path="/parte-2-2"
       />
-      <PartTwoEditor content={content} contentKey="offer" label="Página Oferta" path="/oferta" />
     </AdminShell>
   );
 }

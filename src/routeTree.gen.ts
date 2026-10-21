@@ -17,6 +17,8 @@ import { Route as CriarContaRouteImport } from './routes/criar-conta'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as OfertaRouteImport } from './routes/oferta'
+import { Route as Oferta2RouteImport } from './routes/oferta-2'
+import { Route as Oferta3RouteImport } from './routes/oferta-3'
 import { Route as Parte2RouteImport } from './routes/parte-2'
 import { Route as Parte21RouteImport } from './routes/parte-2-1'
 import { Route as Parte22RouteImport } from './routes/parte-2-2'
@@ -80,6 +82,16 @@ const ObrigadoRoute = ObrigadoRouteImport.update({
 const OfertaRoute = OfertaRouteImport.update({
   id: '/oferta',
   path: '/oferta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Oferta2Route = Oferta2RouteImport.update({
+  id: '/oferta-2',
+  path: '/oferta-2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Oferta3Route = Oferta3RouteImport.update({
+  id: '/oferta-3',
+  path: '/oferta-3',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Parte2Route = Parte2RouteImport.update({
@@ -212,6 +224,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/obrigado': typeof ObrigadoRoute
   '/oferta': typeof OfertaRoute
+  '/oferta-2': typeof Oferta2Route
+  '/oferta-3': typeof Oferta3Route
   '/parte-2': typeof Parte2Route
   '/parte-2-1': typeof Parte21Route
   '/parte-2-2': typeof Parte22Route
@@ -244,6 +258,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/obrigado': typeof ObrigadoRoute
   '/oferta': typeof OfertaRoute
+  '/oferta-2': typeof Oferta2Route
+  '/oferta-3': typeof Oferta3Route
   '/parte-2': typeof Parte2Route
   '/parte-2-1': typeof Parte21Route
   '/parte-2-2': typeof Parte22Route
@@ -279,6 +295,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/obrigado': typeof ObrigadoRoute
   '/oferta': typeof OfertaRoute
+  '/oferta-2': typeof Oferta2Route
+  '/oferta-3': typeof Oferta3Route
   '/parte-2': typeof Parte2Route
   '/parte-2-1': typeof Parte21Route
   '/parte-2-2': typeof Parte22Route
@@ -315,6 +333,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/obrigado'
     | '/oferta'
+    | '/oferta-2'
+    | '/oferta-3'
     | '/parte-2'
     | '/parte-2-1'
     | '/parte-2-2'
@@ -347,6 +367,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/obrigado'
     | '/oferta'
+    | '/oferta-2'
+    | '/oferta-3'
     | '/parte-2'
     | '/parte-2-1'
     | '/parte-2-2'
@@ -381,6 +403,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/obrigado'
     | '/oferta'
+    | '/oferta-2'
+    | '/oferta-3'
     | '/parte-2'
     | '/parte-2-1'
     | '/parte-2-2'
@@ -416,6 +440,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ObrigadoRoute: typeof ObrigadoRoute
   OfertaRoute: typeof OfertaRoute
+  Oferta2Route: typeof Oferta2Route
+  Oferta3Route: typeof Oferta3Route
   Parte2Route: typeof Parte2Route
   Parte21Route: typeof Parte21Route
   Parte22Route: typeof Parte22Route
@@ -477,6 +503,20 @@ declare module '@tanstack/react-router' {
       path: '/oferta'
       fullPath: '/oferta'
       preLoaderRoute: typeof OfertaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oferta-2': {
+      id: '/oferta-2'
+      path: '/oferta-2'
+      fullPath: '/oferta-2'
+      preLoaderRoute: typeof Oferta2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oferta-3': {
+      id: '/oferta-3'
+      path: '/oferta-3'
+      fullPath: '/oferta-3'
+      preLoaderRoute: typeof Oferta3RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parte-2': {
@@ -727,6 +767,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ObrigadoRoute: ObrigadoRoute,
   OfertaRoute: OfertaRoute,
+  Oferta2Route: Oferta2Route,
+  Oferta3Route: Oferta3Route,
   Parte2Route: Parte2Route,
   Parte21Route: Parte21Route,
   Parte22Route: Parte22Route,
