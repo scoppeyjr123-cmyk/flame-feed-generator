@@ -78,7 +78,7 @@ function AdminCheckout() {
                 </div>
                 <div className="admin-form-grid">
                   <div className="admin-field">
-                    <label htmlFor={`provider-checkout-${plan.id}`}>ID do checkout na Wiapy</label>
+                    <label htmlFor={`provider-checkout-${plan.id}`}>ID do checkout na Wiven</label>
                     <input
                       id={`provider-checkout-${plan.id}`}
                       name="provider_checkout_id"
@@ -92,7 +92,7 @@ function AdminCheckout() {
                       id={`provider-${plan.id}`}
                       name="provider"
                       defaultValue={config?.provider ?? ""}
-                      placeholder="Ex.: wiapy"
+                      placeholder="Ex.: UDRLIC7"
                     />
                   </div>
                   <div className="admin-field">

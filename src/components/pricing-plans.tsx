@@ -9,7 +9,7 @@ const fallbackPlans = [
     duration: "7 dias de acesso ilimitado",
     highlight: "Maratone à vontade a semana inteira",
     cta: "QUERO 7 DIAS — R$ 9,90",
-    checkout: "https://pay.wiapy.com/D1rAjQcO8bo_",
+    checkout: "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=UDRLIC7",
     featured: false,
   },
   {
@@ -19,7 +19,7 @@ const fallbackPlans = [
     duration: "12 meses de acesso ilimitado",
     highlight: "Equivale a R$ 8,33/mês",
     cta: "QUERO 1 ANO — R$ 99,90",
-    checkout: "https://pay.wiapy.com/JQcBx7Tif3vh",
+    checkout: "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=84LM9WZ",
     featured: true,
   },
   {
@@ -29,7 +29,7 @@ const fallbackPlans = [
     duration: "30 dias de acesso ilimitado",
     highlight: "Equivale a R$ 0,66 por dia",
     cta: "QUERO 1 MÊS — R$ 19,90",
-    checkout: "https://pay.wiapy.com/KaF1EsAXWGPC",
+    checkout: "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=G2M4G7C",
     featured: false,
   },
 ] as const;

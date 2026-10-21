@@ -164,7 +164,7 @@ export const getPublicPlans = createServerFn({ method: "GET" }).handler(async ()
             ],
             featured: false,
             sort_order: 1,
-            checkout_url: "https://pay.wiapy.com/D1rAjQcO8bo_",
+            checkout_url: "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=UDRLIC7",
           },
           {
             id: "fallback-annual",
@@ -184,7 +184,7 @@ export const getPublicPlans = createServerFn({ method: "GET" }).handler(async ()
             ],
             featured: true,
             sort_order: 2,
-            checkout_url: "https://pay.wiapy.com/JQcBx7Tif3vh",
+            checkout_url: "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=84LM9WZ",
           },
           {
             id: "fallback-monthly",
@@ -204,7 +204,7 @@ export const getPublicPlans = createServerFn({ method: "GET" }).handler(async ()
             ],
             featured: false,
             sort_order: 3,
-            checkout_url: "https://pay.wiapy.com/KaF1EsAXWGPC",
+            checkout_url: "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=G2M4G7C",
           },
         ] as PublicPlan[],
         error: null,
