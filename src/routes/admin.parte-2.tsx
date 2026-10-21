@@ -41,9 +41,13 @@ type EditorProps = {
 };
 
 function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
-  const isOffer = contentKey === "offer" || contentKey === "offer2";
+  const isOffer = contentKey === "offer" || contentKey === "offer2" || contentKey === "offer3";
   const fallbackOffer =
-    contentKey === "offer2" ? (content["offer"] ?? content["partTwo"]) : content["partTwo"];
+    contentKey === "offer3"
+      ? (content["offer2"] ?? content["offer"] ?? content["partTwo"])
+      : contentKey === "offer2"
+        ? (content["offer"] ?? content["partTwo"])
+        : content["partTwo"];
   const rawValue = content[contentKey] ?? (isOffer ? fallbackOffer : null);
   const value =
     rawValue && typeof rawValue === "object" && !Array.isArray(rawValue)
@@ -82,9 +86,11 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
           const bunny = await createPartTwoBunnyAsset({
             data: {
               title: isOffer
-                ? contentKey === "offer2"
-                  ? "Feed Loves — oferta 2"
-                  : "Feed Loves — oferta"
+                ? contentKey === "offer3"
+                  ? "Feed Loves — oferta 3"
+                  : contentKey === "offer2"
+                    ? "Feed Loves — oferta 2"
+                    : "Feed Loves — oferta"
                 : String(form.headline),
             },
           });
@@ -377,7 +383,7 @@ function AdminPartTwo() {
   return (
     <AdminShell
       title="Páginas & Ofertas"
-      description="Edite as páginas de continuação (Parte 2) e as páginas de oferta (/oferta e /oferta-2)."
+      description="Edite as páginas de continuação (Parte 2) e as páginas de oferta (/oferta, /oferta-2 e /oferta-3)."
     >
       <AdminPageHeader
         title="Personalização das páginas de Oferta e Parte 2"
@@ -389,6 +395,12 @@ function AdminPartTwo() {
         contentKey="offer2"
         label="Página Oferta 2"
         path="/oferta-2"
+      />
+      <PartTwoEditor
+        content={content}
+        contentKey="offer3"
+        label="Página Oferta 3 (Vídeo 9:16)"
+        path="/oferta-3"
       />
       <PartTwoEditor
         content={content}

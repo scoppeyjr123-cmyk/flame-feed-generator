@@ -233,11 +233,13 @@ export function ConversionPage({
   series,
   video,
   isPartTwo = false,
+  isPortrait = false,
 }: {
   plans: PublicPlan[];
   series: Awaited<ReturnType<typeof getPublishedCatalog>>["series"];
   video: PartTwoSettings;
   isPartTwo?: boolean;
+  isPortrait?: boolean;
 }) {
   const [campaignVideo, setCampaignVideo] = useState({
     url: video.videoUrl,
@@ -323,7 +325,7 @@ export function ConversionPage({
             : "Doramas coreanos, séries turcas e novelinhas — dublados e legendados para assistir quando quiser. Tudo em um só lugar."}
         </p>
 
-        <div className={`conversion-video-frame${isPartTwo ? " conversion-video-portrait" : ""}`}>
+        <div className={`conversion-video-frame${isPartTwo || isPortrait ? " conversion-video-portrait" : ""}`}>
           {campaignVideo.url ? (
             <EpisodePlayer
               videoUrl={campaignVideo.url}

@@ -85,7 +85,9 @@ async function readPartTwoSettings(key: string): Promise<PartTwoSettings> {
       ? content["partTwo"]
       : key === "offer2"
         ? (content["offer"] ?? content["partTwo"])
-        : null);
+        : key === "offer3"
+          ? (content["offer2"] ?? content["offer"] ?? content["partTwo"])
+          : null);
   const settings = {
     ...partTwoFallback,
     ...(value && typeof value === "object" ? value : {}),
@@ -116,6 +118,10 @@ export const getPublicOfferSettings = createServerFn({ method: "GET" }).handler(
 
 export const getPublicOffer2Settings = createServerFn({ method: "GET" }).handler(async () => {
   return readPartTwoSettings("offer2");
+});
+
+export const getPublicOffer3Settings = createServerFn({ method: "GET" }).handler(async () => {
+  return readPartTwoSettings("offer3");
 });
 
 export const getPublicOffer2Plans = createServerFn({ method: "GET" }).handler(async () => {
@@ -163,6 +169,69 @@ export const getPublicOffer2Plans = createServerFn({ method: "GET" }).handler(as
     },
     {
       id: "offer2-monthly",
+      slug: "monthly",
+      name: "Mensal",
+      description: "30 dias de acesso ilimitado",
+      price: Number(settings.priceMonthly) || 9.9,
+      currency,
+      billing_interval: "month",
+      benefits: defaultBenefits,
+      featured: false,
+      sort_order: 3,
+      checkout_url:
+        settings.checkoutMonthlyUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=ZVZ9FV7",
+    },
+  ];
+
+  return { plans, error: null };
+});
+
+export const getPublicOffer3Plans = createServerFn({ method: "GET" }).handler(async () => {
+  const settings = await readPartTwoSettings("offer3");
+  const currency = settings.currency || "EUR";
+  const defaultBenefits = [
+    "Acesso completo ao catálogo",
+    "Doramas, séries turcas e novelinhas",
+    "Dublado e legendado",
+    "Sem anúncios",
+    "Dispositivos compatíveis",
+    "Liberação imediata",
+  ];
+
+  const plans: PublicPlan[] = [
+    {
+      id: "offer3-weekly",
+      slug: "weekly",
+      name: "Semanal",
+      description: "7 dias de acesso ilimitado",
+      price: Number(settings.priceWeekly) || 4.9,
+      currency,
+      billing_interval: "week",
+      benefits: defaultBenefits,
+      featured: false,
+      sort_order: 1,
+      checkout_url:
+        settings.checkoutWeeklyUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=XTSUYU1",
+    },
+    {
+      id: "offer3-annual",
+      slug: "annual",
+      name: "Anual",
+      description: "12 meses de acesso ilimitado",
+      price: Number(settings.priceAnnual) || 39.9,
+      currency,
+      billing_interval: "year",
+      benefits: defaultBenefits,
+      featured: true,
+      sort_order: 2,
+      checkout_url:
+        settings.checkoutAnnualUrl ||
+        "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=WH555VJ",
+    },
+    {
+      id: "offer3-monthly",
       slug: "monthly",
       name: "Mensal",
       description: "30 dias de acesso ilimitado",
