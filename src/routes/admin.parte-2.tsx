@@ -34,12 +34,13 @@ type EditorProps = {
 };
 
 function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
-  const isOffer = contentKey === "offer";
+  const isOffer = contentKey === "offer" || contentKey === "offer2";
+  const fallbackOffer =
+    contentKey === "offer2" ? (content["offer"] ?? content["partTwo"]) : content["partTwo"];
+  const rawValue = content[contentKey] ?? (isOffer ? fallbackOffer : null);
   const value =
-    (content[contentKey] ?? (isOffer ? content["partTwo"] : null)) &&
-    typeof (content[contentKey] ?? (isOffer ? content["partTwo"] : null)) === "object" &&
-    !Array.isArray(content[contentKey] ?? (isOffer ? content["partTwo"] : null))
-      ? ((content[contentKey] ?? content["partTwo"]) as Record<string, unknown>)
+    rawValue && typeof rawValue === "object" && !Array.isArray(rawValue)
+      ? (rawValue as Record<string, unknown>)
       : {};
   const [form, setForm] = useState({
     ...fallback,
@@ -72,12 +73,19 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
       if (file) {
         if (form.videoProvider === "bunny") {
           const bunny = await createPartTwoBunnyAsset({
-            data: { title: isOffer ? "Feed Loves — oferta" : String(form.headline) },
+            data: {
+              title: isOffer
+                ? contentKey === "offer2"
+                  ? "Feed Loves — oferta 2"
+                  : "Feed Loves — oferta"
+                : String(form.headline),
+            },
           });
           await uploadFileToBunnyTus(file, bunny.upload, setUploadProgress);
           videoUrl = bunny.embedUrl;
         } else {
-          const storagePath = `${path}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+          const sanitizedPath = path.replace(/^\/+/, "");
+          const storagePath = `${sanitizedPath}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
           const upload = await supabase.storage
             .from("feedloves-media")
             .upload(storagePath, file, { upsert: false, contentType: file.type });
@@ -179,9 +187,9 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
           ) : (
             <>
               <div className="admin-field full">
-                <label htmlFor="offer-headline">Headline da página Oferta</label>
+                <label htmlFor={`${contentKey}-headline`}>Headline da {label}</label>
                 <textarea
-                  id="offer-headline"
+                  id={`${contentKey}-headline`}
                   rows={3}
                   maxLength={180}
                   value={String(form.offerHeadline || "")}
@@ -194,9 +202,9 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
                 </small>
               </div>
               <div className="admin-field full">
-                <label htmlFor="offer-catalog-subtitle">Texto abaixo de Explore o Catálogo</label>
+                <label htmlFor={`${contentKey}-catalog-subtitle`}>Texto abaixo de Explore o Catálogo</label>
                 <input
-                  id="offer-catalog-subtitle"
+                  id={`${contentKey}-catalog-subtitle`}
                   maxLength={140}
                   value={String(form.catalogSubtitle || "")}
                   onChange={(e) => setForm({ ...form, catalogSubtitle: e.target.value })}
@@ -280,12 +288,19 @@ function AdminPartTwo() {
       : {};
   return (
     <AdminShell
-      title="Parte 2"
-      description="Edite as três páginas de continuação e o vídeo da oferta."
+      title="Páginas & Ofertas"
+      description="Edite as páginas de continuação (Parte 2) e as páginas de oferta (/oferta e /oferta-2)."
     >
       <AdminPageHeader
-        title="Personalização das páginas Parte 2"
-        description="Cada versão possui vídeo independente. Use Bunny Stream ou URL externa."
+        title="Personalização das páginas de Oferta e Parte 2"
+        description="Cada versão possui vídeo independente e textos customizáveis. Use Bunny Stream, upload direto ou URL externa."
+      />
+      <PartTwoEditor content={content} contentKey="offer" label="Página Oferta" path="/oferta" />
+      <PartTwoEditor
+        content={content}
+        contentKey="offer2"
+        label="Página Oferta 2"
+        path="/oferta-2"
       />
       <PartTwoEditor
         content={content}
@@ -305,7 +320,6 @@ function AdminPartTwo() {
         label="Parte 2 — versão 2"
         path="/parte-2-2"
       />
-      <PartTwoEditor content={content} contentKey="offer" label="Página Oferta" path="/oferta" />
     </AdminShell>
   );
 }

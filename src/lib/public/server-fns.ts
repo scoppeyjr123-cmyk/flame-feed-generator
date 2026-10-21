@@ -65,7 +65,13 @@ async function readPartTwoSettings(key: string): Promise<PartTwoSettings> {
       : {};
   // Until the offer gets its own saved video, keep showing the previously shared
   // Part 2 video. Saving either page then makes its video independent.
-  const value = content[key] ?? (key === "offer" ? content["partTwo"] : null);
+  const value =
+    content[key] ??
+    (key === "offer"
+      ? content["partTwo"]
+      : key === "offer2"
+        ? (content["offer"] ?? content["partTwo"])
+        : null);
   const settings = {
     ...partTwoFallback,
     ...(value && typeof value === "object" ? value : {}),
@@ -92,6 +98,10 @@ export const getPublicPartTwoSettings = createServerFn({ method: "GET" }).handle
 
 export const getPublicOfferSettings = createServerFn({ method: "GET" }).handler(async () => {
   return readPartTwoSettings("offer");
+});
+
+export const getPublicOffer2Settings = createServerFn({ method: "GET" }).handler(async () => {
+  return readPartTwoSettings("offer2");
 });
 
 export const getPublicPartTwoVariantSettings = createServerFn({ method: "GET" })
