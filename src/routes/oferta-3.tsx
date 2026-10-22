@@ -49,5 +49,9 @@ export const Route = createFileRoute("/oferta-3")({
 });
 
 function Offer3Route() {
-  return <ConversionPage {...Route.useLoaderData()} isPortrait={true} />;
+  const data = Route.useLoaderData();
+  const ctaText = data.video.ctaText && data.video.ctaText !== "CONTINUE ASSISTINDO"
+    ? data.video.ctaText
+    : "ASSISTIR PARTE 3";
+  return <ConversionPage {...data} isPortrait={true} heroCtaText={ctaText} />;
 }

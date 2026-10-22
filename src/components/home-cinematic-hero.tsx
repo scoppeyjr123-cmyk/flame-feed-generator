@@ -85,11 +85,16 @@ export function HomeCinematicHero({ series }: { series: HeroSeries[] }) {
       const image = new Image();
       image.src = source;
     }
-    railRef.current?.querySelector<HTMLElement>(`[data-slide="${activeIndex}"]`)?.scrollIntoView({
-      behavior: reducedMotion ? "auto" : "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+    const track = railRef.current;
+    const card = track?.querySelector<HTMLElement>(`[data-slide="${activeIndex}"]`);
+    if (track && card) {
+      const targetLeft =
+        card.offsetLeft - track.clientWidth / 2 + card.clientWidth / 2;
+      track.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    }
   }, [activeIndex, highlights, reducedMotion]);
 
   if (!highlights.length) return null;
@@ -98,8 +103,9 @@ export function HomeCinematicHero({ series }: { series: HeroSeries[] }) {
 
   if (!portalTarget) return hideLegacyHero;
 
-  const active = highlights[activeIndex];
-  const previous = previousIndex === null ? null : highlights[previousIndex];
+  const active = highlights[activeIndex] ?? highlights[0];
+  if (!active) return hideLegacyHero;
+  const previous = previousIndex === null ? null : (highlights[previousIndex] ?? null);
   const activeImage = active.banner_url || active.cover_url || active.thumbnail_url || "";
   const previousImage =
     previous?.banner_url || previous?.cover_url || previous?.thumbnail_url || "";
