@@ -20,6 +20,17 @@ export const Route = createFileRoute("/app/novela/$slug")({
 
 function NovelPage() {
   const { series, error, account } = Route.useLoaderData();
+  const subscriptions = account.subscriptions ?? (account.subscription ? [account.subscription] : []);
+  const canWatch = (episode: (typeof series.episodes)[number]) =>
+    episode.access_type === "free" ||
+    subscriptions.some(
+      (subscription) =>
+        subscription.status === "lifetime" ||
+        (subscription.status === "active" &&
+          (episode.access_type === "subscriber" ||
+            subscription.plan_id === null ||
+            subscription.plan_id === episode.plan_id)),
+    );
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [upgradePlan, setUpgradePlan] = useState<string | null>(null);
@@ -120,12 +131,7 @@ function NovelPage() {
                   src={episode.thumbnail_url || series.cover_url || "/assets/poster1.jpg"}
                   alt=""
                 />
-                {episode.access_type === "free" ||
-                (account.subscription &&
-                  (account.subscription.status === "active" ||
-                    account.subscription.status === "lifetime") &&
-                  (episode.access_type === "subscriber" ||
-                    episode.plan_id === account.subscription.plan_id)) ? (
+                {canWatch(episode) ? (
                   <Link
                     className="novel-episode-thumb-play"
                     to="/app/watch/$episodeId"
@@ -151,12 +157,7 @@ function NovelPage() {
                 </h3>
                 <p>{episode.description || "Assista agora no Feed Loves."}</p>
               </div>
-              {episode.access_type === "free" ||
-              (account.subscription &&
-                (account.subscription.status === "active" ||
-                  account.subscription.status === "lifetime") &&
-                (episode.access_type === "subscriber" ||
-                  episode.plan_id === account.subscription.plan_id)) ? (
+              {canWatch(episode) ? (
                 <Link
                   className="novel-episode-action"
                   to="/app/watch/$episodeId"

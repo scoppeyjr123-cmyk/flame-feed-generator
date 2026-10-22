@@ -18,10 +18,8 @@ export const Route = createFileRoute("/app")({
 });
 
 function AppShell() {
-  const { subscription } = Route.useLoaderData();
-  const hasSubscription = Boolean(
-    subscription && (subscription.status === "active" || subscription.status === "lifetime"),
-  );
+  const { subscriptions = [] } = Route.useLoaderData();
+  const hasSubscription = subscriptions.length > 0;
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [installVisible, setInstallVisible] = useState(false);
   const [installHelp, setInstallHelp] = useState(false);

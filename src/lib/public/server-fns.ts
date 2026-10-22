@@ -468,7 +468,7 @@ export const getPublishedEpisode = createServerFn({ method: "GET" })
     );
     const hasSubscription = validSubscriptions.length > 0;
     const matchingSubscription = validSubscriptions.some(
-      (subscription) => subscription.plan_id === data.plan_id,
+      (subscription) => subscription.status === "lifetime" || subscription.plan_id === data.plan_id,
     );
     const allowed =
       data.access_type === "free" ||
@@ -623,6 +623,12 @@ export const getCustomerAccount = createServerFn({ method: "GET" }).handler(asyn
   return {
     session,
     subscription,
+    subscriptions: (subscriptionRows ?? []).filter(
+      (row) =>
+        row.status === "lifetime" ||
+        row.expires_at === null ||
+        new Date(row.expires_at).getTime() > now,
+    ),
     history: history ?? [],
     watchHistory: watchHistory ?? [],
   };
