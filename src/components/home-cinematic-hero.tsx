@@ -85,11 +85,16 @@ export function HomeCinematicHero({ series }: { series: HeroSeries[] }) {
       const image = new Image();
       image.src = source;
     }
-    railRef.current?.querySelector<HTMLElement>(`[data-slide="${activeIndex}"]`)?.scrollIntoView({
-      behavior: reducedMotion ? "auto" : "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+    const track = railRef.current;
+    const card = track?.querySelector<HTMLElement>(`[data-slide="${activeIndex}"]`);
+    if (track && card) {
+      const targetLeft =
+        card.offsetLeft - track.clientWidth / 2 + card.clientWidth / 2;
+      track.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    }
   }, [activeIndex, highlights, reducedMotion]);
 
   if (!highlights.length) return null;
