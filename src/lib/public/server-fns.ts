@@ -61,7 +61,7 @@ const partTwoFallback: PartTwoSettings = {
   checkoutAnnualUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=WH555VJ",
   priceWeekly: 4.9,
   priceMonthly: 9.9,
-  priceAnnual: 39.9,
+  priceAnnual: 29.9,
   currency: "EUR",
 };
 
@@ -124,6 +124,16 @@ export const getPublicOffer3Settings = createServerFn({ method: "GET" }).handler
   return readPartTwoSettings("offer3");
 });
 
+function parseSettingPrice(value: unknown, fallback: number): number {
+  if (typeof value === "number" && !Number.isNaN(value)) return value;
+  if (typeof value === "string") {
+    const cleaned = value.trim().replace(",", ".");
+    const num = Number(cleaned);
+    if (!Number.isNaN(num) && num > 0) return num;
+  }
+  return fallback;
+}
+
 export const getPublicOffer2Plans = createServerFn({ method: "GET" }).handler(async () => {
   const settings = await readPartTwoSettings("offer2");
   const currency = settings.currency || "EUR";
@@ -142,7 +152,7 @@ export const getPublicOffer2Plans = createServerFn({ method: "GET" }).handler(as
       slug: "weekly",
       name: "Semanal",
       description: "7 dias de acesso ilimitado",
-      price: Number(settings.priceWeekly) || 4.9,
+      price: parseSettingPrice(settings.priceWeekly, 4.9),
       currency,
       billing_interval: "week",
       benefits: defaultBenefits,
@@ -157,7 +167,7 @@ export const getPublicOffer2Plans = createServerFn({ method: "GET" }).handler(as
       slug: "annual",
       name: "Anual",
       description: "12 meses de acesso ilimitado",
-      price: Number(settings.priceAnnual) || 39.9,
+      price: parseSettingPrice(settings.priceAnnual, 29.9),
       currency,
       billing_interval: "year",
       benefits: defaultBenefits,
@@ -172,7 +182,7 @@ export const getPublicOffer2Plans = createServerFn({ method: "GET" }).handler(as
       slug: "monthly",
       name: "Mensal",
       description: "30 dias de acesso ilimitado",
-      price: Number(settings.priceMonthly) || 9.9,
+      price: parseSettingPrice(settings.priceMonthly, 9.9),
       currency,
       billing_interval: "month",
       benefits: defaultBenefits,
@@ -205,7 +215,7 @@ export const getPublicOffer3Plans = createServerFn({ method: "GET" }).handler(as
       slug: "weekly",
       name: "Semanal",
       description: "7 dias de acesso ilimitado",
-      price: Number(settings.priceWeekly) || 4.9,
+      price: parseSettingPrice(settings.priceWeekly, 4.9),
       currency,
       billing_interval: "week",
       benefits: defaultBenefits,
@@ -220,7 +230,7 @@ export const getPublicOffer3Plans = createServerFn({ method: "GET" }).handler(as
       slug: "annual",
       name: "Anual",
       description: "12 meses de acesso ilimitado",
-      price: Number(settings.priceAnnual) || 39.9,
+      price: parseSettingPrice(settings.priceAnnual, 29.9),
       currency,
       billing_interval: "year",
       benefits: defaultBenefits,
@@ -235,7 +245,7 @@ export const getPublicOffer3Plans = createServerFn({ method: "GET" }).handler(as
       slug: "monthly",
       name: "Mensal",
       description: "30 dias de acesso ilimitado",
-      price: Number(settings.priceMonthly) || 9.9,
+      price: parseSettingPrice(settings.priceMonthly, 9.9),
       currency,
       billing_interval: "month",
       benefits: defaultBenefits,

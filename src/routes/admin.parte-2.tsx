@@ -30,7 +30,7 @@ const fallback = {
   checkoutAnnualUrl: "https://checkout.applyfy.com.br/checkout/cmuoezoou05ca01onipslolbi?offer=WH555VJ",
   priceWeekly: "4.90",
   priceMonthly: "9.90",
-  priceAnnual: "39.90",
+  priceAnnual: "29.90",
   currency: "EUR",
 };
 type EditorProps = {
