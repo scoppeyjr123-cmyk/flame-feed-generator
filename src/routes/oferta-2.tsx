@@ -15,8 +15,12 @@ export const Route = createFileRoute("/oferta-2")({
       getPublicOffer2Settings(),
     ]);
 
+    const plans = planResult.plans.map((p) =>
+      p.slug === "annual" ? { ...p, price: 19.9 } : p,
+    );
+
     return {
-      plans: planResult.plans,
+      plans,
       series: catalogResult.series,
       video,
     };

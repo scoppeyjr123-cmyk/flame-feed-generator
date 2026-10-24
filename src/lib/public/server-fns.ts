@@ -167,7 +167,7 @@ export const getPublicOffer2Plans = createServerFn({ method: "GET" }).handler(as
       slug: "annual",
       name: "Anual",
       description: "12 meses de acesso ilimitado",
-      price: parseSettingPrice(settings.priceAnnual, 29.9),
+      price: parseSettingPrice(settings.priceAnnual, 19.9),
       currency,
       billing_interval: "year",
       benefits: defaultBenefits,
