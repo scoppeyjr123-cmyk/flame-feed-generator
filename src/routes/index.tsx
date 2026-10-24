@@ -5,11 +5,26 @@ import { getPublishedCatalog } from "../lib/public/server-fns";
 import { getCatalogCode } from "../lib/catalog-code";
 import { WhatsAppSupportButton } from "../components/whatsapp-support-button";
 import { HomeCinematicHero } from "../components/home-cinematic-hero";
+import { HomeMultiplatformSection } from "../components/home-multiplatform-section";
 
 const wivenMarkup = originalMarkup
-  .replaceAll("https://pay.wiapy.com/D1rAjQcO8bo_", "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=UDRLIC7")
-  .replaceAll("https://pay.wiapy.com/JQcBx7Tif3vh", "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=84LM9WZ")
-  .replaceAll("https://pay.wiapy.com/KaF1EsAXWGPC", "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=G2M4G7C");
+  .replaceAll(
+    "https://pay.wiapy.com/D1rAjQcO8bo_",
+    "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=UDRLIC7",
+  )
+  .replaceAll(
+    "https://pay.wiapy.com/JQcBx7Tif3vh",
+    "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=84LM9WZ",
+  )
+  .replaceAll(
+    "https://pay.wiapy.com/KaF1EsAXWGPC",
+    "https://checkout.wiven.com.br/checkout/cmvhph805123801pwk9wex6k2?offer=G2M4G7C",
+  );
+
+const homeMarkup = wivenMarkup.replace(
+  /<section class="page-shell grid items-center gap-12 py-20 lg:grid-cols-2">[\s\S]*?MULTIPLATAFORMA[\s\S]*?<\/section>/,
+  '<div id="home-multiplatform-slot"></div>',
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -313,8 +328,9 @@ function Index() {
 
   return (
     <>
-      <div dangerouslySetInnerHTML={{ __html: wivenMarkup }} />
+      <div dangerouslySetInnerHTML={{ __html: homeMarkup }} />
       <HomeCinematicHero series={series} />
+      <HomeMultiplatformSection />
       <WhatsAppSupportButton />
     </>
   );
