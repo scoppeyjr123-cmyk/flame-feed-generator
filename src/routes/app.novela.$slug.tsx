@@ -21,7 +21,7 @@ export const Route = createFileRoute("/app/novela/$slug")({
 function NovelPage() {
   const { series, error, account } = Route.useLoaderData();
   const subscriptions = account.subscriptions ?? (account.subscription ? [account.subscription] : []);
-  const canWatch = (episode: (typeof series.episodes)[number]) =>
+  const canWatch = (episode: NonNullable<typeof series>["episodes"][number]) =>
     episode.access_type === "free" ||
     subscriptions.some(
       (subscription) =>

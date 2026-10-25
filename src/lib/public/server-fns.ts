@@ -596,7 +596,15 @@ export const getCustomerProgress = createServerFn({ method: "GET" }).handler(asy
 
 export const getCustomerAccount = createServerFn({ method: "GET" }).handler(async () => {
   const session = await getCustomerSession();
-  if (!session.authenticated) return { session, subscription: null };
+  if (!session.authenticated) {
+    return {
+      session,
+      subscription: null,
+      subscriptions: [],
+      history: [],
+      watchHistory: [],
+    };
+  }
   const supabase = createClient();
   const [{ data: subscriptionRows }, { data: history }, { data: watchHistory }] = await Promise.all(
     [
