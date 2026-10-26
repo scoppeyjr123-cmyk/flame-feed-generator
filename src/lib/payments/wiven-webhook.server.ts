@@ -1,11 +1,4 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-
-function adminClient() {
-  const url = process.env["VITE_SUPABASE_URL"];
-  const key = process.env["SUPABASE_SECRET_KEY"] ?? process.env["SUPABASE_SERVICE_ROLE_KEY"];
-  if (!url || !key) throw new Error("Supabase server credentials are not configured");
-  return createSupabaseClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-}
+import { syncCustomerSubscriptionFromPayment } from "./payment-sync.server";
 
 function readPath(value: unknown, paths: string[]) {
   for (const path of paths) {
@@ -39,16 +32,28 @@ export async function handleWivenWebhook(request: Request) {
   }
 
   const event = readPath(payload, ["event", "type", "name"]) ?? "unknown";
-  const email = readPath(payload, [
-    "customer.email",
-    "buyer.email",
-    "user.email",
-    "data.customer.email",
-    "data.buyer.email",
-    "data.customer_email",
-    "data.email",
-    "customer_email",
-  ])?.toLowerCase() ?? null;
+  const email =
+    readPath(payload, [
+      "customer.email",
+      "buyer.email",
+      "user.email",
+      "data.customer.email",
+      "data.buyer.email",
+      "data.customer_email",
+      "data.email",
+      "customer_email",
+    ])?.toLowerCase() ?? null;
+
+  const buyerName = readPath(payload, [
+    "customer.name",
+    "customer.full_name",
+    "buyer.name",
+    "user.name",
+    "data.customer.name",
+    "data.buyer.name",
+    "data.name",
+  ]);
+
   const checkoutId = readPath(payload, [
     "checkout.id",
     "offer.id",
@@ -62,13 +67,16 @@ export async function handleWivenWebhook(request: Request) {
     "data.product.code",
   ]);
 
-  const paymentStatus = (readPath(payload, [
-    "payment.status",
-    "transaction.status",
-    "data.payment.status",
-    "data.transaction.status",
-    "status",
-  ]) ?? event).toLowerCase();
+  const paymentStatus = (
+    readPath(payload, [
+      "payment.status",
+      "transaction.status",
+      "data.payment.status",
+      "data.transaction.status",
+      "status",
+    ]) ?? event
+  ).toLowerCase();
+
   const providerSubscriptionId = readPath(payload, [
     "subscription.id",
     "payment.id",
@@ -78,74 +86,47 @@ export async function handleWivenWebhook(request: Request) {
     "data.transaction.id",
   ]);
 
-  // Keep the endpoint tolerant while Wiven's first real payload is being verified.
-  // Events without the fields required for activation are acknowledged and logged only.
-  if (!email || !checkoutId) {
-    console.info("Wiven webhook received", { event, hasEmail: Boolean(email), hasCheckoutId: Boolean(checkoutId) });
-    return Response.json({ ok: true, received: true, processed: false });
-  }
-
-  const supabase = adminClient();
-  const { data: profile } = await supabase.from("profiles").select("id").ilike("email", email).maybeSingle();
-  const { data: checkout } = await supabase
-    .from("checkout_settings")
-    .select("plan_id")
-    .eq("provider", "wiven")
-    .eq("provider_checkout_id", checkoutId)
-    .maybeSingle();
-
-  if (!profile?.id || !checkout?.plan_id) {
-    await supabase.from("pending_payment_events").upsert(
-      {
-        provider: "wiven",
-        event_key: `${email}:${checkoutId}:${event}`,
-        email,
-        checkout_id: checkoutId,
-        payment_status: event,
-        payload,
-      },
-      { onConflict: "event_key" },
-    );
-    return Response.json({ ok: true, received: true, processed: false });
-  }
-
-  const isActive = ["paid", "approved", "completed", "success", "successful", "active"].some(
-    (value) => paymentStatus.includes(value),
-  );
-  const isCancelled = ["refunded", "chargeback", "chargedback", "cancelled", "canceled", "expired"].some(
-    (value) => paymentStatus.includes(value),
-  );
-  const status = isActive ? "active" : isCancelled ? "cancelled" : "pending";
   const startsAt = readPath(payload, [
     "subscription.starts_at",
     "subscription.start_at",
     "data.subscription.starts_at",
-  ]) ?? new Date().toISOString();
+  ]);
+
   const expiresAt = readPath(payload, [
     "subscription.expires_at",
     "subscription.end_at",
     "subscription.dt_end",
     "data.subscription.expires_at",
   ]);
-  const { data: existing } = providerSubscriptionId
-    ? await supabase.from("subscriptions").select("id").eq("provider_subscription_id", providerSubscriptionId).maybeSingle()
-    : { data: null };
-  const record = {
-    user_id: profile.id,
-    plan_id: checkout.plan_id,
-    status,
-    starts_at: startsAt,
-    expires_at: expiresAt,
-    provider_subscription_id: providerSubscriptionId,
-    origin: "wiven",
-    notes: `Sincronizado via webhook Wiven (${event})`,
-  };
-  const result = existing
-    ? await supabase.from("subscriptions").update(record).eq("id", existing.id).select("id").single()
-    : await supabase.from("subscriptions").insert(record).select("id").single();
-  if (result.error) {
-    console.error("Wiven subscription sync failed", result.error);
-    return Response.json({ ok: false, received: true, processed: false }, { status: 500 });
+
+  const renewsAt = readPath(payload, [
+    "subscription.next_billing",
+    "subscription.renews_at",
+    "data.subscription.next_billing",
+  ]);
+
+  if (!email || !checkoutId) {
+    console.info("Wiven webhook received with incomplete info", {
+      event,
+      hasEmail: Boolean(email),
+      hasCheckoutId: Boolean(checkoutId),
+    });
+    return Response.json({ ok: true, received: true, processed: false });
   }
-  return Response.json({ ok: true, received: true, processed: true, subscriptionId: result.data.id, status });
+
+  const result = await syncCustomerSubscriptionFromPayment({
+    provider: "wiven",
+    email,
+    buyerName,
+    checkoutId,
+    paymentStatus,
+    providerSubscriptionId,
+    event,
+    payload,
+    startsAt,
+    expiresAt,
+    renewsAt,
+  });
+
+  return Response.json(result, { status: result.ok ? 200 : 500 });
 }

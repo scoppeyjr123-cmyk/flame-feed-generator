@@ -349,6 +349,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      pending_payment_events: {
+        Row: {
+          checkout_id: string;
+          created_at: string;
+          email: string;
+          event_key: string;
+          id: string;
+          payload: Json;
+          payment_status: string;
+          processed_at: string | null;
+          provider: string;
+        };
+        Insert: {
+          checkout_id: string;
+          created_at?: string;
+          email: string;
+          event_key: string;
+          id?: string;
+          payload?: Json;
+          payment_status: string;
+          processed_at?: string | null;
+          provider?: string;
+        };
+        Update: {
+          checkout_id?: string;
+          created_at?: string;
+          email?: string;
+          event_key?: string;
+          id?: string;
+          payload?: Json;
+          payment_status?: string;
+          processed_at?: string | null;
+          provider?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           created_at: string;

@@ -5,6 +5,7 @@ import { renderErrorPage } from "./lib/error-page";
 import { handleBunnyWebhook } from "./lib/bunny/webhook.server";
 import { handleWiapyWebhook } from "./lib/payments/wiapy-webhook.server";
 import { handleWivenWebhook } from "./lib/payments/wiven-webhook.server";
+import { handleApplyfyWebhook } from "./lib/payments/applyfy-webhook.server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -59,6 +60,9 @@ export default {
       }
       if (url.pathname === "/api/wiven/webhook") {
         return await handleWivenWebhook(request);
+      }
+      if (url.pathname === "/api/applyfy/webhook") {
+        return await handleApplyfyWebhook(request);
       }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);

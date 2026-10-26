@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { syncCustomerSubscriptionFromPayment } from "./payment-sync.server";
 
 type WiapyPayload = {
   payment?: { id?: string; status?: string; type?: string } | null;
@@ -11,7 +11,7 @@ type WiapyPayload = {
     dt_end?: string;
     next_billing?: string;
   } | null;
-  customer?: { email?: string } | null;
+  customer?: { email?: string; name?: string } | null;
   checkout?: { id?: string; title?: string } | null;
 };
 
@@ -21,21 +21,13 @@ function secureToken(expected: string, received: string) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-function adminClient() {
-  const url = process.env["VITE_SUPABASE_URL"];
-  const key = process.env["SUPABASE_SECRET_KEY"] ?? process.env["SUPABASE_SERVICE_ROLE_KEY"];
-  if (!url || !key) throw new Error("Supabase server credentials are not configured");
-  return createSupabaseClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
-
 export async function handleWiapyWebhook(request: Request) {
   if (request.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
   const token = process.env["WIAPY_WEBHOOK_TOKEN"];
   const received = request.headers.get("authorization") ?? "";
-  if (!token || !secureToken(token, received.replace(/^Bearer\s+/i, "")))
+  if (!token || !secureToken(token, received.replace(/^Bearer\s+/i, ""))) {
     return new Response("Unauthorized", { status: 401 });
+  }
 
   let payload: WiapyPayload;
   try {
@@ -43,81 +35,31 @@ export async function handleWiapyWebhook(request: Request) {
   } catch {
     return new Response("Invalid JSON", { status: 400 });
   }
+
   const email = payload.customer?.email?.trim().toLowerCase();
   const checkoutId = payload.checkout?.id;
   const paymentStatus = payload.payment?.status;
-  if (!email || !checkoutId || !paymentStatus)
+  if (!email || !checkoutId || !paymentStatus) {
     return new Response("Incomplete payload", { status: 400 });
-
-  const supabase = adminClient();
-  const [{ data: profile }, { data: checkout }] = await Promise.all([
-    supabase.from("profiles").select("id,email").ilike("email", email).maybeSingle(),
-    supabase
-      .from("checkout_settings")
-      .select("plan_id")
-      .eq("provider_checkout_id", checkoutId)
-      .maybeSingle(),
-  ]);
-  if (!profile?.id || !checkout?.plan_id) {
-    console.warn("Wiapy webhook accepted without local mapping", { email, checkoutId });
-    const eventKey = providerEventKey(payload, email, checkoutId);
-    await supabase.from("pending_payment_events").upsert(
-      {
-        event_key: eventKey,
-        email,
-        checkout_id: checkoutId,
-        payment_status: paymentStatus,
-        payload,
-      },
-      { onConflict: "event_key" },
-    );
-    return Response.json({ ok: true, processed: false, reason: "Customer or checkout not mapped" });
   }
 
+  const buyerName = payload.customer?.name || null;
   const subscription = payload.subscription;
   const providerSubscriptionId = subscription?.id || payload.payment?.id || null;
-  const active = paymentStatus === "paid" && (subscription ? subscription.active !== false : true);
-  const status = active
-    ? "active"
-    : paymentStatus === "refunded" || paymentStatus === "chargedback"
-      ? "cancelled"
-      : "expired";
-  const { data: existing } = providerSubscriptionId
-    ? await supabase
-        .from("subscriptions")
-        .select("id")
-        .eq("provider_subscription_id", providerSubscriptionId)
-        .maybeSingle()
-    : { data: null };
-  const record = {
-    user_id: profile.id,
-    plan_id: checkout.plan_id,
-    status,
-    starts_at: subscription?.dt_start || new Date().toISOString(),
-    expires_at: subscription?.dt_end || null,
-    renews_at: subscription?.next_billing || null,
-    origin: "wiapy",
-    provider_subscription_id: providerSubscriptionId,
-    notes: "Sincronizado via webhook Wiapy",
-  };
-  const result = existing
-    ? await supabase
-        .from("subscriptions")
-        .update(record)
-        .eq("id", existing.id)
-        .select("id")
-        .single()
-    : await supabase.from("subscriptions").insert(record).select("id").single();
-  if (result.error) return new Response("Subscription update failed", { status: 500 });
-  return Response.json({ ok: true, subscriptionId: result.data.id, status });
-}
 
-function providerEventKey(payload: WiapyPayload, email: string, checkoutId: string) {
-  return [
+  const result = await syncCustomerSubscriptionFromPayment({
+    provider: "wiapy",
     email,
+    buyerName,
     checkoutId,
-    payload.subscription?.id || "",
-    payload.payment?.id || "",
-    payload.payment?.status || "",
-  ].join(":");
+    paymentStatus,
+    providerSubscriptionId,
+    event: "wiapy_webhook",
+    payload,
+    startsAt: subscription?.dt_start || null,
+    expiresAt: subscription?.dt_end || null,
+    renewsAt: subscription?.next_billing || null,
+  });
+
+  return Response.json(result, { status: result.ok ? 200 : 500 });
 }
