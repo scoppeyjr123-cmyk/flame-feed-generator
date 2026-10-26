@@ -1,6 +1,72 @@
 import { createServerFn } from "@tanstack/react-start";
 
+import { getAdminSupabaseClient, normalizeEmail } from "../payments/payment-sync.server";
 import { createClient } from "./server";
+
+export type EmailLoginResult =
+  { ok: true } | { ok: false; reason: "invalid_email" | "account_not_found" | "session_error" };
+
+export const loginCustomerByEmail = createServerFn({ method: "POST" })
+  .validator((email: string) => email)
+  .handler(async ({ data: rawEmail }): Promise<EmailLoginResult> => {
+    const email = normalizeEmail(rawEmail);
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!isValidEmail) return { ok: false, reason: "invalid_email" };
+
+    const admin = getAdminSupabaseClient();
+    const { data: profile, error: profileError } = await admin
+      .from("profiles")
+      .select("id,email")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (profileError || !profile) {
+      return { ok: false, reason: "account_not_found" };
+    }
+
+    const { data: role } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", profile.id)
+      .maybeSingle();
+
+    // Administrative accounts keep their stronger password-based login flow.
+    if (role?.role === "admin") {
+      return { ok: false, reason: "account_not_found" };
+    }
+
+    const { data: link, error: linkError } = await admin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+    });
+    const tokenHash = link.properties?.hashed_token;
+
+    if (linkError || !tokenHash) {
+      console.error("Unable to generate passwordless customer session", {
+        userId: profile.id,
+        error: linkError?.message,
+      });
+      return { ok: false, reason: "session_error" };
+    }
+
+    const supabase = createClient();
+    const { data: verification, error: verificationError } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: "email",
+    });
+
+    if (verificationError || verification.user?.id !== profile.id || !verification.session) {
+      await supabase.auth.signOut();
+      console.error("Unable to establish passwordless customer session", {
+        userId: profile.id,
+        error: verificationError?.message,
+      });
+      return { ok: false, reason: "session_error" };
+    }
+
+    return { ok: true };
+  });
 
 export const getAdminSession = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = createClient();
@@ -96,7 +162,8 @@ export const getCustomerAccessStatus = createServerFn({ method: "GET" }).handler
     const activeSub = subscriptionList.find(
       (s) =>
         s.status === "lifetime" ||
-        (s.status === "active" && (s.expires_at === null || new Date(s.expires_at).getTime() > now)),
+        (s.status === "active" &&
+          (s.expires_at === null || new Date(s.expires_at).getTime() > now)),
     );
 
     if (activeSub) {
@@ -152,4 +219,3 @@ export const getCustomerAccessStatus = createServerFn({ method: "GET" }).handler
     };
   },
 );
-

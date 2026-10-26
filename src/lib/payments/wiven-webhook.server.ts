@@ -18,12 +18,6 @@ function readPath(value: unknown, paths: string[]) {
 export async function handleWivenWebhook(request: Request) {
   if (request.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
 
-  const configuredToken = process.env["WIVEN_WEBHOOK_TOKEN"];
-  if (configuredToken) {
-    const received = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
-    if (received !== configuredToken) return new Response("Unauthorized", { status: 401 });
-  }
-
   let payload: unknown;
   try {
     payload = JSON.parse(await request.text());
@@ -31,9 +25,20 @@ export async function handleWivenWebhook(request: Request) {
     return new Response("Invalid JSON", { status: 400 });
   }
 
+  const configuredToken = process.env["WIVEN_WEBHOOK_TOKEN"];
+  if (configuredToken) {
+    const authorizationToken =
+      request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+    const payloadToken = readPath(payload, ["token"]) ?? "";
+    if (authorizationToken !== configuredToken && payloadToken !== configuredToken) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+  }
+
   const event = readPath(payload, ["event", "type", "name"]) ?? "unknown";
   const email =
     readPath(payload, [
+      "client.email",
       "customer.email",
       "buyer.email",
       "user.email",
@@ -45,6 +50,7 @@ export async function handleWivenWebhook(request: Request) {
     ])?.toLowerCase() ?? null;
 
   const buyerName = readPath(payload, [
+    "client.name",
     "customer.name",
     "customer.full_name",
     "buyer.name",
@@ -55,6 +61,7 @@ export async function handleWivenWebhook(request: Request) {
   ]);
 
   const checkoutId = readPath(payload, [
+    "offerCode",
     "checkout.id",
     "offer.id",
     "product.id",
@@ -65,16 +72,30 @@ export async function handleWivenWebhook(request: Request) {
     "data.offer.code",
     "product.code",
     "data.product.code",
+    "items.0.product.externalId",
+    "transaction.orderItems.0.product.externalId",
   ]);
 
+  const normalizedEvent = event.toLowerCase();
+  const eventStatus = normalizedEvent.includes("expired")
+    ? "expired"
+    : normalizedEvent.includes("cancel")
+      ? "cancelled"
+      : normalizedEvent.includes("refund") || normalizedEvent.includes("charged_back")
+        ? "refunded"
+        : null;
   const paymentStatus = (
+    eventStatus ??
     readPath(payload, [
       "payment.status",
       "transaction.status",
+      "subscription.status",
       "data.payment.status",
       "data.transaction.status",
+      "data.subscription.status",
       "status",
-    ]) ?? event
+    ]) ??
+    event
   ).toLowerCase();
 
   const providerSubscriptionId = readPath(payload, [
@@ -87,12 +108,14 @@ export async function handleWivenWebhook(request: Request) {
   ]);
 
   const startsAt = readPath(payload, [
+    "subscription.startAt",
     "subscription.starts_at",
     "subscription.start_at",
     "data.subscription.starts_at",
   ]);
 
   const expiresAt = readPath(payload, [
+    "subscription.nextChargeAt",
     "subscription.expires_at",
     "subscription.end_at",
     "subscription.dt_end",
@@ -100,12 +123,13 @@ export async function handleWivenWebhook(request: Request) {
   ]);
 
   const renewsAt = readPath(payload, [
+    "subscription.nextChargeAt",
     "subscription.next_billing",
     "subscription.renews_at",
     "data.subscription.next_billing",
   ]);
 
-  if (!email || !checkoutId) {
+  if ((!email || !checkoutId) && !providerSubscriptionId) {
     console.info("Wiven webhook received with incomplete info", {
       event,
       hasEmail: Boolean(email),
@@ -116,7 +140,7 @@ export async function handleWivenWebhook(request: Request) {
 
   const result = await syncCustomerSubscriptionFromPayment({
     provider: "wiven",
-    email,
+    email: email ?? "",
     buyerName,
     checkoutId,
     paymentStatus,

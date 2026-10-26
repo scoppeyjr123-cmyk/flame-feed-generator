@@ -5,7 +5,7 @@ export type PaymentSyncInput = {
   provider: "wiven" | "wiapy" | "applyfy" | string;
   email: string;
   buyerName?: string | null;
-  checkoutId: string;
+  checkoutId?: string | null;
   paymentStatus: string;
   providerSubscriptionId?: string | null;
   event?: string;
@@ -28,32 +28,26 @@ export type PaymentSyncResult = {
 // Known checkout IDs mapped to plan slugs for maximum resilience
 const KNOWN_CHECKOUT_TO_SLUG: Record<string, string> = {
   // Wiven
-  "UDRLIC7": "weekly",
-  "G2M4G7C": "monthly",
+  UDRLIC7: "weekly",
+  G2M4G7C: "monthly",
   "84LM9WZ": "annual",
   // Applyfy
-  "XTSUYU1": "weekly",
-  "ZVZ9FV7": "monthly",
-  "WH555VJ": "annual",
+  XTSUYU1: "weekly",
+  ZVZ9FV7: "monthly",
+  WH555VJ: "annual",
   // Wiapy
-  "D1rAjQcO8bo_": "weekly",
-  "KaF1EsAXWGPC": "monthly",
-  "JQcBx7Tif3vh": "annual",
+  D1rAjQcO8bo_: "weekly",
+  KaF1EsAXWGPC: "monthly",
+  JQcBx7Tif3vh: "annual",
   // Direct slugs
-  "weekly": "weekly",
-  "monthly": "monthly",
-  "annual": "annual",
+  weekly: "weekly",
+  monthly: "monthly",
+  annual: "annual",
 };
 
 export function getAdminSupabaseClient(): SupabaseClient<Database> {
-  const url =
-    process.env["VITE_SUPABASE_URL"] ??
-    process.env["SUPABASE_URL"] ??
-    "";
-  const key =
-    process.env["SUPABASE_SECRET_KEY"] ??
-    process.env["SUPABASE_SERVICE_ROLE_KEY"] ??
-    "";
+  const url = process.env["VITE_SUPABASE_URL"] ?? process.env["SUPABASE_URL"] ?? "";
+  const key = process.env["SUPABASE_SECRET_KEY"] ?? process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? "";
 
   if (!url || !key) {
     throw new Error("Supabase server credentials are not configured");
@@ -74,7 +68,10 @@ export function normalizeEmail(email: string): string {
 export async function resolvePlanId(
   supabase: SupabaseClient<Database>,
   checkoutId: string,
-): Promise<{ planId: string | null; billingInterval?: Database["public"]["Enums"]["billing_interval"] | undefined }> {
+): Promise<{
+  planId: string | null;
+  billingInterval?: Database["public"]["Enums"]["billing_interval"] | undefined;
+}> {
   const cleanedId = checkoutId.trim();
 
   // 1. Try finding in checkout_settings
@@ -85,7 +82,9 @@ export async function resolvePlanId(
     .maybeSingle();
 
   if (checkout?.plan_id) {
-    const planInfo = checkout.plans as unknown as { billing_interval: Database["public"]["Enums"]["billing_interval"] } | null;
+    const planInfo = checkout.plans as unknown as {
+      billing_interval: Database["public"]["Enums"]["billing_interval"];
+    } | null;
     return {
       planId: checkout.plan_id,
       billingInterval: planInfo?.billing_interval ?? undefined,
@@ -164,14 +163,18 @@ export async function findOrCreateUser(
     isNew = true;
   } else if (createError) {
     // User might already exist in auth.users without a profile entry
-    // Search auth users by email to recover the ID
-    const { data: listData } = await supabase.auth.admin.listUsers({
-      page: 1,
-      perPage: 50,
-    });
-    const match = listData?.users?.find(
-      (u) => u.email?.toLowerCase() === normalized,
-    );
+    // Search all auth pages by email to recover the ID. The previous fixed
+    // first-page lookup stopped finding customers after the first 50 users.
+    let match: { id: string; email?: string } | undefined;
+    for (let page = 1; !match; page += 1) {
+      const { data: listData, error: listError } = await supabase.auth.admin.listUsers({
+        page,
+        perPage: 1000,
+      });
+      if (listError) break;
+      match = listData.users.find((user) => user.email?.toLowerCase() === normalized);
+      if (listData.users.length < 1000) break;
+    }
     if (match) {
       userId = match.id;
       isNew = false;
@@ -242,11 +245,11 @@ export async function syncCustomerSubscriptionFromPayment(
   input: PaymentSyncInput,
 ): Promise<PaymentSyncResult> {
   const email = normalizeEmail(input.email);
-  const checkoutId = input.checkoutId.trim();
+  const checkoutId = input.checkoutId?.trim() ?? "";
   const event = input.event || "payment";
   const provider = input.provider || "checkout";
 
-  if (!email || !checkoutId) {
+  if ((!email || !checkoutId) && !input.providerSubscriptionId) {
     return {
       ok: false,
       received: true,
@@ -256,12 +259,43 @@ export async function syncCustomerSubscriptionFromPayment(
   }
 
   const supabase = getAdminSupabaseClient();
+  let existingId: string | null = null;
+  let beforeData: Database["public"]["Tables"]["subscriptions"]["Row"] | null = null;
+  let userId: string | null = null;
+  let planId: string | null = null;
+  let billingInterval: Database["public"]["Enums"]["billing_interval"] | undefined;
+  let isNew = false;
 
-  // 1. Resolve plan
-  const { planId, billingInterval } = await resolvePlanId(supabase, checkoutId);
+  // Subscription lifecycle events may not include an offer code. Reuse the
+  // original Wiven subscription link before trying to resolve a checkout.
+  if (input.providerSubscriptionId) {
+    const { data: foundByProvider } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("provider_subscription_id", input.providerSubscriptionId)
+      .maybeSingle();
 
-  // 2. Find or provision user
-  const { userId, isNew } = await findOrCreateUser(supabase, email, input.buyerName);
+    if (foundByProvider) {
+      existingId = foundByProvider.id;
+      beforeData = foundByProvider;
+      userId = foundByProvider.user_id;
+      planId = foundByProvider.plan_id;
+    }
+  }
+
+  // 1. Resolve the plan for a new purchase or enrich an existing link.
+  if (checkoutId) {
+    const resolvedPlan = await resolvePlanId(supabase, checkoutId);
+    planId = resolvedPlan.planId ?? planId;
+    billingInterval = resolvedPlan.billingInterval;
+  }
+
+  // 2. Find or provision the user only when the subscription was not linked yet.
+  if (!userId && email) {
+    const resolvedUser = await findOrCreateUser(supabase, email, input.buyerName);
+    userId = resolvedUser.userId;
+    isNew = resolvedUser.isNew;
+  }
 
   // If user or plan could not be resolved, save in pending_payment_events for manual/later review
   if (!userId || !planId) {
@@ -281,7 +315,7 @@ export async function syncCustomerSubscriptionFromPayment(
         email,
         checkout_id: checkoutId,
         payment_status: input.paymentStatus,
-        payload: (input.payload && typeof input.payload === "object" ? (input.payload as Json) : {}),
+        payload: input.payload && typeof input.payload === "object" ? (input.payload as Json) : {},
       },
       { onConflict: "event_key" },
     );
@@ -296,22 +330,13 @@ export async function syncCustomerSubscriptionFromPayment(
 
   // 3. Determine status
   const normalizedStatus = input.paymentStatus.toLowerCase();
-  const isActive = [
-    "paid",
-    "approved",
-    "completed",
-    "success",
-    "successful",
-    "active",
-  ].some((s) => normalizedStatus.includes(s));
+  const isActive = ["paid", "approved", "completed", "success", "successful", "active"].some((s) =>
+    normalizedStatus.includes(s),
+  );
 
-  const isCancelled = [
-    "refunded",
-    "chargeback",
-    "chargedback",
-    "cancelled",
-    "canceled",
-  ].some((s) => normalizedStatus.includes(s));
+  const isCancelled = ["refunded", "chargeback", "chargedback", "cancelled", "canceled"].some((s) =>
+    normalizedStatus.includes(s),
+  );
 
   const isExpired = ["expired"].some((s) => normalizedStatus.includes(s));
 
@@ -323,38 +348,16 @@ export async function syncCustomerSubscriptionFromPayment(
         ? "expired"
         : "pending";
 
-  const startsAt = input.startsAt || new Date().toISOString();
-  const expiresAt =
-    input.expiresAt ||
-    (isActive ? calculateExpiration(startsAt, billingInterval) : null);
-  const renewsAt = input.renewsAt || null;
-
-  // 4. Idempotency check:
-  // Look for existing subscription by providerSubscriptionId or (user_id, plan_id, active/pending)
-  let existingId: string | null = null;
-  let beforeData: unknown = null;
-
-  if (input.providerSubscriptionId) {
-    const { data: foundByProvider } = await supabase
-      .from("subscriptions")
-      .select("id, status, plan_id, starts_at, expires_at, renews_at")
-      .eq("provider_subscription_id", input.providerSubscriptionId)
-      .maybeSingle();
-
-    if (foundByProvider) {
-      existingId = foundByProvider.id;
-      beforeData = foundByProvider;
-    }
-  }
-
+  // 4. Idempotency fallback for providers/events without a subscription ID.
   if (!existingId) {
     const { data: foundByUser } = await supabase
       .from("subscriptions")
-      .select("id, status, plan_id, starts_at, expires_at, renews_at")
+      .select("*")
       .eq("user_id", userId)
       .eq("plan_id", planId)
       .in("status", ["active", "pending", "lifetime"])
       .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (foundByUser) {
@@ -362,6 +365,13 @@ export async function syncCustomerSubscriptionFromPayment(
       beforeData = foundByUser;
     }
   }
+
+  const startsAt = input.startsAt || beforeData?.starts_at || new Date().toISOString();
+  const expiresAt =
+    input.expiresAt ||
+    beforeData?.expires_at ||
+    (isActive ? calculateExpiration(startsAt, billingInterval) : null);
+  const renewsAt = input.renewsAt || beforeData?.renews_at || null;
 
   const record: Database["public"]["Tables"]["subscriptions"]["Insert"] = {
     user_id: userId,
@@ -371,7 +381,8 @@ export async function syncCustomerSubscriptionFromPayment(
     expires_at: expiresAt,
     renews_at: renewsAt,
     origin: provider,
-    provider_subscription_id: input.providerSubscriptionId || null,
+    provider_subscription_id:
+      input.providerSubscriptionId || beforeData?.provider_subscription_id || null,
     notes: `Sincronizado automaticamente via webhook ${provider} (${event})`,
     updated_at: new Date().toISOString(),
   };
@@ -422,8 +433,8 @@ export async function syncCustomerSubscriptionFromPayment(
     subscription_id: subscriptionId,
     user_id: userId,
     action: historyAction,
-    before_data: (beforeData && typeof beforeData === "object" ? (beforeData as Json) : null),
-    after_data: (record as unknown as Json),
+    before_data: beforeData && typeof beforeData === "object" ? (beforeData as Json) : null,
+    after_data: record as unknown as Json,
   });
 
   // 6. Record audit log
