@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, Users } from "lucide-react";
+import { Search, UserPlus, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import {
@@ -8,6 +8,7 @@ import {
   AdminShell,
   AdminStatus,
 } from "../components/admin/admin-shell";
+import { CreateCustomerModal } from "../components/admin/create-customer-modal";
 import { requireAdmin } from "../lib/admin/guard";
 import { getAdminCustomers } from "../lib/admin/server-fns";
 
@@ -19,7 +20,8 @@ export const Route = createFileRoute("/admin/clientes")({
 });
 
 function AdminCustomers() {
-  const { customers, subscriptions, roles } = Route.useLoaderData();
+  const { customers, subscriptions, roles, plans } = Route.useLoaderData();
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [planFilter, setPlanFilter] = useState("all");
@@ -77,6 +79,20 @@ function AdminCustomers() {
       <AdminPageHeader
         title="Clientes e assinantes"
         description="Pesquise e acompanhe o estado atual de cada cliente."
+        action={
+          <button
+            type="button"
+            className="admin-primary-button"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <UserPlus size={15} /> Novo cliente
+          </button>
+        }
+      />
+      <CreateCustomerModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        plans={plans ?? []}
       />
       <div className="admin-card admin-panel" style={{ marginBottom: 16 }}>
         <div className="admin-form-grid">

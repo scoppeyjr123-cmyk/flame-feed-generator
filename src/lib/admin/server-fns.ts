@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
+import { findOrCreateUser, getAdminSupabaseClient, normalizeEmail } from "../payments/payment-sync.server";
+import type { Json } from "../supabase/database.types";
 import { createClient } from "../supabase/server";
 
 async function assertAdmin() {
@@ -97,6 +99,7 @@ export const getAdminCustomers = createServerFn({ method: "GET" }).handler(async
     { data: customers, error },
     { data: subscriptions, error: subscriptionsError },
     { data: roles, error: rolesError },
+    { data: plans, error: plansError },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -107,13 +110,152 @@ export const getAdminCustomers = createServerFn({ method: "GET" }).handler(async
       .select("id,user_id,status,starts_at,expires_at,renews_at,origin,plan_id,plans(name)")
       .order("created_at", { ascending: false }),
     supabase.from("user_roles").select("user_id,role"),
+    supabase
+      .from("plans")
+      .select("id,name,slug,billing_interval,price,active")
+      .order("sort_order", { ascending: true }),
   ]);
 
   if (error) throw new Error(error.message);
   if (subscriptionsError) throw new Error(subscriptionsError.message);
   if (rolesError) throw new Error(rolesError.message);
-  return { customers: customers ?? [], subscriptions: subscriptions ?? [], roles: roles ?? [] };
+  if (plansError) throw new Error(plansError.message);
+  return {
+    customers: customers ?? [],
+    subscriptions: subscriptions ?? [],
+    roles: roles ?? [],
+    plans: plans ?? [],
+  };
 });
+
+export type CreateAdminCustomerAccountInput = {
+  name?: string | null | undefined;
+  email: string;
+  password?: string | null | undefined;
+  grantAccess?: boolean | undefined;
+  planId?: string | null | undefined;
+  status?: "active" | "lifetime" | "pending" | "paused" | "cancelled" | "expired" | undefined;
+  startsAt?: string | null | undefined;
+  expiresAt?: string | null | undefined;
+  notes?: string | null | undefined;
+};
+
+export const createAdminCustomerAccount = createServerFn({ method: "POST" })
+  .validator((input: CreateAdminCustomerAccountInput) => input)
+  .handler(async ({ data: input }) => {
+    const { user: adminUser } = await assertAdmin();
+    const email = normalizeEmail(input.email || "");
+    if (!email || !email.includes("@")) {
+      throw new Error("Informe um endereço de e-mail válido.");
+    }
+
+    const adminClient = getAdminSupabaseClient();
+    const { userId, isNew } = await findOrCreateUser(
+      adminClient,
+      email,
+      input.name,
+      input.password,
+    );
+
+    if (!userId) {
+      throw new Error("Não foi possível criar ou localizar a conta de usuário no Supabase.");
+    }
+
+    let subscriptionId: string | null = null;
+    const shouldGrantAccess = input.grantAccess !== false;
+
+    if (shouldGrantAccess) {
+      const status = input.status || (input.planId ? "active" : "lifetime");
+      const startsAt = input.startsAt
+        ? new Date(`${input.startsAt}T12:00:00`).toISOString()
+        : new Date().toISOString();
+
+      let expiresAt: string | null = null;
+      if (status === "lifetime") {
+        expiresAt = null;
+      } else if (input.expiresAt) {
+        expiresAt = new Date(`${input.expiresAt}T23:59:59`).toISOString();
+      } else if (input.planId) {
+        const { data: plan } = await adminClient
+          .from("plans")
+          .select("id, billing_interval")
+          .eq("id", input.planId)
+          .maybeSingle();
+
+        const start = new Date(startsAt);
+        if (plan?.billing_interval === "week") {
+          expiresAt = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        } else if (plan?.billing_interval === "year") {
+          expiresAt = new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
+        } else if (plan?.billing_interval === "lifetime") {
+          expiresAt = null;
+        } else {
+          // month or default
+          expiresAt = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        }
+      } else {
+        expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      }
+
+      const { data: subscription, error: subError } = await adminClient
+        .from("subscriptions")
+        .insert({
+          user_id: userId,
+          plan_id: status === "lifetime" ? null : (input.planId || null),
+          status: status,
+          starts_at: startsAt,
+          expires_at: expiresAt,
+          renews_at: null,
+          origin: "manual",
+          notes: input.notes?.trim() || "Conta e acesso criados manualmente pelo administrador",
+          created_by: adminUser.id,
+          updated_by: adminUser.id,
+        })
+        .select()
+        .single();
+
+      if (subError || !subscription) {
+        throw new Error(`Erro ao conceder acesso: ${subError?.message ?? "Falha ao registrar assinatura."}`);
+      }
+
+      subscriptionId = subscription.id;
+
+      await adminClient.from("subscription_history").insert({
+        subscription_id: subscription.id,
+        user_id: userId,
+        action: "manual_account_and_access_created",
+        before_data: null,
+        after_data: subscription as unknown as Json,
+        performed_by: adminUser.id,
+      });
+    }
+
+    await adminClient.from("audit_logs").insert({
+      admin_id: adminUser.id,
+      action: "admin_manual_customer_created",
+      entity_type: "customer",
+      entity_id: userId,
+      after_data: {
+        name: input.name?.trim() || null,
+        email,
+        grantAccess: shouldGrantAccess,
+        planId: input.planId || null,
+        status: input.status || null,
+        isNewUser: isNew,
+        subscriptionId,
+      } as unknown as Json,
+    });
+
+    return {
+      ok: true,
+      isNew,
+      userId,
+      subscriptionId,
+      message: isNew
+        ? "Conta de cliente criada com sucesso e acesso ao Web App liberado!"
+        : "Conta existente identificada e novo acesso ao Web App concedido!",
+    };
+  });
 
 export const getAdminPlans = createServerFn({ method: "GET" }).handler(async () => {
   const { supabase } = await assertAdmin();

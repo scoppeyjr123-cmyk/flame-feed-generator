@@ -127,6 +127,7 @@ export async function findOrCreateUser(
   supabase: SupabaseClient<Database>,
   email: string,
   buyerName?: string | null,
+  password?: string | null,
 ): Promise<{ userId: string | null; isNew: boolean }> {
   const normalized = normalizeEmail(email);
 
@@ -145,18 +146,36 @@ export async function findOrCreateUser(
         .update({ name: buyerName.trim(), updated_at: new Date().toISOString() })
         .eq("id", existingProfile.id);
     }
+    if (password?.trim()) {
+      await supabase.auth.admin.updateUserById(existingProfile.id, {
+        password: password.trim(),
+      });
+    }
     return { userId: existingProfile.id, isNew: false };
   }
 
-  // 2. Not in profiles: try creating via Supabase Auth Admin API (passwordless)
+  // 2. Not in profiles: try creating via Supabase Auth Admin API
   let userId: string | null = null;
   let isNew = false;
 
-  const { data: created, error: createError } = await supabase.auth.admin.createUser({
+  type CreateUserParams = {
+    email: string;
+    email_confirm: boolean;
+    user_metadata: { name?: string };
+    password?: string;
+  };
+
+  const createPayload: CreateUserParams = {
     email: normalized,
     email_confirm: true,
     user_metadata: buyerName?.trim() ? { name: buyerName.trim() } : {},
-  });
+  };
+
+  if (password?.trim()) {
+    createPayload.password = password.trim();
+  }
+
+  const { data: created, error: createError } = await supabase.auth.admin.createUser(createPayload);
 
   if (created?.user?.id) {
     userId = created.user.id;
@@ -178,6 +197,11 @@ export async function findOrCreateUser(
     if (match) {
       userId = match.id;
       isNew = false;
+      if (password?.trim()) {
+        await supabase.auth.admin.updateUserById(userId, {
+          password: password.trim(),
+        });
+      }
     } else {
       console.error("Failed to provision or find auth user for email:", normalized, createError);
     }

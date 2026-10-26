@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CreditCard, Plus } from "lucide-react";
+import { CreditCard, Plus, UserPlus } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 
 import {
@@ -8,6 +8,7 @@ import {
   AdminShell,
   AdminStatus,
 } from "../components/admin/admin-shell";
+import { CreateCustomerModal } from "../components/admin/create-customer-modal";
 import { requireAdmin } from "../lib/admin/guard";
 import { getAdminCustomers, getAdminPlans } from "../lib/admin/server-fns";
 import { createClient } from "../lib/supabase/client";
@@ -50,6 +51,7 @@ function toIsoDate(value: string) {
 
 function AdminSubscriptions() {
   const { customers, subscriptions, plans } = Route.useLoaderData();
+  const [showCreateCustomerModal, setShowCreateCustomerModal] = useState(false);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [planFilter, setPlanFilter] = useState("all");
@@ -214,10 +216,24 @@ function AdminSubscriptions() {
         title="Assinaturas"
         description="As ações abaixo alteram o acesso real do usuário e geram histórico administrativo."
         action={
-          <button type="button" className="admin-primary-button" onClick={openCreateForm}>
-            <Plus size={15} /> Nova assinatura
-          </button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button
+              type="button"
+              className="admin-ghost-button"
+              onClick={() => setShowCreateCustomerModal(true)}
+            >
+              <UserPlus size={15} /> Criar cliente
+            </button>
+            <button type="button" className="admin-primary-button" onClick={openCreateForm}>
+              <Plus size={15} /> Nova assinatura
+            </button>
+          </div>
         }
+      />
+      <CreateCustomerModal
+        open={showCreateCustomerModal}
+        onClose={() => setShowCreateCustomerModal(false)}
+        plans={plans ?? []}
       />
       {message ? (
         <p className="admin-alert" role="alert">
@@ -235,7 +251,27 @@ function AdminSubscriptions() {
           </div>
           <div className="admin-form-grid">
             <div className="admin-field">
-              <label htmlFor="subscription-user">Cliente</label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label htmlFor="subscription-user">Cliente</label>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateCustomerModal(true)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--primary)",
+                    cursor: "pointer",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: 0,
+                  }}
+                >
+                  <UserPlus size={12} /> + Criar nova conta
+                </button>
+              </div>
               <select
                 id="subscription-user"
                 required
