@@ -287,13 +287,13 @@ function PartTwoEditor({ content, contentKey, label, path }: EditorProps) {
                 style={{
                   marginTop: 10,
                   paddingTop: 16,
-                  borderTop: "1px solid #3a2335",
+                  borderTop: "1px solid var(--admin-divider, #3a2335)",
                 }}
               >
-                <strong style={{ fontSize: 13, color: "#fff" }}>
+                <strong style={{ fontSize: 13, color: "var(--admin-text-strong, #fff)" }}>
                   Links de Checkout e Preços (/oferta-2)
                 </strong>
-                <small style={{ color: "#a8889d" }}>
+                <small style={{ color: "var(--admin-muted, #a8889d)" }}>
                   Configure os links e valores específicos da plataforma parceira (Applyfy, etc.).
                 </small>
               </div>

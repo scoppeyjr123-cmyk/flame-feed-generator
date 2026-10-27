@@ -181,9 +181,9 @@ export function CreateCustomerModal({ open, onClose, plans, onSuccess }: CreateC
           display: "flex",
           flexDirection: "column",
           borderRadius: 18,
-          border: "1px solid #5a2d4c",
-          background: "linear-gradient(150deg, #241124 0%, #160b17 100%)",
-          boxShadow: "0 28px 90px rgba(0, 0, 0, 0.85), 0 0 1px #f33ca844",
+          border: "1px solid var(--admin-card-border, #5a2d4c)",
+          background: "var(--admin-card-bg, linear-gradient(150deg, #241124 0%, #160b17 100%))",
+          boxShadow: "var(--admin-card-shadow, 0 28px 90px rgba(0, 0, 0, 0.85))",
           overflow: "hidden",
         }}
       >
@@ -194,7 +194,7 @@ export function CreateCustomerModal({ open, onClose, plans, onSuccess }: CreateC
             alignItems: "flex-start",
             justifyContent: "space-between",
             padding: "22px 24px 18px",
-            borderBottom: "1px solid #3d2236",
+            borderBottom: "1px solid var(--admin-card-border, #3d2236)",
             background: "linear-gradient(180deg, rgba(243,60,168,0.06), transparent)",
           }}
         >
@@ -215,10 +215,10 @@ export function CreateCustomerModal({ open, onClose, plans, onSuccess }: CreateC
               <UserPlus size={13} />
               Área Administrativa
             </div>
-            <h3 id="create-customer-title" style={{ fontSize: 18, fontWeight: 700, margin: 0, color: "#fff" }}>
+            <h3 id="create-customer-title" style={{ fontSize: 18, fontWeight: 700, margin: 0, color: "var(--admin-text-strong, #fff)" }}>
               Criar Conta de Cliente
             </h3>
-            <p style={{ margin: "4px 0 0", color: "#a8889d", fontSize: 11, lineHeight: 1.5 }}>
+            <p style={{ margin: "4px 0 0", color: "var(--admin-muted, #a8889d)", fontSize: 11, lineHeight: 1.5 }}>
               Provisiona o cliente para login sem senha (OTP) e libera o acesso ao Web App.
             </p>
           </div>
@@ -317,14 +317,14 @@ export function CreateCustomerModal({ open, onClose, plans, onSuccess }: CreateC
                 justifyContent: "space-between",
                 padding: "10px 14px",
                 borderRadius: 10,
-                border: "1px solid #4a2441",
-                background: "#1e0e1e",
+                border: "1px solid var(--admin-card-border, #4a2441)",
+                background: "var(--admin-btn-ghost-bg, #1e0e1e)",
               }}
             >
               <div>
                 <label
                   htmlFor="grant-access-checkbox"
-                  style={{ fontWeight: 700, fontSize: 12, color: "#fff", cursor: "pointer", display: "block" }}
+                  style={{ fontWeight: 700, fontSize: 12, color: "var(--admin-text-strong, #fff)", cursor: "pointer", display: "block" }}
                 >
                   Liberar acesso ao Web App imediatamente
                 </label>
@@ -349,8 +349,8 @@ export function CreateCustomerModal({ open, onClose, plans, onSuccess }: CreateC
                   gap: 12,
                   padding: 14,
                   borderRadius: 12,
-                  border: "1px solid #3e1f36",
-                  background: "#170b16",
+                  border: "1px solid var(--admin-card-border, #3e1f36)",
+                  background: "var(--admin-field-bg, #170b16)",
                 }}
               >
                 <div className="admin-form-grid" style={{ margin: 0 }}>
@@ -433,12 +433,12 @@ export function CreateCustomerModal({ open, onClose, plans, onSuccess }: CreateC
             style={{
               padding: "10px 12px",
               borderRadius: 10,
-              border: "1px solid #4f2545",
-              background: "#200e1f",
+              border: "1px solid var(--admin-card-border, #4f2545)",
+              background: "var(--admin-metric-icon-bg, #200e1f)",
               display: "flex",
               alignItems: "flex-start",
               gap: 9,
-              color: "#d8c0d3",
+              color: "var(--admin-text, #d8c0d3)",
               fontSize: 11,
               lineHeight: 1.5,
             }}
@@ -446,7 +446,7 @@ export function CreateCustomerModal({ open, onClose, plans, onSuccess }: CreateC
             <Sparkles size={16} style={{ color: "var(--primary)", flexShrink: 0, marginTop: 1 }} />
             <span>
               Ao salvar, a conta estará pronta. O cliente pode acessar{" "}
-              <strong style={{ color: "#fff" }}>/login</strong>, digitar este e-mail e receber o código OTP
+              <strong style={{ color: "var(--admin-text-strong, #fff)" }}>/login</strong>, digitar este e-mail e receber o código OTP
               instantaneamente para entrar no Web App.
             </span>
           </div>
